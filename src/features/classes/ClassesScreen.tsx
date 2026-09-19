@@ -23,7 +23,7 @@ import {
 } from '@/design-system';
 import { spacing } from '@/design-system/tokens';
 
-const TABS = ['Ученики', 'Тесты', 'Выводы'] as const;
+const TABS = ['Ученики', 'Выводы'] as const;
 
 export function ClassesScreen() {
   const router = useRouter();
@@ -75,6 +75,7 @@ export function ClassesScreen() {
           <MetricTile label="Проверено" value={`${progress.checkedCount}`} />
           <MetricTile label="Осталось" value={`${progress.remainingCount}`} />
         </View>
+        <Button icon="library" onPress={() => router.push('/assignments')} title="Все тесты" variant="ghost" />
       </Card>
 
       <SegmentedTabs activeIndex={activeTab} onTabChange={setActiveTab} tabs={TABS} />
@@ -104,26 +105,6 @@ export function ClassesScreen() {
       )}
 
       {activeTab === 1 && (
-        <View style={styles.section}>
-          <SectionHeader title="Тесты" subtitle="Нажмите, чтобы сделать текущим" />
-          <Card style={styles.list}>
-            {ctx.tests.map((t, index) => (
-              <ListRow
-                icon="library"
-                isLast={index === ctx.tests.length - 1}
-                key={t.testId}
-                onPress={() => session.selectAssignment(t.testId)}
-                right={t.testId === ctx.assignmentId ? <StatusPill label="Текущий" tone="info" /> : undefined}
-                subtitle={`${t.questionsCount} заданий · ${t.gradeLevel} класс`}
-                title={t.title}
-                variant="plain"
-              />
-            ))}
-          </Card>
-        </View>
-      )}
-
-      {activeTab === 2 && (
         <View style={styles.section}>
           <SectionHeader title="Выводы" subtitle="По результатам проверенных работ" />
           {analytics.data && analytics.data.topMistakes.some((m) => m.affectedStudents > 0) ? (

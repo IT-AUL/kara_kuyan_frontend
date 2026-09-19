@@ -1,131 +1,142 @@
 import { useRouter } from 'expo-router';
+import { useCallback, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
+import { kvStore } from '@/composition';
 import { useActiveContext } from '@/data/context';
-import { bundleResource, classAnalyticsResource } from '@/data/hub';
+import { classAnalyticsResource } from '@/data/hub';
 import { useResource } from '@/data/resource';
-import {
-  AssessmentCard,
-  Button,
-  Card,
-  EmptyState,
-  ListRow,
-  Notice,
-  Screen,
-  ScreenHeader,
-  SectionHeader,
-  StatusPill,
-  textStyles,
-} from '@/design-system';
-import { colors, fontFamilies, spacing } from '@/design-system/tokens';
+import { retryFailedSheets, useSyncState } from '@/data/syncState';
+import { EmptyState, Notice, Screen, textStyles } from '@/design-system';
+import { useMotion } from '@/design-system/motion';
+import { colors, hairline, radius, spacing } from '@/design-system/tokens';
+
+import { CheckHero } from './components/CheckHero';
+import { InsightCard } from './components/InsightCard';
+
+function greeting(date = new Date()): string {
+  const h = date.getHours();
+  if (h < 5) return 'Доброй ночи';
+  if (h < 12) return 'Доброе утро';
+  if (h < 18) return 'Добрый день';
+  return 'Добрый вечер';
+}
+
+/** Staggered entrance; under reduced motion the content simply appears. */
+function Reveal({ index, children }: { index: number; children: ReactNode }) {
+  const { reduced, enterMs, staggerMs } = useMotion();
+  return <Animated.View entering={reduced ? undefined : FadeInDown.delay(index * staggerMs).duration(enterMs)}>{children}</Animated.View>;
+}
+
+function Skeleton({ height }: { height: number }) {
+  return <View accessibilityLabel="Загрузка" style={[styles.skeleton, { height }]} />;
+}
+
+const dismissKey = (classId: string, topicCode: string) => `insight-dismissed:${classId}:${topicCode}`;
 
 export function HomeScreen() {
   const router = useRouter();
   const ctx = useActiveContext();
   const analytics = useResource(ctx.classId ? classAnalyticsResource(ctx.classId) : null);
-  const bundle = useResource(ctx.assignmentId ? bundleResource(ctx.assignmentId) : null);
+  const { counts } = useSyncState();
+  const [refreshing, setRefreshing] = useState(false);
+  const [dismissed, setDismissed] = useState<readonly string[]>([]);
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([ctx.refreshAll(), analytics.refresh()]);
+    setRefreshing(false);
+  }, [ctx, analytics]);
+
   const mistakes = (analytics.data?.topMistakes ?? []).filter((m) => m.affectedStudents > 0);
   const top = [...mistakes].sort((a, b) => b.failureRatePct - a.failureRatePct)[0];
+  const insightVisible =
+    !!top && !!ctx.classId && ctx.progress.checkedCount > 0 && !dismissed.includes(top.topicCode) && kvStore.get(dismissKey(ctx.classId, top.topicCode)) === null;
   const offline = ctx.classesState.offline || ctx.testsState.offline;
+  const loading = ctx.classes.length === 0 && (ctx.classesState.status === 'idle' || ctx.classesState.status === 'loading');
+  const test = ctx.tests.find((t) => t.testId === ctx.assignmentId);
+  const name = ctx.profile?.teacherName ?? '';
+  const rawSchool = ctx.profile?.school?.trim();
+  const school = rawSchool && rawSchool !== name.trim() ? rawSchool : undefined;
+
+  const dismissInsight = () => {
+    if (!top || !ctx.classId) return;
+    kvStore.set(dismissKey(ctx.classId, top.topicCode), '1');
+    setDismissed((d) => [...d, top.topicCode]);
+  };
+
+  const hero =
+    ctx.classId && ctx.assignmentId && ctx.assignmentTitle ? (
+      <CheckHero
+        assignmentTitle={ctx.assignmentTitle}
+        checkedCount={ctx.progress.checkedCount}
+        className={ctx.className ?? ''}
+        gradeLevel={test?.gradeLevel}
+        onOpenTest={() => router.push({ pathname: '/test-detail', params: { id: ctx.assignmentId ?? '' } })}
+        onScan={() => router.push('/scan')}
+        studentCount={ctx.progress.studentCount}
+      />
+    ) : (
+      <EmptyState
+        actionLabel={ctx.classes.length === 0 ? 'Создать класс' : 'Выбрать работу'}
+        body={ctx.classes.length === 0 ? 'Создайте первый класс и добавьте учеников.' : 'Выберите работу — здесь появится прогресс проверки.'}
+        icon="library"
+        onAction={() => router.push(ctx.classes.length === 0 ? '/class-form' : '/assignments')}
+        title={ctx.classes.length === 0 ? 'Создайте первый класс' : 'Нечего проверять'}
+      />
+    );
 
   return (
-    <Screen edges={['top']}>
-      <ScreenHeader
-        eyebrow="Кара Куян"
-        subtitle={ctx.profile?.school ?? ''}
-        title={ctx.profile?.teacherName ?? ''}
-      />
+    <Screen edges={['top']} onRefresh={() => void refresh()} refreshing={refreshing}>
+      <Reveal index={0}>
+        <View style={styles.header}>
+          <Text style={textStyles.bodySmall}>{greeting()}{school ? ` · ${school}` : ''}</Text>
+          <Text accessibilityRole="header" numberOfLines={1} selectable style={textStyles.display}>
+            {name}
+          </Text>
+        </View>
+      </Reveal>
 
       {offline ? (
-        <Notice actionLabel="Обновить" message="Нет связи с сервером: показаны сохранённые данные." onAction={() => void ctx.refreshAll()} />
+        <Notice actionLabel="Обновить" message="Нет связи: показаны сохранённые данные." onAction={() => void refresh()} />
+      ) : null}
+      {ctx.classesState.status === 'error' && ctx.classes.length === 0 ? (
+        <Notice actionLabel="Повторить" message="Не удалось загрузить классы." onAction={() => void refresh()} tone="error" />
       ) : null}
 
-      {ctx.classId && ctx.assignmentId && ctx.assignmentTitle ? (
-        <AssessmentCard
-          assessment={{
-            title: ctx.assignmentTitle,
-            topic: `${ctx.tests.find((t) => t.testId === ctx.assignmentId)?.gradeLevel ?? ''} класс`,
-            className: ctx.className ?? '',
-            reviewCount: 0,
-            variantCount: bundle.data?.variants.length ?? 1,
-          }}
-          onContinue={() => router.push('/checking')}
-          progress={{ checkedCount: ctx.progress.checkedCount, studentCount: ctx.progress.studentCount, completionPercent: ctx.progress.percent }}
-        />
+      {counts.failed > 0 ? (
+        <Notice actionLabel="Повторить" message={`Не отправлено работ: ${counts.failed}. Они сохранены на телефоне.`} onAction={() => void retryFailedSheets()} tone="error" />
+      ) : counts.pending + counts.syncing > 0 ? (
+        <Notice message={`Отправляется на сервер: ${counts.pending + counts.syncing}.`} tone="info" />
+      ) : null}
+
+      {loading ? (
+        <Skeleton height={320} />
       ) : (
-        <EmptyState
-          actionLabel={ctx.classes.length === 0 ? 'Создать класс' : 'Выбрать работу'}
-          body="Создайте класс и выберите работу — здесь появится прогресс проверки."
-          icon="library"
-          onAction={() => router.push(ctx.classes.length === 0 ? '/class-form' : '/assignments')}
-          title="Нечего проверять"
-        />
+        <Reveal index={1}>{hero}</Reveal>
       )}
 
-      {top ? (
-        <Card style={styles.insightCard} tone="raised">
-          <View style={styles.insightHeader}>
-            <StatusPill icon="insight" label="Ключевой вывод" tone="info" />
-            <Text style={textStyles.caption}>по {ctx.progress.checkedCount} проверенным</Text>
-          </View>
-          <Text selectable style={textStyles.title}>Рекомендуем повторить: {top.topicName}</Text>
-          <Text style={textStyles.bodySmall}>Затронуто учеников: {top.affectedStudents} из {analytics.data?.studentsCount ?? ctx.progress.studentCount}.</Text>
-          <Button icon="analytics" onPress={() => router.push('/analytics')} title="Открыть аналитику" variant="secondary" />
-        </Card>
+      {insightVisible && top ? (
+        <Reveal index={2}>
+          <InsightCard
+            affected={top.affectedStudents}
+            basedOn={ctx.progress.checkedCount}
+            onDismiss={dismissInsight}
+            onOpen={() => router.push('/analytics')}
+            topicName={top.topicName}
+            total={analytics.data?.studentsCount ?? ctx.progress.studentCount}
+          />
+        </Reveal>
       ) : null}
 
-      <View style={styles.section}>
-        <SectionHeader title="Последние активности" />
-        {ctx.submissions.length === 0 ? (
-          <Notice message="Проверенных работ пока нет." tone="info" />
-        ) : (
-          <Card style={styles.recentList}>
-            {ctx.submissions.slice(0, 5).map((sub, index, list) => (
-              <ListRow
-                icon="person"
-                isLast={index === list.length - 1}
-                key={sub.uuid}
-                right={
-                  <View style={styles.resultRight}>
-                    <Text style={styles.resultText}>{sub.score}/{sub.maxScore}</Text>
-                    <StatusPill label={`Оценка ${sub.grade}`} tone="success" />
-                  </View>
-                }
-                subtitle={new Date(sub.checkedAt).toLocaleDateString('ru-RU')}
-                title={sub.studentName}
-                variant="plain"
-              />
-            ))}
-          </Card>
-        )}
-      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  insightCard: {
-    gap: spacing.md,
-  },
-  insightHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  recentList: {
-    paddingBottom: spacing.xs,
-    paddingTop: spacing.xs,
-  },
-  resultRight: {
-    alignItems: 'flex-end',
-    gap: spacing.xxs,
-  },
-  resultText: {
-    color: colors.textMuted,
-    fontFamily: fontFamilies.medium,
-    fontSize: 13,
-  },
-  section: {
-    gap: spacing.sm,
-  },
+  header: { gap: 2 },
+  list: { borderColor: colors.divider, borderRadius: radius.lg, borderTopWidth: hairline, paddingTop: spacing.xxs },
+  section: { gap: spacing.sm },
+  skeleton: { backgroundColor: colors.surface, borderColor: colors.divider, borderRadius: radius.xl, borderWidth: hairline },
 });

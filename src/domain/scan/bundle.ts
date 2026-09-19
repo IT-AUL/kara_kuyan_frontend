@@ -7,6 +7,8 @@ export type BundleQuestion = {
   markerId: number;
   prompt: string;
   topicTag: string;
+  /** Human-readable topic (Tatar); absent in bundles cached before it was parsed. */
+  topicName?: string;
   expectedAnswer: string;
   expectedCells: readonly BundleCell[];
 };

@@ -46,6 +46,7 @@ export function useActiveContext() {
       byUuid.set(p.client_submission_uuid, {
         uuid: p.client_submission_uuid, studentId: p.student_id, studentName: p.student_name, variant: p.variant,
         checkedAt: p.checked_at, score: p.overall_score, maxScore: p.max_score, grade: p.final_grade, reviewedFlags: p.teacher_reviewed_flags,
+        tasks: p.questions_results.map((q) => ({ number: q.question_number, correct: q.is_correct })),
       });
     }
     return [...byUuid.values()].sort((a, b) => b.checkedAt.localeCompare(a.checkedAt));

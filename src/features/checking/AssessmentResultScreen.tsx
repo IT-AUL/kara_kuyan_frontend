@@ -9,6 +9,7 @@ import { Button, Card, Screen, ScreenHeader, SectionHeader, StatusPill } from '@
 import { spacing } from '@/design-system/tokens';
 import { ResultSummaryCard } from './components/ResultSummaryCard';
 import { TaskResultRow } from './components/TaskResultRow';
+import { SheetWarnings } from './components/SheetWarnings';
 import { scanSession, useScanSession } from './scanSession';
 
 export function AssessmentResultScreen() {
@@ -53,6 +54,8 @@ export function AssessmentResultScreen() {
         subtitle={student ? `${student.name} · ${student.code}` : 'Ученик не выбран'}
         title="Работа проверена"
       />
+
+      <SheetWarnings outcome={outcome} />
 
       <ResultSummaryCard
         grade={gradeForPercent(percent, session.getState().profile?.gradingScale ?? defaultGradeScale)}

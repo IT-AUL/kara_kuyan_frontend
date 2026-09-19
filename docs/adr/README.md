@@ -9,5 +9,6 @@
 | 0005 | [ONNX Runtime first, benchmark-driven](0005-onnx-runtime-first-benchmark.md) | Accepted (inference lane; camera separate) |
 | 0006 | [CameraX inside the native OCR module](0006-camerax-in-native-module.md) | Accepted |
 | 0007 | [Import a sheet image from the phone](0007-import-sheet-from-device.md) | Accepted |
+| 0008 | [Self-update from GitHub Releases](0008-self-update-from-github-releases.md) | Accepted |
 
 Status meanings: **Proposed** — decided in principle, pending evidence; **Accepted** — in effect; **Deprecated/Superseded** — replaced by a newer ADR.

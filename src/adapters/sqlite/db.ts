@@ -15,10 +15,23 @@ function migrate(expo: SQLiteDatabase): void {
   }
 }
 
-/** Opens (and migrates) the app database. Statements run synchronously, so a Drizzle transaction is atomic. */
-export function openDb(name = 'kara-kuyan.db') {
+type Opened = { db: ReturnType<typeof drizzle>; expo: SQLiteDatabase };
+
+/**
+ * Opens (and migrates) the app database once per JS runtime. Statements run synchronously, so a Drizzle
+ * transaction is atomic. The handle is kept on `globalThis`: a development Fast Refresh re-evaluates modules,
+ * and opening the same file a second time lets the first native handle be finalised under the new one, which
+ * surfaces as `NativeDatabase.prepareSync ... NullPointerException`.
+ */
+export function openDb(name = 'kara-kuyan.db'): Opened {
+  const registry = globalThis as { __kkDbs?: Record<string, Opened> };
+  registry.__kkDbs ??= {};
+  const existing = registry.__kkDbs[name];
+  if (existing) return existing;
   const expo = openDatabaseSync(name);
   expo.execSync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   migrate(expo);
-  return { db: drizzle(expo), expo };
+  const opened = { db: drizzle(expo), expo };
+  registry.__kkDbs[name] = opened;
+  return opened;
 }

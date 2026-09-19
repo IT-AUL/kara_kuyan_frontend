@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { Button, Card, Screen, ScreenHeader, StatusPill, textStyles } from '@/design-system';
 import { colors, spacing } from '@/design-system/tokens';
@@ -8,7 +8,7 @@ import { scanSession, useScanSession } from './scanSession';
 
 export function ProcessingScreen() {
   const router = useRouter();
-  const { phase, error } = useScanSession();
+  const { phase, error, rejection } = useScanSession();
 
   useEffect(() => {
     if (phase === 'ready') router.replace('/student-identified');
@@ -20,7 +20,16 @@ export function ProcessingScreen() {
   };
 
   return (
-    <Screen footer={phase === 'error' ? <Button icon="scan" onPress={retry} title="Сканировать заново" /> : undefined}>
+    <Screen
+      footer={
+        phase === 'error' ? (
+          <View style={styles.footer}>
+            <Button icon="scan" onPress={retry} title="Сканировать заново" />
+            {rejection ? <Button icon="check" onPress={() => scanSession.forceCheck()} title="Всё равно проверить" variant="secondary" /> : null}
+          </View>
+        ) : undefined
+      }
+    >
       <ScreenHeader
         eyebrow="Обработка"
         subtitle="Выравниваем лист и читаем ответы на устройстве."
@@ -30,9 +39,12 @@ export function ProcessingScreen() {
       <Card style={styles.hero} tone="raised">
         <StatusPill label="100% локально" tone="success" />
         {phase === 'error' ? (
-          <Text selectable style={textStyles.title}>
-            {error}
-          </Text>
+          <>
+            <Text selectable style={textStyles.title}>
+              {error}
+            </Text>
+            {rejection ? <Text style={textStyles.bodySmall}>«Всё равно проверить» оценит лист по тесту из QR или по выбранному тесту, с предупреждением. Результат может быть неверным.</Text> : null}
+          </>
         ) : (
           <>
             <ActivityIndicator color={colors.primary} size="large" />
@@ -47,5 +59,6 @@ export function ProcessingScreen() {
 }
 
 const styles = StyleSheet.create({
+  footer: { gap: spacing.xs },
   hero: { backgroundColor: colors.surfaceRaised, gap: spacing.md },
 });

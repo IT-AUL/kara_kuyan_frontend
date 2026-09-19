@@ -12,7 +12,7 @@ type SearchBarProps = {
 export function SearchBar({ placeholder = 'Поиск...', value, onChangeText }: SearchBarProps) {
   return (
     <View accessibilityRole="search" style={styles.container}>
-      <AppIcon color={colors.textFaint} name="qr" size={18} />
+      <AppIcon color={colors.textFaint} name="search" size={18} />
       <TextInput
         accessibilityLabel={placeholder}
         onChangeText={onChangeText}

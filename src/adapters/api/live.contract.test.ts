@@ -83,8 +83,29 @@ const TEACHER = '00000000-0000-4000-8000-00000000c0de';
     for (const r of [tests, classes, bank, classA, assignA, subs]) expect(r).toEqual(expect.objectContaining({ ok: true }));
     expect(tests.ok && tests.value.some((t) => t.testId === ASSIGNMENT)).toBe(true);
     expect(subs.ok && subs.value.length).toBeGreaterThan(0);
+    const [types, manifest] = await Promise.all([api.taskTypes(), api.modelManifest()]);
+    expect(types).toEqual(expect.objectContaining({ ok: true }));
+    expect(manifest.ok && manifest.value.alphabet.length).toBe(39);
     const pdf = await api.blankPdfTarget(ASSIGNMENT, 1);
     expect(pdf.url).toContain('/blank.pdf?variant=1');
+  });
+
+  // Writes to the backend (a custom task, generated tasks, one test). Opt-in: LIVE_WRITE=1.
+  (process.env.LIVE_WRITE ? it : it.skip)('creates a custom task, generates tasks and assembles a test from them', async () => {
+    const custom = await api.createTask({ prompt: 'KK probe: напишите слово китап', answer: 'КИТАП', cellCount: 6, gradeLevel: 7, topicTag: 'custom', topicName: 'Своё задание' });
+    expect(custom).toEqual(expect.objectContaining({ ok: true }));
+    const generated = await api.generateTasks({ taskType: 'plural_affixes', count: 2, gradeLevel: 7 });
+    expect(generated).toEqual(expect.objectContaining({ ok: true }));
+    if (!custom.ok || !generated.ok) return;
+    console.log('LIVE custom', JSON.stringify(custom.value), 'generated', JSON.stringify(generated.value.map((t) => [t.taskId, t.expectedAnswer, t.cellCount])));
+    const ids = [custom.value.taskId, ...generated.value.map((t) => t.taskId)];
+    const test = await api.assembleTest({ title: 'KK constructor probe', gradeLevel: 7, variants: 1, taskIds: ids });
+    expect(test).toEqual(expect.objectContaining({ ok: true }));
+    if (!test.ok) return;
+    const answers = test.value.variants[0].questions.map((q) => q.expectedAnswer);
+    console.log('LIVE test', test.value.assignmentId, 'questions', test.value.variants[0].questions.length, JSON.stringify(answers));
+    expect(test.value.variants[0].questions.length).toBe(ids.length);
+    expect(answers).toContain('КИТАП');
   });
 
   it('rejects a malformed request as final (4xx), not retryable', async () => {

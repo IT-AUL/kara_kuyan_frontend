@@ -33,3 +33,6 @@ Read back: `GET /analytics/assignments/TAT-2026-Q1DAB` → `total_submissions 1`
 Note: jest-expo stubs global `fetch`; the live test uses `node:https`. Written rows: teacher `…c0de`, assignment `TAT-2026-Q1DAB`, class `KK-PROBE`, submission `kk-live-contract-0001`.
 
 Caveat: the 3-pass run above was made before a typing-only refactor of the test's `node:https` helper (for `tsc`). Right after it the server returned **502 on every request for >15 s** (`/health` too), so the final file has not been re-run green against the live server yet; `typecheck`, `lint` and the 48 default tests pass. Re-run when the host is back.
+
+## Constructor write path (run 2026-09-19 late, `LIVE_WRITE=1`)
+`createTask` (custom, 5-letter answer in 6 cells) → 201 `tsk_fda3ac71`; `generateTasks` (`plural_affixes`, count 2, `save_to_bank: true`) → `tsk_cd119ad4` КУЯННАР, `tsk_e292edb2` ТАКТАЛАР; `assembleTest` with those three ids → bundle `TAT-2026-Q107F` with exactly 3 questions in the given order (КИТАП, КУЯННАР, ТАКТАЛАР). So ids from the generator and the custom-task endpoint are accepted by the test assembler. Left on the server (no delete endpoint): those 3 tasks and the test «KK constructor probe». Not exercised: `custom_stems`, the phone UI for these screens.

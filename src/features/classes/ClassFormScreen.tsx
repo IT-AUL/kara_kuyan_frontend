@@ -38,6 +38,7 @@ export function ClassFormScreen() {
 
   return (
     <Screen
+      avoidKeyboard
       footer={<Button disabled={!canSubmit} icon="check" onPress={() => void submit()} title={busy ? 'Сохраняем…' : existing ? 'Добавить учеников' : 'Создать класс'} />}
     >
       <ScreenHeader

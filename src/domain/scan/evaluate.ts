@@ -40,8 +40,20 @@ export type SheetCheck =
       detail: string;
     };
 
+export type RejectionReason = Extract<SheetCheck, { ok: false }>['reason'];
+
+/** Non-blocking notes shown to the teacher next to a result. */
+export type SheetWarning =
+  /** The QR belongs to another test than the one currently selected; the result is saved under the sheet's own test. */
+  | { kind: 'assignment-differs'; sheetAssignmentId: string; currentAssignmentId: string }
+  /** The teacher chose to check a sheet the QR did not match; `because` is what was bypassed. */
+  | { kind: 'forced'; because: RejectionReason; assignmentId: string; variantId: number };
+
+export type ForceTarget = { bundle: OfflineBundle; variantId: number; because: RejectionReason };
+
 export type SheetOutcome = {
   check: SheetCheck;
+  warnings?: readonly SheetWarning[];
   assignmentId: string;
   variant: number;
   qrRecognised: boolean;
@@ -70,26 +82,39 @@ export function evaluateSheet(
   evidence: SheetEvidence,
   bundles: OfflineBundle | readonly OfflineBundle[],
   thresholds: DecisionThresholds = proposedThresholds,
+  /** Teacher override: grade against this test/variant whatever the QR says (adds a `forced` warning). */
+  force?: ForceTarget,
 ): SheetOutcome {
   const catalog = Array.isArray(bundles) ? (bundles as readonly OfflineBundle[]) : [bundles as OfflineBundle];
-  const qr = parseQrSignature(evidence.qrPayload);
-  if (!qr) {
-    return rejected({ ok: false, reason: 'qr-unreadable', detail: 'QR не прочитан' }, evidence);
-  }
-  const bundle = catalog.find((b) => b.assignmentId === qr.assignmentId);
-  if (!bundle) {
-    return rejected({ ok: false, reason: 'unknown-assignment', detail: qr.assignmentId }, evidence, qr.assignmentId);
-  }
-  const variant = bundle.variants.find((v) => v.variantId === qr.variant);
-  if (!variant) {
-    return rejected({ ok: false, reason: 'unknown-variant', detail: String(qr.variant) }, evidence, bundle.assignmentId);
-  }
-  if (qr.questionCount !== null && qr.questionCount !== variant.questions.length) {
-    return rejected(
-      { ok: false, reason: 'question-count-mismatch', detail: `${qr.questionCount} вместо ${variant.questions.length}` },
-      evidence,
-      bundle.assignmentId,
-    );
+  let bundle: OfflineBundle | undefined;
+  let variant: OfflineBundle['variants'][number] | undefined;
+  let warnings: SheetWarning[] = [];
+
+  if (force) {
+    bundle = force.bundle;
+    variant = force.bundle.variants.find((v) => v.variantId === force.variantId);
+    if (!variant) return rejected({ ok: false, reason: 'unknown-variant', detail: String(force.variantId) }, evidence, bundle.assignmentId);
+    warnings = [{ kind: 'forced', because: force.because, assignmentId: bundle.assignmentId, variantId: variant.variantId }];
+  } else {
+    const qr = parseQrSignature(evidence.qrPayload);
+    if (!qr) {
+      return rejected({ ok: false, reason: 'qr-unreadable', detail: 'QR не прочитан' }, evidence);
+    }
+    bundle = catalog.find((b) => b.assignmentId === qr.assignmentId);
+    if (!bundle) {
+      return rejected({ ok: false, reason: 'unknown-assignment', detail: qr.assignmentId }, evidence, qr.assignmentId);
+    }
+    variant = bundle.variants.find((v) => v.variantId === qr.variant);
+    if (!variant) {
+      return rejected({ ok: false, reason: 'unknown-variant', detail: String(qr.variant) }, evidence, bundle.assignmentId);
+    }
+    if (qr.questionCount !== null && qr.questionCount !== variant.questions.length) {
+      return rejected(
+        { ok: false, reason: 'question-count-mismatch', detail: `${qr.questionCount} вместо ${variant.questions.length}` },
+        evidence,
+        bundle.assignmentId,
+      );
+    }
   }
 
   const tasks = variant.questions.map<EvaluatedTask>((q) => {
@@ -129,6 +154,7 @@ export function evaluateSheet(
 
   return {
     check: { ok: true },
+    warnings,
     assignmentId: bundle.assignmentId,
     variant: variant.variantId,
     qrRecognised: true,

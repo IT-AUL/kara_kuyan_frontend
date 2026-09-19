@@ -33,7 +33,28 @@ export type SubmissionRow = {
   maxScore: number;
   grade: number;
   reviewedFlags: number;
+  /** Per-task result, when the server sent `questions_results` (absent in caches made before this field). */
+  tasks?: { number: number; correct: boolean }[];
 };
+
+export type TaskType = { taskType: string; topicTag: string; topicName: string };
+export type ModelManifest = { modelVersion: string; sha256: string; alphabet: string[] };
+
+function parseTaskTypes(json: unknown): TaskType[] {
+  return arr(obj(json, 'task types').task_types, 'task_types').map((raw) => {
+    const t = obj(raw, 'task type');
+    return { taskType: str(t.task_type, 'task_type'), topicTag: str(t.topic_tag, 'topic_tag'), topicName: str(t.topic_name_tt, 'topic_name_tt') };
+  });
+}
+
+function parseManifest(json: unknown): ModelManifest {
+  const m = obj(json, 'manifest');
+  return {
+    modelVersion: str(m.model_version, 'model_version'),
+    sha256: str(m.sha256, 'sha256'),
+    alphabet: arr(m.alphabet_classes, 'alphabet_classes').map((c) => str(c, 'class')),
+  };
+}
 
 export function parseBundle(json: unknown): OfflineBundle {
   const b = obj(json, 'bundle');
@@ -51,6 +72,7 @@ export function parseBundle(json: unknown): OfflineBundle {
             markerId: num(q.marker_id, 'marker_id'),
             prompt: str(q.prompt, 'prompt'),
             topicTag: str(q.topic_tag, 'topic_tag'),
+            topicName: typeof q.topic_name_tt === 'string' ? q.topic_name_tt : undefined,
             expectedAnswer: str(q.expected_answer, 'expected_answer'),
             expectedCells: arr(q.expected_cells, 'expected_cells').map((rawC) => {
               const c = obj(rawC, 'cell');
@@ -98,20 +120,20 @@ function parseRoster(json: unknown): ClassRoster {
   };
 }
 
-function parseTasks(json: unknown): TaskBankEntry[] {
-  return arr(json, 'tasks').map((raw) => {
-    const t = obj(raw, 'task');
-    return {
-      taskId: str(t.task_id, 'task_id'),
-      prompt: str(t.prompt_tt, 'prompt_tt'),
-      expectedAnswer: str(t.expected_answer, 'expected_answer'),
-      cellCount: num(t.cell_count, 'cell_count'),
-      gradeLevel: num(t.grade_level, 'grade_level'),
-      topicTag: str(t.topic_tag, 'topic_tag'),
-      topicName: str(t.topic_name_tt, 'topic_name_tt'),
-    };
-  });
+function parseTask(raw: unknown): TaskBankEntry {
+  const t = obj(raw, 'task');
+  return {
+    taskId: str(t.task_id, 'task_id'),
+    prompt: str(t.prompt_tt, 'prompt_tt'),
+    expectedAnswer: str(t.expected_answer, 'expected_answer'),
+    cellCount: num(t.cell_count, 'cell_count'),
+    gradeLevel: num(t.grade_level, 'grade_level'),
+    topicTag: str(t.topic_tag, 'topic_tag'),
+    topicName: str(t.topic_name_tt, 'topic_name_tt'),
+  };
 }
+
+const parseTasks = (json: unknown): TaskBankEntry[] => arr(json, 'tasks').map(parseTask);
 
 function parseTests(json: unknown): TestSummary[] {
   return arr(json, 'tests').map((raw) => {
@@ -167,6 +189,12 @@ function parseSubmissions(json: unknown): SubmissionRow[] {
       maxScore: num(s.max_score, 'max_score'),
       grade: num(s.final_grade, 'final_grade'),
       reviewedFlags: typeof s.teacher_reviewed_flags === 'number' ? s.teacher_reviewed_flags : 0,
+      tasks: Array.isArray(s.questions_results)
+        ? s.questions_results.flatMap((raw) => {
+            const q = raw as Record<string, unknown>;
+            return typeof q.question_number === 'number' && typeof q.is_correct === 'boolean' ? [{ number: q.question_number, correct: q.is_correct }] : [];
+          })
+        : undefined,
     };
   });
 }
@@ -254,5 +282,49 @@ export class BackendApi {
 
   gradebookTarget(assignmentId: string, classId: string, format: 'xlsx' | 'csv') {
     return this.client.downloadTarget(`/api/v1/reports/assignments/${encodeURIComponent(assignmentId)}/gradebook.xlsx`, { class_id: classId, format });
+  }
+
+  taskTypes(): Promise<ApiResult<TaskType[]>> {
+    return this.client.request('/api/v1/constructor/task-types', parseTaskTypes);
+  }
+
+  /** Deterministic generator on the server; `saveToBank` makes the tasks addressable by id in a test. */
+  generateTasks(input: { taskType: string; count: number; gradeLevel: number; customStems?: readonly string[]; seed?: number }): Promise<ApiResult<TaskBankEntry[]>> {
+    return this.client.request(
+      '/api/v1/constructor/generate',
+      (json) => arr(obj(json, 'generate').tasks, 'tasks').map(parseTask),
+      {
+        method: 'POST',
+        body: {
+          task_type: input.taskType,
+          count: input.count,
+          grade_level: input.gradeLevel,
+          save_to_bank: true,
+          ...(input.customStems && input.customStems.length > 0 ? { custom_stems: input.customStems } : {}),
+          ...(input.seed === undefined ? {} : { seed: input.seed }),
+        },
+      },
+    );
+  }
+
+  createTask(input: { prompt: string; answer: string; cellCount: number; gradeLevel: number; topicTag: string; topicName: string }): Promise<ApiResult<TaskBankEntry>> {
+    return this.client.request('/api/v1/constructor/tasks', parseTask, {
+      method: 'POST',
+      body: {
+        prompt_tt: input.prompt,
+        expected_answer: input.answer,
+        cell_count: input.cellCount,
+        grade_level: input.gradeLevel,
+        topic_tag: input.topicTag,
+        topic_name_tt: input.topicName,
+        is_public_in_bank: false,
+        task_type: 'custom',
+      },
+    });
+  }
+
+  /** Public, no auth needed: model version, hash and the recogniser's alphabet. */
+  modelManifest(): Promise<ApiResult<ModelManifest>> {
+    return this.client.request('/api/v1/model/manifest', parseManifest);
   }
 }

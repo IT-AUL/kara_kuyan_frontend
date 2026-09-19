@@ -4,8 +4,10 @@ import type {
   ClassAnalytics,
   ClassRoster,
   ClassSummary,
+  ModelManifest,
   SubmissionRow,
   TaskBankEntry,
+  TaskType,
   TestSummary,
 } from '@/adapters/api/backend';
 import { backendApi, kvStore } from '@/composition';
@@ -31,6 +33,10 @@ function memo<K extends string, T>(make: (key: K) => Resource<T>) {
 export const classesResource = new Resource<ClassSummary[]>('classes', () => backendApi?.listClasses() ?? offline(), kvStore);
 export const testsResource = new Resource<TestSummary[]>('tests', () => backendApi?.listTests() ?? offline(), kvStore);
 export const bankResource = new Resource<TaskBankEntry[]>('bank', () => backendApi?.searchTasks({}) ?? offline(), kvStore);
+
+export const taskTypesResource = new Resource<TaskType[]>('task-types', () => backendApi?.taskTypes() ?? offline(), kvStore);
+/** The recogniser's alphabet, used to validate teacher-written answers. */
+export const manifestResource = new Resource<ModelManifest>('model-manifest', () => backendApi?.modelManifest() ?? offline(), kvStore);
 
 export const rosterResource = memo<string, ClassRoster>(
   (classId) => new Resource(`roster:${classId}`, () => backendApi?.classRoster(classId) ?? offline(), kvStore),

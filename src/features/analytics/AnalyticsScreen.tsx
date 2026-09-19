@@ -120,7 +120,7 @@ export function AnalyticsScreen() {
             <MetricTile label="Среднее" value={`${Math.round(data.averageScorePct)}%`} tone="success" />
           </View>
           <Card style={styles.chartCard}>
-            <BarChart bars={['5', '4', '3', '2'].map((g) => ({ label: `«${g}»`, value: dist[g] ?? 0 }))} title="Оценки" />
+            <BarChart bars={['5', '4', '3', '2'].map((g) => ({ label: `«${g}»`, value: dist[g] ?? 0 }))} title="Оценки" valueSuffix="" />
           </Card>
         </View>
       )}

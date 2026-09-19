@@ -12,9 +12,11 @@ type BarItem = {
 type BarChartProps = {
   bars: readonly BarItem[];
   title?: string;
+  /** Printed after each value: '%' for percentages (default), '' for plain counts. */
+  valueSuffix?: string;
 };
 
-export function BarChart({ bars, title }: BarChartProps) {
+export function BarChart({ bars, title, valueSuffix = '%' }: BarChartProps) {
   const maxValue = Math.max(...bars.map((b) => b.maxValue ?? b.value), 1);
 
   return (
@@ -39,7 +41,7 @@ export function BarChart({ bars, title }: BarChartProps) {
               </View>
               <Text style={styles.label}>{bar.label}</Text>
               <Text style={[styles.valueLabel, isLast && styles.valueLabelActive]}>
-                {bar.value}%
+                {bar.value}{valueSuffix}
               </Text>
             </View>
           );

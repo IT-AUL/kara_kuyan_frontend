@@ -6,7 +6,7 @@ import { session as appSession } from '@/data/session';
 import { gradeForPercent, scorePercent } from '@/domain/assessment/grading';
 import type { OfflineBundle } from '@/domain/scan/bundle';
 import { parseQrSignature } from '@/domain/scan/bundle';
-import type { Override, SheetOutcome } from '@/domain/scan/evaluate';
+import type { Override, RejectionReason, SheetOutcome } from '@/domain/scan/evaluate';
 import { evaluateSheet, scoreOutcome } from '@/domain/scan/evaluate';
 import { buildSubmission } from '@/domain/sync/payload';
 import { matchStudent } from '@/domain/roster/match';
@@ -24,14 +24,18 @@ type State = {
   studentMatched: boolean;
   overrides: Readonly<Record<number, Override>>;
   captureMs: number | null;
+  /** Why the last sheet was refused, when the teacher may still check it anyway (see `forceCheck`). */
+  rejection: RejectionReason | null;
 };
 
 const initial: State = {
   phase: 'idle', error: null, outcome: null, student: null, studentMatched: false,
-  overrides: {}, captureMs: null,
+  overrides: {}, captureMs: null, rejection: null,
 };
 
 let state: State = initial;
+/** Numbers and text of the last read sheet, kept in memory only so a refused sheet can be checked anyway. */
+let lastEvidence: SheetEvidence | null = null;
 const listeners = new Set<() => void>();
 let session: OcrSession | null = null;
 
@@ -86,11 +90,12 @@ export type ScanResult = 'done' | 'cancelled';
 /** Reads a sheet (camera or picked file), then evaluates it against the cached assignment bundles. */
 async function processSheet(read: (session: OcrSession) => Promise<SheetEvidence>, phaseWhileReading: boolean): Promise<ScanResult> {
   if (state.phase === 'processing') return 'done';
-  set({ phase: phaseWhileReading ? 'processing' : 'idle', error: null, outcome: null, overrides: {}, student: null, studentMatched: false });
+  set({ phase: phaseWhileReading ? 'processing' : 'idle', error: null, rejection: null, outcome: null, overrides: {}, student: null, studentMatched: false });
   const started = Date.now();
   try {
     const active = await getSession();
     const evidence = await read(active);
+    lastEvidence = evidence;
     const readStarted = Date.now();
     set({ phase: 'processing' });
     let catalog: OfflineBundle[] = knownBundles();
@@ -103,8 +108,12 @@ async function processSheet(read: (session: OcrSession) => Promise<SheetEvidence
     }
     if (!outcome.check.ok) {
       console.log(`[scan] rejected: ${outcome.check.reason} (${outcome.check.detail})`);
-      set({ phase: 'error', error: rejectionMessage(outcome.check) });
+      set({ phase: 'error', error: rejectionMessage(outcome.check), rejection: outcome.check.reason });
       return 'done';
+    }
+    const currentId = appSession.getState().activeAssignmentId;
+    if (currentId && outcome.assignmentId !== currentId) {
+      outcome = { ...outcome, warnings: [...(outcome.warnings ?? []), { kind: 'assignment-differs', sheetAssignmentId: outcome.assignmentId, currentAssignmentId: currentId }] };
     }
     const roster = currentRoster(outcome.variant);
     const student = matchStudent(outcome.studentNameText, roster);
@@ -146,6 +155,35 @@ export const scanSession = {
     return (await getSession()).onAlignment(listener);
   },
 
+  /**
+   * Checks the refused sheet anyway (for trying things out): against the sheet's own test when it is known
+   * (picking the variant with the same task count, else the first), otherwise against the selected test.
+   */
+  forceCheck(): void {
+    const evidence = lastEvidence;
+    const because = state.rejection;
+    if (!evidence || !because) return;
+    const qr = parseQrSignature(evidence.qrPayload);
+    const bundles = knownBundles();
+    const currentId = appSession.getState().activeAssignmentId;
+    const bundle = bundles.find((b) => b.assignmentId === qr?.assignmentId) ?? bundles.find((b) => b.assignmentId === currentId);
+    if (!bundle) {
+      set({ error: 'Нет теста, по которому можно проверить лист. Выберите тест во вкладке «Тесты».' });
+      return;
+    }
+    const variant =
+      bundle.variants.find((v) => v.variantId === qr?.variant) ??
+      bundle.variants.find((v) => qr?.questionCount != null && v.questions.length === qr.questionCount) ??
+      bundle.variants[0];
+    const outcome = evaluateSheet(evidence, bundles, undefined, { bundle, variantId: variant.variantId, because });
+    if (!outcome.check.ok) {
+      set({ error: rejectionMessage(outcome.check) });
+      return;
+    }
+    const student = matchStudent(outcome.studentNameText, currentRoster(outcome.variant));
+    set({ phase: 'ready', error: null, rejection: null, outcome, student, studentMatched: student !== null });
+  },
+
   selectStudent(id: string) {
     set({ student: currentRoster(state.outcome?.variant ?? 1).find((s) => s.id === id) ?? null, studentMatched: false });
   },
@@ -177,12 +215,14 @@ export const scanSession = {
         grade: gradeForPercent(scorePercent(score, maxScore), profile.gradingScale),
       }),
     });
-    set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null });
+    lastEvidence = null;
+    set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null, rejection: null });
     void syncScheduler.trigger();
   },
 
   reset() {
-    set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null });
+    lastEvidence = null;
+    set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null, rejection: null });
   },
 };
 

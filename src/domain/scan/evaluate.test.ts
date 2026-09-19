@@ -36,6 +36,40 @@ const evidence = (rows: SheetEvidence['questions']): SheetEvidence => ({
   studentNameText: 'ГАЛИЕВАМИРР', method: 'aruco-4-point', questions: rows, stageTimingsMs: {},
 });
 
+describe('evaluateSheet with a forced target', () => {
+  const rows = [
+    { questionNumber: 1, markerId: 11, cells: [sure(0, 'К'), sure(1, 'А'), sure(2, 'Д'), empty(3)] },
+    { questionNumber: 2, markerId: 12, cells: [sure(0, 'Т'), sure(1, 'А')] },
+  ];
+
+  it('grades a sheet whose QR names an unknown test against the chosen test and says so', () => {
+    const foreign = { ...evidence(rows), qrPayload: '{"tid":"OTHER","var":1,"page":1,"tot":1,"n_q":2}' };
+    expect(evaluateSheet(foreign, [bundle]).check).toMatchObject({ ok: false, reason: 'unknown-assignment' });
+    const forced = evaluateSheet(foreign, [bundle], undefined, { bundle, variantId: 1, because: 'unknown-assignment' });
+    expect(forced.check).toEqual({ ok: true });
+    expect(forced.assignmentId).toBe('T1');
+    expect(forced.tasks.map((t) => t.status)).toEqual(['correct', 'correct']);
+    expect(forced.warnings).toEqual([{ kind: 'forced', because: 'unknown-assignment', assignmentId: 'T1', variantId: 1 }]);
+  });
+
+  it('grades a sheet with an unreadable QR or a missing variant when forced', () => {
+    const noQr = { ...evidence(rows), qrPayload: null };
+    expect(evaluateSheet(noQr, [bundle]).check).toMatchObject({ reason: 'qr-unreadable' });
+    expect(evaluateSheet(noQr, [bundle], undefined, { bundle, variantId: 1, because: 'qr-unreadable' }).check).toEqual({ ok: true });
+    const wrongVariant = { ...evidence(rows), qrPayload: '{"tid":"T1","var":9,"page":1,"tot":1,"n_q":2}' };
+    expect(evaluateSheet(wrongVariant, [bundle]).check).toMatchObject({ reason: 'unknown-variant' });
+    expect(evaluateSheet(wrongVariant, [bundle], undefined, { bundle, variantId: 1, because: 'unknown-variant' }).check).toEqual({ ok: true });
+  });
+
+  it('still rejects when the forced variant does not exist', () => {
+    expect(evaluateSheet(evidence(rows), [bundle], undefined, { bundle, variantId: 7, because: 'unknown-variant' }).check).toMatchObject({ ok: false });
+  });
+
+  it('adds no warnings to a normal, matching sheet', () => {
+    expect(evaluateSheet(evidence(rows), [bundle]).warnings).toEqual([]);
+  });
+});
+
 describe('evaluateSheet', () => {
   it('grades tasks against the bundle and keeps the recognised text', () => {
     const outcome = evaluateSheet(

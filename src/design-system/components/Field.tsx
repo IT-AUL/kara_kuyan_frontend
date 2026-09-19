@@ -9,21 +9,25 @@ type FieldProps = {
   onChangeText: (text: string) => void;
   placeholder?: string;
   multiline?: boolean;
-  autoCapitalize?: 'none' | 'sentences' | 'words';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  /** Visible lines of a multiline field (default 6). */
+  lines?: number;
 };
 
-export function Field({ label, value, onChangeText, placeholder, multiline = false, autoCapitalize = 'sentences' }: FieldProps) {
+export function Field({ label, value, onChangeText, placeholder, multiline = false, autoCapitalize = 'sentences', lines = 6 }: FieldProps) {
   return (
     <View style={styles.wrap}>
       <Text style={textStyles.bodySmall}>{label}</Text>
       <TextInput
         accessibilityLabel={label}
+        autoComplete="off"
+        importantForAutofill="no"
         autoCapitalize={autoCapitalize}
         multiline={multiline}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.textFaint}
-        style={[styles.input, multiline && styles.multiline]}
+        style={[styles.input, multiline && styles.multiline, multiline && { minHeight: 34 + lines * 24 }]}
         textAlignVertical={multiline ? 'top' : 'center'}
         value={value}
       />

@@ -13,6 +13,8 @@ type ScreenHeaderProps = {
   showBack?: boolean;
   size?: 'large' | 'compact';
   right?: ReactNode;
+  /** Clamp a long title (test names) to this many lines. */
+  titleLines?: number;
 };
 
 export function ScreenHeader({
@@ -22,6 +24,7 @@ export function ScreenHeader({
   showBack = false,
   size,
   right,
+  titleLines,
 }: ScreenHeaderProps) {
   const router = useRouter();
   const titleStyle = (size ?? (showBack ? 'compact' : 'large')) === 'large'
@@ -44,7 +47,7 @@ export function ScreenHeader({
         ) : null}
         <View style={styles.copy}>
           {eyebrow ? <Text style={textStyles.eyebrow}>{eyebrow}</Text> : null}
-          <Text selectable style={titleStyle}>
+          <Text numberOfLines={titleLines} selectable={!titleLines} style={titleStyle}>
             {title}
           </Text>
           {subtitle ? <Text style={textStyles.bodySmall}>{subtitle}</Text> : null}

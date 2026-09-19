@@ -45,7 +45,7 @@ export default function TabsLayout() {
         name="assignments"
         options={{
           tabBarIcon: ({ color, size }) => <AppIcon color={color} name="assignment" size={size} />,
-          title: 'Задания',
+          title: 'Тесты',
         }}
       />
       <Tabs.Screen name="classes" options={{ href: null }} />

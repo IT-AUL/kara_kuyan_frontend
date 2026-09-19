@@ -54,8 +54,8 @@ export function MoreScreen() {
             icon="library"
             isLast
             onPress={() => router.push('/assignments')}
-            subtitle="Готовые тесты и печать"
-            title="Задания"
+            subtitle="Конструктор, бланки для печати"
+            title="Тесты"
             variant="plain"
           />
         </Card>

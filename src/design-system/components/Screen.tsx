@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
+import { KeyboardAvoidingView, RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors, hairline, spacing } from '../tokens';
@@ -9,6 +9,11 @@ type ScreenProps = PropsWithChildren<{
   edges?: Edge[];
   contentStyle?: ViewStyle;
   footer?: ReactNode;
+  /** Pull-to-refresh: shown when `onRefresh` is set. */
+  onRefresh?: () => void;
+  refreshing?: boolean;
+  /** Lifts the footer above the on-screen keyboard: for screens with text fields. */
+  avoidKeyboard?: boolean;
 }>;
 
 export function Screen({
@@ -17,10 +22,19 @@ export function Screen({
   edges = ['top', 'bottom'],
   contentStyle,
   footer,
+  onRefresh,
+  refreshing = false,
+  avoidKeyboard = false,
 }: ScreenProps) {
   const content = scroll ? (
     <ScrollView
       contentContainerStyle={[styles.content, contentStyle]}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl colors={[colors.primary]} onRefresh={onRefresh} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} tintColor={colors.primary} />
+        ) : undefined
+      }
+      keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
       {children}
@@ -31,10 +45,17 @@ export function Screen({
 
   return (
     <SafeAreaView edges={edges} style={styles.safeArea}>
-      <View style={styles.frame}>
-        {content}
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
-      </View>
+      {avoidKeyboard ? (
+        <KeyboardAvoidingView behavior="padding" style={styles.frame}>
+          {content}
+          {footer ? <View style={styles.footer}>{footer}</View> : null}
+        </KeyboardAvoidingView>
+      ) : (
+        <View style={styles.frame}>
+          {content}
+          {footer ? <View style={styles.footer}>{footer}</View> : null}
+        </View>
+      )}
     </SafeAreaView>
   );
 }

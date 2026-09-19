@@ -7,6 +7,7 @@ import { colors } from '../tokens';
 type SymbolName = ComponentProps<typeof SymbolView>['name'];
 
 const iconNames = {
+  add: { ios: 'plus', android: 'add', web: 'add' },
   analytics: { ios: 'chart.bar.fill', android: 'analytics', web: 'analytics' },
   arrowBack: { ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' },
   arrowRight: { ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' },
@@ -30,6 +31,7 @@ const iconNames = {
   qr: { ios: 'qrcode.viewfinder', android: 'qr_code_scanner', web: 'qr_code_scanner' },
   review: { ios: 'exclamationmark.circle.fill', android: 'error', web: 'error' },
   scan: { ios: 'viewfinder', android: 'crop_free', web: 'crop_free' },
+  search: { ios: 'magnifyingglass', android: 'search', web: 'search' },
   school: { ios: 'graduationcap.fill', android: 'school', web: 'school' },
   sync: { ios: 'arrow.triangle.2.circlepath', android: 'sync', web: 'sync' },
   task: { ios: 'checklist', android: 'task_alt', web: 'task_alt' },

@@ -5,6 +5,7 @@ import { useActiveContext } from '@/data/context';
 import { AppIcon, Button, Card, Screen, ScreenHeader, SectionHeader, textStyles } from '@/design-system';
 import { colors, radius, spacing, touchTarget } from '@/design-system/tokens';
 import { StudentIdentityCard } from './components/StudentIdentityCard';
+import { SheetWarnings } from './components/SheetWarnings';
 import { scanSession, useScanSession } from './scanSession';
 
 export function StudentIdentifiedScreen() {
@@ -31,6 +32,8 @@ export function StudentIdentifiedScreen() {
         title="Лист распознан"
       />
 
+      <SheetWarnings outcome={outcome} />
+
       <StudentIdentityCard
         matched={studentMatched}
         nameText={outcome?.studentNameText ?? ''}
@@ -40,14 +43,14 @@ export function StudentIdentifiedScreen() {
 
       <Card style={styles.meta}>
         <View style={styles.row}>
-          <Text style={textStyles.bodySmall}>Работа</Text>
-          <Text selectable style={textStyles.body}>
+          <Text style={[textStyles.bodySmall, styles.label]}>Работа</Text>
+          <Text numberOfLines={3} style={[textStyles.body, styles.value]}>
             {title}
           </Text>
         </View>
         <View style={styles.row}>
-          <Text style={textStyles.bodySmall}>Шаблон</Text>
-          <Text style={textStyles.body}>{outcome?.qrRecognised ? 'QR распознан' : 'QR не прочитан'}</Text>
+          <Text style={[textStyles.bodySmall, styles.label]}>Шаблон</Text>
+          <Text style={[textStyles.body, styles.value]}>{outcome?.qrRecognised ? 'QR распознан' : 'QR не прочитан'}</Text>
         </View>
       </Card>
 
@@ -74,7 +77,9 @@ export function StudentIdentifiedScreen() {
 const styles = StyleSheet.create({
   meta: { gap: spacing.sm },
   roster: { gap: 0, paddingVertical: spacing.xxs },
-  row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  label: { flexShrink: 0 },
+  row: { alignItems: 'flex-start', alignSelf: 'stretch', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
+  value: { flex: 1, flexShrink: 1, textAlign: 'right' },
   rosterRow: {
     alignItems: 'center',
     borderRadius: radius.sm,

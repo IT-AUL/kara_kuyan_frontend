@@ -23,6 +23,7 @@ export function OnboardingScreen() {
 
   return (
     <Screen
+      avoidKeyboard
       footer={<Button disabled={!canSubmit} icon="check" onPress={() => void submit()} title={busy ? 'Подключаемся…' : 'Продолжить'} />}
     >
       <ScreenHeader eyebrow="Кара Куян" subtitle="Один раз: так сервер узнает ваш телефон." title="Знакомство" />
