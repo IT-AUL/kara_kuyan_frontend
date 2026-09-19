@@ -4,7 +4,7 @@
     "slug": "kara-kuyan",
     "description": "Проверка рукописных работ по татарскому языку: сканируйте, оценивайте и видите, что повторить с классом. Фото не сохраняются.",
     "primaryColor": "#25E38A",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "karakuyan",
