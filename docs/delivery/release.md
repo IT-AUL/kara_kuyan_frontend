@@ -25,8 +25,9 @@ Repo → Settings → Secrets and variables → Actions:
 Keystores are git-ignored (`*.keystore`, `*.jks`).
 
 ## Known limits
-- OCR models live in `models/ocr/` (FP32 + INT8, SHA-256 in `SHA256SUMS`, checked in CI). The native module does not
-  package them yet — it still reads `filesDir/ocr-lab/models` — so loading from assets is a separate native change.
+- OCR models live in `models/ocr/` (SHA-256 in `SHA256SUMS`, checked in CI) and are packaged into the APK as module assets
+  (`modules/ocr-native/android/build.gradle`); `ModelStore` extracts the FP32 model to `filesDir/models` on first scan and
+  verifies it against `ocr-manifest.json`. Lab tools still read `filesDir/ocr-lab/models`.
 - R8/shrink is off (`android.enableMinifyInReleaseBuilds` default) until keep rules for ONNX Runtime / OpenCV / ML Kit
   are verified on a device.
 - `EXPO_PUBLIC_SYNC_URL` is not set in CI: the release build does not sync to a backend.

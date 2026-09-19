@@ -218,7 +218,7 @@ object CameraController {
     val manifest = JSONObject(context.assets.open("ocr-manifest.json").bufferedReader().readText())
     val alphabet = manifest.getJSONArray("alphabet").let { a -> List(a.length()) { a.getString(it) } }
     val fp32 = manifest.getJSONObject("models").getJSONObject("fp32")
-    val modelFile = File(context.filesDir, "ocr-lab/models/${fp32.getString("file")}")
+    val modelFile = ModelStore.resolve(context, fp32.getString("file"), fp32.getString("sha256"))
     val engine = OrtEngine(modelFile.absolutePath, OrtEngine.Lane.FP32_XNNPACK, 6)
     return SheetReader(engine, alphabet, fp32.getString("sha256")).also { reader = it }
   }

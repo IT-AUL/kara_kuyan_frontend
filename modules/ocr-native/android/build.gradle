@@ -12,6 +12,13 @@ android {
     versionCode 1
     versionName "0.1.0"
   }
+
+  // Ship the OCR models (repo root models/ocr, SHA-256 in SHA256SUMS) inside the APK.
+  sourceSets {
+    main {
+      assets.srcDirs += file("${projectDir}/../../../models/ocr")
+    }
+  }
 }
 
 dependencies {
