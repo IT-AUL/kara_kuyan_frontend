@@ -1,0 +1,358 @@
+[
+  {
+    "name": "home-initial",
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-flow-00-home.png"
+  },
+  {
+    "name": "01-check",
+    "action": "Продолжить",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/check",
+    "metrics": {
+      "path": "/check",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ПРОВЕРКА",
+        "Контрольная №3"
+      ]
+    },
+    "image": "/tmp/kara-flow-01-check.png"
+  },
+  {
+    "name": "02-scan",
+    "action": "Сканировать следующую",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/scan",
+    "metrics": {
+      "path": "/scan",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "СКАНИРОВАНИЕ",
+        "Выровняйте лист"
+      ]
+    },
+    "image": "/tmp/kara-flow-02-scan.png"
+  },
+  {
+    "name": "03-processing",
+    "action": "Смоделировать скан",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/processing",
+    "metrics": {
+      "path": "/processing",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ОБРАБОТКА",
+        "Лист обработан"
+      ]
+    },
+    "image": "/tmp/kara-flow-03-processing.png"
+  },
+  {
+    "name": "04-student",
+    "action": "Показать ученика",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/student-identified",
+    "metrics": {
+      "path": "/student-identified",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ИДЕНТИФИКАЦИЯ",
+        "Лист распознан"
+      ]
+    },
+    "image": "/tmp/kara-flow-04-student.png"
+  },
+  {
+    "name": "05-result",
+    "action": "Открыть результат",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/assessment-result",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "7 из 8 заданий"
+      ]
+    },
+    "image": "/tmp/kara-flow-05-result.png"
+  },
+  {
+    "name": "06-review",
+    "action": "Проверить отмеченные",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/task-review",
+    "metrics": {
+      "path": "/task-review",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "REVIEW",
+        "1 из 4 решений"
+      ]
+    },
+    "image": "/tmp/kara-flow-06-review.png"
+  },
+  {
+    "name": "07-analytics",
+    "action": "Принять ответ",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/analytics",
+    "metrics": {
+      "path": "/analytics",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "АНАЛИТИКА",
+        "Что повторить"
+      ]
+    },
+    "image": "/tmp/kara-flow-07-analytics.png"
+  },
+  {
+    "name": "08-export",
+    "action": "Экспорт журнала",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/export-gradebook",
+    "metrics": {
+      "path": "/export-gradebook",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ЭКСПОРТ",
+        "Журнал оценок"
+      ]
+    },
+    "image": "/tmp/kara-flow-08-export.png"
+  },
+  {
+    "name": "09-prepared",
+    "action": "Подготовить файл",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/export-gradebook",
+    "metrics": {
+      "path": "/export-gradebook",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ЭКСПОРТ",
+        "Журнал оценок"
+      ]
+    },
+    "image": "/tmp/kara-flow-09-prepared.png"
+  },
+  {
+    "name": "10-home",
+    "action": "Готово",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": null
+  },
+  {
+    "name": "tab-assignments",
+    "action": "Задания",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/assignments",
+    "metrics": {
+      "path": "/assignments",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-flow-tab-assignments.png"
+  },
+  {
+    "name": "tab-classes",
+    "action": "Классы",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/classes",
+    "metrics": {
+      "path": "/classes",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-flow-tab-classes.png"
+  },
+  {
+    "name": "tab-more",
+    "action": "Ещё",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/more",
+    "metrics": {
+      "path": "/more",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-flow-tab-more.png"
+  },
+  {
+    "name": "tab-home",
+    "action": "Главная",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": null
+  },
+  {
+    "name": "home-1024",
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-flow-11-home-1024.png"
+  }
+]

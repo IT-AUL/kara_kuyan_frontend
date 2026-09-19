@@ -1,0 +1,1054 @@
+[
+  {
+    "name": "home-initial",
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-00-home.png"
+  },
+  {
+    "name": "01-checking",
+    "action": "Продолжить",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/checking",
+    "metrics": {
+      "path": "/checking",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-01-checking.png"
+  },
+  {
+    "name": "02-scan",
+    "action": "Сканировать следующий лист",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/scan",
+    "metrics": {
+      "path": "/scan",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "СКАНИРОВАНИЕ",
+        "Выровняйте лист"
+      ]
+    },
+    "image": "/tmp/kara-refresh-02-scan.png"
+  },
+  {
+    "name": "03-processing",
+    "action": "Продолжить с этим листом",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/processing",
+    "metrics": {
+      "path": "/processing",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ОБРАБОТКА",
+        "Лист обработан"
+      ]
+    },
+    "image": "/tmp/kara-refresh-03-processing.png"
+  },
+  {
+    "name": "04-student",
+    "action": "Продолжить",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/student-identified",
+    "metrics": {
+      "path": "/student-identified",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ИДЕНТИФИКАЦИЯ",
+        "Лист распознан"
+      ]
+    },
+    "image": "/tmp/kara-refresh-04-student.png"
+  },
+  {
+    "name": "05-result",
+    "action": "Показать результат",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/assessment-result",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    },
+    "image": "/tmp/kara-refresh-05-result.png"
+  },
+  {
+    "name": "06-review",
+    "action": "Проверить отмеченный ответ",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/task-review",
+    "metrics": {
+      "path": "/task-review",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ПРОВЕРКА ОТВЕТА",
+        "Задание 3"
+      ]
+    },
+    "image": "/tmp/kara-refresh-06-review.png"
+  },
+  {
+    "name": "07-result-reviewed",
+    "action": "Засчитать ответ",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/assessment-result",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    },
+    "image": "/tmp/kara-refresh-07-result-reviewed.png"
+  },
+  {
+    "name": "08-save",
+    "action": "Сохранить и сканировать дальше",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/checking",
+    "metrics": {
+      "path": "/checking",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "Проверка работ",
+        "7-А · Татар теле",
+        "Контрольная работа №3"
+      ]
+    },
+    "image": "/tmp/kara-refresh-08-save.png"
+  },
+  {
+    "name": "09-analytics",
+    "action": "Открыть аналитику",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/analytics",
+    "metrics": {
+      "path": "/analytics",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "АНАЛИТИКА",
+        "Что повторить"
+      ]
+    },
+    "image": "/tmp/kara-refresh-09-analytics.png"
+  },
+  {
+    "name": "10-export",
+    "action": "Экспорт журнала",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/export-gradebook",
+    "metrics": {
+      "path": "/export-gradebook",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ЭКСПОРТ",
+        "Журнал оценок"
+      ]
+    },
+    "image": "/tmp/kara-refresh-10-export.png"
+  },
+  {
+    "name": "11-prepared",
+    "action": "Подготовить файл",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/export-gradebook",
+    "metrics": {
+      "path": "/export-gradebook",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ЭКСПОРТ",
+        "Журнал оценок"
+      ]
+    },
+    "image": "/tmp/kara-refresh-11-prepared.png"
+  },
+  {
+    "name": "12-home",
+    "action": "Готово",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": null
+  },
+  {
+    "name": "tab-checking",
+    "action": "Проверка",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/checking",
+    "metrics": {
+      "path": "/checking",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-tab-checking.png"
+  },
+  {
+    "name": "tab-assignments",
+    "action": "Задания",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/assignments",
+    "metrics": {
+      "path": "/assignments",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-tab-assignments.png"
+  },
+  {
+    "name": "tab-more",
+    "action": "Ещё",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/more",
+    "metrics": {
+      "path": "/more",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-tab-more.png"
+  },
+  {
+    "name": "more-classes",
+    "action": "Классы",
+    "click": {
+      "ok": true,
+      "tag": "button",
+      "role": "button"
+    },
+    "path": "/classes",
+    "metrics": {
+      "path": "/classes",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-more-classes.png"
+  },
+  {
+    "name": "tab-home",
+    "action": "Главная",
+    "click": {
+      "ok": true,
+      "tag": "a",
+      "role": "tab"
+    },
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": null
+  },
+  {
+    "name": "responsive-360-/",
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-home-360.png"
+  },
+  {
+    "name": "responsive-360-/checking",
+    "path": "/checking",
+    "metrics": {
+      "path": "/checking",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "Проверка работ",
+        "7-А · Татар теле",
+        "Контрольная работа №3"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/scan",
+    "path": "/scan",
+    "metrics": {
+      "path": "/scan",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "СКАНИРОВАНИЕ",
+        "Выровняйте лист"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/processing",
+    "path": "/processing",
+    "metrics": {
+      "path": "/processing",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "ОБРАБОТКА",
+        "Лист обработан"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/student-identified",
+    "path": "/student-identified",
+    "metrics": {
+      "path": "/student-identified",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "ИДЕНТИФИКАЦИЯ",
+        "Лист распознан"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/assessment-result",
+    "path": "/assessment-result",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/assessment-result?reviewed=1",
+    "path": "/assessment-result?reviewed=1",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/task-review",
+    "path": "/task-review",
+    "metrics": {
+      "path": "/task-review",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "ПРОВЕРКА ОТВЕТА",
+        "Задание 3"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/analytics",
+    "path": "/analytics",
+    "metrics": {
+      "path": "/analytics",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "АНАЛИТИКА",
+        "Что повторить"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/export-gradebook",
+    "path": "/export-gradebook",
+    "metrics": {
+      "path": "/export-gradebook",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "",
+        "ЭКСПОРТ",
+        "Журнал оценок"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/assignments",
+    "path": "/assignments",
+    "metrics": {
+      "path": "/assignments",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "ЗАДАНИЯ",
+        "Библиотека",
+        "Быстрый выбор готового теста или сборка из банка."
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/classes",
+    "path": "/classes",
+    "metrics": {
+      "path": "/classes",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "КЛАССЫ",
+        "7-А · Татар теле",
+        "Гимназия №2 им. Ш. Марджани"
+      ]
+    }
+  },
+  {
+    "name": "responsive-360-/more",
+    "path": "/more",
+    "metrics": {
+      "path": "/more",
+      "innerWidth": 360,
+      "clientWidth": 360,
+      "scrollWidth": 360,
+      "overflow": 0,
+      "title": [
+        "ЕЩЁ",
+        "Инструменты",
+        "Класс, аналитика, экспорт и отправка результатов."
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/",
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-home-390.png"
+  },
+  {
+    "name": "responsive-390-/checking",
+    "path": "/checking",
+    "metrics": {
+      "path": "/checking",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "Проверка работ",
+        "7-А · Татар теле",
+        "Контрольная работа №3"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/scan",
+    "path": "/scan",
+    "metrics": {
+      "path": "/scan",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "СКАНИРОВАНИЕ",
+        "Выровняйте лист"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/processing",
+    "path": "/processing",
+    "metrics": {
+      "path": "/processing",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ОБРАБОТКА",
+        "Лист обработан"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/student-identified",
+    "path": "/student-identified",
+    "metrics": {
+      "path": "/student-identified",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ИДЕНТИФИКАЦИЯ",
+        "Лист распознан"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/assessment-result",
+    "path": "/assessment-result",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/assessment-result?reviewed=1",
+    "path": "/assessment-result?reviewed=1",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/task-review",
+    "path": "/task-review",
+    "metrics": {
+      "path": "/task-review",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ПРОВЕРКА ОТВЕТА",
+        "Задание 3"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/analytics",
+    "path": "/analytics",
+    "metrics": {
+      "path": "/analytics",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "АНАЛИТИКА",
+        "Что повторить"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/export-gradebook",
+    "path": "/export-gradebook",
+    "metrics": {
+      "path": "/export-gradebook",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "",
+        "ЭКСПОРТ",
+        "Журнал оценок"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/assignments",
+    "path": "/assignments",
+    "metrics": {
+      "path": "/assignments",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "ЗАДАНИЯ",
+        "Библиотека",
+        "Быстрый выбор готового теста или сборка из банка."
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/classes",
+    "path": "/classes",
+    "metrics": {
+      "path": "/classes",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "КЛАССЫ",
+        "7-А · Татар теле",
+        "Гимназия №2 им. Ш. Марджани"
+      ]
+    }
+  },
+  {
+    "name": "responsive-390-/more",
+    "path": "/more",
+    "metrics": {
+      "path": "/more",
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflow": 0,
+      "title": [
+        "ЕЩЁ",
+        "Инструменты",
+        "Класс, аналитика, экспорт и отправка результатов."
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/",
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-home-1024.png"
+  },
+  {
+    "name": "responsive-1024-/checking",
+    "path": "/checking",
+    "metrics": {
+      "path": "/checking",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "Проверка работ",
+        "7-А · Татар теле",
+        "Контрольная работа №3"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/scan",
+    "path": "/scan",
+    "metrics": {
+      "path": "/scan",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "СКАНИРОВАНИЕ",
+        "Выровняйте лист"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/processing",
+    "path": "/processing",
+    "metrics": {
+      "path": "/processing",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "ОБРАБОТКА",
+        "Лист обработан"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/student-identified",
+    "path": "/student-identified",
+    "metrics": {
+      "path": "/student-identified",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "ИДЕНТИФИКАЦИЯ",
+        "Лист распознан"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/assessment-result",
+    "path": "/assessment-result",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/assessment-result?reviewed=1",
+    "path": "/assessment-result?reviewed=1",
+    "metrics": {
+      "path": "/assessment-result",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "РЕЗУЛЬТАТ",
+        "Работа проверена"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/task-review",
+    "path": "/task-review",
+    "metrics": {
+      "path": "/task-review",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "ПРОВЕРКА ОТВЕТА",
+        "Задание 3"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/analytics",
+    "path": "/analytics",
+    "metrics": {
+      "path": "/analytics",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "АНАЛИТИКА",
+        "Что повторить"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/export-gradebook",
+    "path": "/export-gradebook",
+    "metrics": {
+      "path": "/export-gradebook",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "",
+        "ЭКСПОРТ",
+        "Журнал оценок"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/assignments",
+    "path": "/assignments",
+    "metrics": {
+      "path": "/assignments",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "ЗАДАНИЯ",
+        "Библиотека",
+        "Быстрый выбор готового теста или сборка из банка."
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/classes",
+    "path": "/classes",
+    "metrics": {
+      "path": "/classes",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "КЛАССЫ",
+        "7-А · Татар теле",
+        "Гимназия №2 им. Ш. Марджани"
+      ]
+    }
+  },
+  {
+    "name": "responsive-1024-/more",
+    "path": "/more",
+    "metrics": {
+      "path": "/more",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "ЕЩЁ",
+        "Инструменты",
+        "Класс, аналитика, экспорт и отправка результатов."
+      ]
+    }
+  },
+  {
+    "name": "home-1024",
+    "path": "/",
+    "metrics": {
+      "path": "/",
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "overflow": 0,
+      "title": [
+        "КАРА КУЯН",
+        "Гөлнара ханым",
+        "Гимназия №2 им. Ш. Марджани · Каримова Гөлнара Илдар кызы"
+      ]
+    },
+    "image": "/tmp/kara-refresh-13-home-1024.png"
+  }
+]

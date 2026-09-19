@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [],
+    "deny": ["Exec(sudo)", "Exec(rm -rf)"],
+    "ask": ["Write(.env*)", "Write(**/.env*)"]
+  },
+  "read_config_from": {
+    "agents_standard": true,
+    "cursor": false,
+    "windsurf": false,
+    "claude": false
+  }
+}
