@@ -36,10 +36,12 @@ class AppUpdaterModule : Module() {
     }
 
     Function("openInstallSettings") {
-      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return@Function
-      val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))
-        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      context.startActivity(intent)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))
+          .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+      }
+      null
     }
 
     AsyncFunction("downloadApk") { url: String, sha256: String ->
