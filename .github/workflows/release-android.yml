@@ -114,6 +114,7 @@ jobs:
         run: >
           ./gradlew :app:assembleRelease --no-daemon --stacktrace
           -PreactNativeArchitectures=${{ env.ANDROID_ABIS }}
+          -Pexpo.useLegacyPackaging=true
           -Pkk.versionCode=${{ steps.meta.outputs.version_code }}
           -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
 
