@@ -31,3 +31,37 @@ Thumbs.db
 
 expo-env.d.ts
 # @end expo-cli
+
+# OCR lab (spike)
+tools/**/.venv/
+tools/**/fixtures-private/
+tools/**/out/
+
+# Native build output (local Expo module + generated android/)
+/modules/**/android/build/
+/modules/**/android/.cxx/
+.gradle/
+.cxx/
+local.properties
+*.iml
+
+# Release artifacts and signing material — never commit
+/build-release/
+*.apk
+*.aab
+*.keystore
+*.jks
+*.p12
+*.pem
+*.mobileprovision
+keystore.properties
+
+# Python / logs / misc
+__pycache__/
+*.py[cod]
+*.log
+npm-debug.*
+yarn-error.*
+.claude/settings.local.json
+.claude/worktrees/
+.pnpm-store/
