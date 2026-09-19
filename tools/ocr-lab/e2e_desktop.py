@@ -54,13 +54,33 @@ def rectify(img):
     return cv2.warpPerspective(img, cv2.getPerspectiveTransform(src, DST), (W, H), flags=cv2.INTER_LANCZOS4)
 
 
+def name_cells_from_lines(v_lines, name_top):
+    """16 name cells from vertical grid lines (backend template versions differ: 9 mm vs 8 mm cells); None if not found."""
+    band = v_lines[name_top + 6:name_top + 13, 440:1960]  # strip under the top border: grid lines only, no glyph strokes
+    col = band.sum(axis=0) // 255
+    on = np.where(col > 4)[0]
+    if len(on) == 0:
+        return None
+    groups = np.split(on, np.where(np.diff(on) > 1)[0] + 1)
+    centers = [440 + (g[0] + g[-1]) / 2 for g in groups]
+    if len(centers) < 17:
+        return None
+    d = np.diff(centers)
+    for s in range(len(centers) - 16):
+        w = d[s:s + 16]
+        pitch = float(np.sort(w)[8])
+        if 70 <= pitch <= 100 and np.all(np.abs(w - pitch) <= 6):
+            return [(int(centers[s + i]), name_top, int(pitch), int(pitch)) for i in range(16)]
+    return None
+
+
 def extract_cells(rect):
     gray = cv2.cvtColor(rect, cv2.COLOR_BGR2GRAY)
     thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 25, 10)
     v_lines = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 35)))
     sobel_y = np.abs(cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3))
     name_top = 200 + int(np.argmax(sobel_y[200:245, 470:1910].mean(axis=1)))
-    name = [(int(474 + i * 89.9), name_top, 90, 96) for i in range(16)]
+    name = name_cells_from_lines(v_lines, name_top) or [(int(474 + i * 89.9), name_top, 90, 96) for i in range(16)]
     corners, ids, _ = detector.detectMarkers(rect)
     q = {int(i): c[0] for i, c in zip(ids.flatten(), corners) if int(i) >= 11} if ids is not None else {}
     rows = []

@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { demoInsight, demoProgress, demoTopics } from '@/demo/demo-data';
+import { useActiveContext } from '@/data/context';
+import { classAnalyticsResource, progressResource } from '@/data/hub';
+import { useResource } from '@/data/resource';
 import {
   BarChart,
   Button,
   Card,
   MetricTile,
+  Notice,
   Screen,
   ScreenHeader,
   SectionHeader,
@@ -19,15 +22,18 @@ import { colors, fontFamilies, spacing } from '@/design-system/tokens';
 
 const TABS = ['Обзор', 'Темы', 'Ученики'] as const;
 
-const gradeHistory = [
-  { label: 'КР1', value: 55 },
-  { label: 'КР2', value: 66 },
-  { label: 'КР3', value: 74 },
-] as const;
-
 export function AnalyticsScreen() {
   const router = useRouter();
+  const ctx = useActiveContext();
   const [activeTab, setActiveTab] = useState(0);
+  const analytics = useResource(ctx.classId ? classAnalyticsResource(ctx.classId) : null);
+  const series = useResource(ctx.classId ? progressResource(ctx.classId) : null);
+  const data = analytics.data;
+  const points = series.data ?? [];
+  const topics = [...(data?.topMistakes ?? [])].filter((t) => t.affectedStudents > 0).sort((a, b) => b.failureRatePct - a.failureRatePct);
+  const top = topics[0];
+  const delta = points.length >= 2 ? points[points.length - 1].value - points[points.length - 2].value : null;
+  const dist = data?.gradeDistribution ?? {};
 
   return (
     <Screen
@@ -41,70 +47,81 @@ export function AnalyticsScreen() {
     >
       <ScreenHeader
         showBack
-        subtitle="7-А · Исем килешләре"
+        subtitle={ctx.className ?? 'Класс не выбран'}
         title="Аналитика класса"
       />
 
       <SegmentedTabs activeIndex={activeTab} onTabChange={setActiveTab} tabs={TABS} />
 
-      {activeTab === 0 && (
+      {analytics.offline ? <Notice message="Нет связи с сервером: показаны сохранённые данные." /> : null}
+      {analytics.status === 'error' ? <Notice actionLabel="Повторить" message="Не удалось загрузить аналитику." onAction={() => void analytics.refresh()} tone="error" /> : null}
+      {!ctx.classId ? <Notice message="Создайте класс, чтобы увидеть аналитику." tone="info" /> : null}
+
+      {activeTab === 0 && data && (
         <>
           <Card style={styles.statsCard}>
             <Text style={textStyles.body}>Средний результат класса</Text>
             <View style={styles.resultRow}>
-              <Text selectable style={textStyles.display}>74%</Text>
-              <Text style={styles.delta}>+8% к прошлой работе</Text>
+              <Text selectable style={textStyles.display}>{Math.round(data.averageScorePct)}%</Text>
+              {delta !== null ? <Text style={styles.delta}>{delta >= 0 ? '+' : ''}{delta}% к прошлой работе</Text> : null}
             </View>
           </Card>
 
-          <Card style={styles.chartCard}>
-            <BarChart bars={gradeHistory} title="Динамика оценок" />
-          </Card>
+          {points.length > 0 ? (
+            <Card style={styles.chartCard}>
+              <BarChart bars={points.map((p) => ({ label: p.label, value: p.value, maxValue: 100 }))} title="Динамика по работам" />
+            </Card>
+          ) : null}
 
-          <Card style={styles.recommendation} tone="raised">
-            <StatusPill icon="insight" label="Тема для повторения" tone="info" />
-            <Text selectable style={textStyles.title}>
-              {demoInsight.title}
-            </Text>
-            <Text style={textStyles.bodySmall}>
-              11 из 25 учеников допустили ошибки
-            </Text>
-            <Button compact onPress={() => {}} title="Подобрать упражнения" variant="ghost" />
-          </Card>
+          {top ? (
+            <Card style={styles.recommendation} tone="raised">
+              <StatusPill icon="insight" label="Тема для повторения" tone="info" />
+              <Text selectable style={textStyles.title}>Рекомендуем повторить: {top.topicName}</Text>
+              <Text style={textStyles.bodySmall}>Затронуто учеников: {top.affectedStudents} из {data.studentsCount}</Text>
+            </Card>
+          ) : (
+            <Notice message="Пока мало проверенных работ для рекомендаций." tone="info" />
+          )}
         </>
       )}
 
       {activeTab === 1 && (
         <View style={styles.section}>
-          <SectionHeader subtitle="Ранжировано по количеству ошибок, без рейтинга учеников." title="Темы для повторения" />
-          <Card style={styles.topics}>
-            {demoTopics.map((topic, index) => (
-              <View
-                key={topic.title}
-                style={[styles.topicRow, index < demoTopics.length - 1 && styles.topicDivider]}
-              >
-                <Text style={styles.ordinal}>{index + 1}</Text>
-                <View style={styles.topicCopy}>
-                  <Text selectable style={textStyles.body}>
-                    {topic.title}
-                  </Text>
-                  <Text style={textStyles.bodySmall}>{topic.detail}</Text>
+          <SectionHeader subtitle="Ранжировано по доле ошибок, без рейтинга учеников." title="Темы для повторения" />
+          {topics.length === 0 ? (
+            <Notice message="Ошибок по темам пока нет." tone="info" />
+          ) : (
+            <Card style={styles.topics}>
+              {topics.map((topic, index) => (
+                <View key={topic.topicCode} style={[styles.topicRow, index < topics.length - 1 && styles.topicDivider]}>
+                  <Text style={styles.ordinal}>{index + 1}</Text>
+                  <View style={styles.topicCopy}>
+                    <Text selectable style={textStyles.body}>{topic.topicName}</Text>
+                    <Text style={textStyles.bodySmall}>Ошибки: {Math.round(topic.failureRatePct)}%</Text>
+                  </View>
+                  <Text style={[textStyles.titleSmall, styles.count]}>{topic.affectedStudents}</Text>
                 </View>
-                <Text style={[textStyles.titleSmall, styles.count]}>{topic.count}</Text>
-              </View>
-            ))}
-          </Card>
+              ))}
+            </Card>
+          )}
+          {data && data.difficultLetters.length > 0 ? (
+            <Text style={textStyles.bodySmall}>
+              Трудные буквы: {data.difficultLetters.map((c) => `${c.letter} (${Math.round(c.errorRatePct)}%)`).join(', ')}
+            </Text>
+          ) : null}
         </View>
       )}
 
-      {activeTab === 2 && (
+      {activeTab === 2 && data && (
         <View style={styles.section}>
-          <SectionHeader title="Ученики" subtitle="Средние результаты по классу" />
+          <SectionHeader title="Класс в целом" subtitle="Распределение оценок, без списка учеников" />
           <View style={styles.metrics}>
-            <MetricTile detail={`${demoProgress.checkedCount}/${demoProgress.studentCount} работ`} label="Проверено" value={`${demoProgress.completionPercent}%`} />
-            <MetricTile label="Среднее" value="74%" tone="success" />
-            <MetricTile label="Проверить" value="4" tone="warning" />
+            <MetricTile detail={`${ctx.progress.checkedCount}/${ctx.progress.studentCount} работ`} label="Проверено" value={`${ctx.progress.percent}%`} />
+            <MetricTile label="Среднее" value={`${Math.round(data.averageScorePct)}%`} tone="success" />
           </View>
+          <Card style={styles.chartCard}>
+            <BarChart bars={['5', '4', '3', '2'].map((g) => ({ label: `«${g}»`, value: dist[g] ?? 0 }))} title="Оценки" />
+          </Card>
         </View>
       )}
     </Screen>

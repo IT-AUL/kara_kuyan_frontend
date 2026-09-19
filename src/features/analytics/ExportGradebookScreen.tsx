@@ -2,11 +2,14 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { demoAssessment } from '@/demo/demo-data';
+import { backendApi } from '@/composition';
+import { downloadAndShare } from '@/adapters/files/downloads';
+import { useActiveContext } from '@/data/context';
 import {
   AppIcon,
   Button,
   Card,
+  Notice,
   Screen,
   ScreenHeader,
   StatusPill,
@@ -20,12 +23,28 @@ export function ExportGradebookScreen() {
   const router = useRouter();
   const [format, setFormat] = useState<ExportFormat>('xlsx');
   const [prepared, setPrepared] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const ctx = useActiveContext();
+  const ready = !!ctx.classId && !!ctx.assignmentId;
+
+  const prepare = async () => {
+    if (!backendApi || !ctx.classId || !ctx.assignmentId) return;
+    setBusy(true);
+    setError(null);
+    const target = await backendApi.gradebookTarget(ctx.assignmentId, ctx.classId, format);
+    const mime = format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv';
+    const result = await downloadAndShare(target, `gradebook-${ctx.classId}-${ctx.assignmentId}.${format}`, mime);
+    setBusy(false);
+    if (result.ok) setPrepared(true);
+    else setError(`Не удалось получить журнал: ${result.message}`);
+  };
 
   return (
     <Screen
       footer={
         !prepared ? (
-          <Button icon="export" onPress={() => setPrepared(true)} title="Подготовить файл" />
+          <Button disabled={!ready || busy} icon="export" onPress={() => void prepare()} title={busy ? 'Готовим файл…' : 'Подготовить файл'} />
         ) : (
           <Button icon="check" onPress={() => router.replace('/')} title="Готово" />
         )
@@ -34,7 +53,7 @@ export function ExportGradebookScreen() {
       <ScreenHeader
         eyebrow="Экспорт"
         showBack
-        subtitle={`${demoAssessment.title} · ${demoAssessment.className}`}
+        subtitle={ctx.assignmentTitle && ctx.className ? `${ctx.assignmentTitle} · ${ctx.className}` : 'Выберите класс и работу'}
         title="Журнал оценок"
       />
 
@@ -71,18 +90,17 @@ export function ExportGradebookScreen() {
           })}
         </View>
         <Text style={textStyles.bodySmall}>
-          В файл войдут оценки 25 учеников без фотографий и данных распознавания.
+          В файл войдут оценки учеников класса без фотографий и данных распознавания.
         </Text>
       </Card>
 
       {prepared ? (
         <Card style={styles.prepared}>
           <StatusPill label={`${format.toUpperCase()} подготовлен`} tone="success" />
-          <Text style={textStyles.bodySmall}>
-            Файл подготовлен. Отправка станет доступна после подключения экспорта.
-          </Text>
+          <Text style={textStyles.bodySmall}>Файл получен от сервера и открыт в меню «Поделиться».</Text>
         </Card>
       ) : null}
+      {error ? <Notice message={error} tone="error" /> : null}
     </Screen>
   );
 }

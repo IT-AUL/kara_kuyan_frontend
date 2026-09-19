@@ -1,6 +1,6 @@
 import OcrNative from '../../../modules/ocr-native';
 import type { SheetEvidence } from '@/domain/ocr/evidence';
-import type { OcrEngine, OcrSession } from '@/ports/ocr-engine';
+import { SheetPickCancelled, type OcrEngine, type OcrSession } from '@/ports/ocr-engine';
 import { alignmentBus } from './alignmentBus';
 
 class NativeSession implements OcrSession {
@@ -8,6 +8,15 @@ class NativeSession implements OcrSession {
 
   async captureSheet(): Promise<SheetEvidence> {
     return JSON.parse(await OcrNative.captureSheet()) as SheetEvidence;
+  }
+
+  async readSheetFromDevice(): Promise<SheetEvidence> {
+    try {
+      return JSON.parse(await OcrNative.pickAndReadSheet()) as SheetEvidence;
+    } catch (e) {
+      if (String(e).includes('PICK_CANCELLED')) throw new SheetPickCancelled();
+      throw e;
+    }
   }
 
   async close(): Promise<void> {}

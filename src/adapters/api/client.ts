@@ -72,6 +72,11 @@ export class ApiClient {
     }
   }
 
+  /** Absolute URL and auth headers for file downloads (PDF, XLSX) done by a file adapter, not by JSON requests. */
+  async downloadTarget(path: string, query?: RequestOptions['query']): Promise<{ url: string; headers: Record<string, string> }> {
+    return { url: this.url(path, query), headers: { 'X-Teacher-UUID': await this.options.teacherUuid() } };
+  }
+
   private url(path: string, query?: RequestOptions['query']): string {
     const base = this.options.baseUrl.replace(/\/+$/, '');
     const params = Object.entries(query ?? {})

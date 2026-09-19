@@ -24,3 +24,9 @@ export const outbox = sqliteTable(
   },
   (t) => [index('outbox_due_idx').on(t.status, t.nextAttemptAt)],
 );
+
+export const kv = sqliteTable('kv', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});

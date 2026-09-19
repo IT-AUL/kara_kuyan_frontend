@@ -1,5 +1,6 @@
 import {
-  demoGradeForPercent,
+  defaultGradeScale,
+  gradeForPercent,
   scorePercent,
   summarizeAssessmentProgress,
 } from './grading';
@@ -11,9 +12,9 @@ describe('assessment demo grading', () => {
   });
 
   it('maps demo percentage to the product example grade', () => {
-    expect(demoGradeForPercent(87)).toBe(5);
-    expect(demoGradeForPercent(84)).toBe(4);
-    expect(demoGradeForPercent(49)).toBe(2);
+    expect(gradeForPercent(87, defaultGradeScale)).toBe(5);
+    expect(gradeForPercent(84, defaultGradeScale)).toBe(4);
+    expect(gradeForPercent(49, defaultGradeScale)).toBe(2);
   });
 
   it('summarizes class checking progress', () => {
@@ -30,5 +31,12 @@ describe('assessment demo grading', () => {
       remainingCount: 7,
       completionPercent: 72,
     });
+  });
+});
+
+describe('gradeForPercent', () => {
+  it('uses the teacher scale, not a fixed one', () => {
+    const strict = { grade5MinPct: 90, grade4MinPct: 75, grade3MinPct: 60 };
+    expect([100, 90, 89, 75, 74, 60, 59].map((p) => gradeForPercent(p, strict))).toEqual([5, 5, 4, 4, 3, 3, 2]);
   });
 });

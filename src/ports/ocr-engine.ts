@@ -39,6 +39,12 @@ export type OcrSessionConfig = {
   template: SheetTemplate;
 };
 
+export class SheetPickCancelled extends Error {
+  constructor() {
+    super('sheet pick cancelled');
+  }
+}
+
 export type Unsubscribe = () => void;
 
 export interface OcrSession {
@@ -49,6 +55,11 @@ export interface OcrSession {
    * and resolves with numbers and text only. Rejects if the session is closed.
    */
   captureSheet(): Promise<SheetEvidence>;
+  /**
+   * Lets the teacher pick an existing image of a sheet and reads it the same way. The file is opened and
+   * released inside the native module (ADR 0007). Rejects with `SheetPickCancelled` when nothing is chosen.
+   */
+  readSheetFromDevice(): Promise<SheetEvidence>;
   /** Releases the camera and every native buffer. Safe to call more than once. */
   close(): Promise<void>;
 }

@@ -63,6 +63,15 @@ Still open: repo has no licence (permission to reuse needed); accuracy claims co
 - Only in the draft: `/assignments/{id}/batch-blanks.pdf`, `/constructor/tests/{test_id}/fork` (absent from the live server).
 - Codegen is no longer blocked by lint, but the semantic gaps above remain; the live spec, not the draft, should become the reference once the offline-bundle 500 is resolved.
 
+## Live spec update (fetched 2026-09-19 evening, `openapi-live-2026-09-19b.json`, SHA-256 `22d29198…de08`)
+
+- **Added:** `GET /api/v1/model/manifest` (no auth): model name/version, 39-class alphabet (**Ә at index 1 — confirms our measured order**), `sha256` `b55481b4…` (= the `.pth`, matches ours), and a `PreprocessingSpec`. **Added fields:** `HandwritingMetrics`, `handwriting_*` on class/student analytics and the performance row. No operations removed or changed; still no security scheme.
+- **Gap 21 resolved:** `GET /assignments/TAT-2026-Q1/offline-bundle` now returns 200 (1 variant, 4 questions; metadata earlier said 2 variants — mismatch to ask).
+- **27. Preprocessing spec differs from the source we ported:** manifest says `margin_trim_pct 11`, `ink_min_area_pixels 35`, bbox padding 2, occupancy 46, background 250, ink offset 22; the code at 796601e (and our Kotlin port) uses trim **8%**, empty if total ink **< 30 px**, min component area 18. Either the server changed after 796601e or the manifest is documentation only. Needs the authors' answer and a parity check (our fixtures) before we change the port; do not adopt silently.
+- **28. Handwriting metrics** (quality %, correction rate, low-confidence rate, unclear characters) are computed server-side from per-cell confidences we send; usable for the class insight screen, but the formula is undocumented.
+
+- **29. Template drift:** the live `blank.pdf` now has 8 mm name cells (was 9 mm); bundle/manifest carry no template version or geometry. The client now finds the name cells from printed lines, but a versioned template (gap 15) is still needed.
+
 ## Consequence
 
 **Codegen is blocked.** Orval/generated client work may not start until the contract passes lint and the semantic questions above are answered by the backend. Track answers here or in an updated contract revision; do not invent semantics client-side.

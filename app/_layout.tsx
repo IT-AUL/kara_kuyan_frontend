@@ -14,10 +14,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { syncScheduler } from '@/composition';
 import { colors } from '@/design-system';
+import { useSession } from '@/data/session';
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const { profile } = useSession();
   const [fontsLoaded, fontError] = useFonts({
     Onest_400Regular,
     Onest_500Medium,
@@ -49,7 +51,25 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: colors.background },
             headerShown: false,
           }}
-        />
+        >
+          <Stack.Protected guard={profile === null}>
+            <Stack.Screen name="onboarding" />
+          </Stack.Protected>
+          <Stack.Protected guard={profile !== null}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="check" />
+            <Stack.Screen name="scan" />
+            <Stack.Screen name="processing" />
+            <Stack.Screen name="student-identified" />
+            <Stack.Screen name="assessment-result" />
+            <Stack.Screen name="task-review" />
+            <Stack.Screen name="analytics" />
+            <Stack.Screen name="export-gradebook" />
+            <Stack.Screen name="class-form" />
+            <Stack.Screen name="test-form" />
+          </Stack.Protected>
+          <Stack.Screen name="ocr-lab" />
+        </Stack>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

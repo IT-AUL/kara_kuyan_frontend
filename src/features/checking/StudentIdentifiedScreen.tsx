@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { demoAssessment, demoStudents } from '@/demo/demo-data';
+import { useActiveContext } from '@/data/context';
 import { AppIcon, Button, Card, Screen, ScreenHeader, SectionHeader, textStyles } from '@/design-system';
 import { colors, radius, spacing, touchTarget } from '@/design-system/tokens';
 import { StudentIdentityCard } from './components/StudentIdentityCard';
@@ -10,6 +10,8 @@ import { scanSession, useScanSession } from './scanSession';
 export function StudentIdentifiedScreen() {
   const router = useRouter();
   const { outcome, student, studentMatched } = useScanSession();
+  const { students, tests } = useActiveContext();
+  const title = tests.find((t) => t.testId === outcome?.assignmentId)?.title ?? outcome?.assignmentId ?? '';
 
   return (
     <Screen
@@ -40,7 +42,7 @@ export function StudentIdentifiedScreen() {
         <View style={styles.row}>
           <Text style={textStyles.bodySmall}>Работа</Text>
           <Text selectable style={textStyles.body}>
-            {demoAssessment.title}
+            {title}
           </Text>
         </View>
         <View style={styles.row}>
@@ -52,15 +54,15 @@ export function StudentIdentifiedScreen() {
       <View style={styles.section}>
         <SectionHeader title="Изменить ученика" />
         <Card style={styles.roster}>
-          {demoStudents.map((s) => (
+          {students.map((s) => (
             <Pressable
               accessibilityRole="button"
-              key={s.id}
-              onPress={() => scanSession.selectStudent(s.id)}
+              key={s.studentId}
+              onPress={() => scanSession.selectStudent(s.studentId)}
               style={styles.rosterRow}
             >
-              <Text style={textStyles.body}>{s.name}</Text>
-              {student?.id === s.id ? <AppIcon color={colors.primary} name="check" size={20} /> : null}
+              <Text style={textStyles.body}>{s.fullName}</Text>
+              {student?.id === s.studentId ? <AppIcon color={colors.primary} name="check" size={20} /> : null}
             </Pressable>
           ))}
         </Card>

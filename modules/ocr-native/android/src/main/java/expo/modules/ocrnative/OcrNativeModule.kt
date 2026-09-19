@@ -1,6 +1,8 @@
 package expo.modules.ocrnative
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import expo.modules.interfaces.permissions.Permissions
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
@@ -16,6 +18,10 @@ import java.io.File
 import kotlin.math.abs
 
 class OcrNativeModule : Module() {
+  private var pendingPick: Promise? = null
+
+  private companion object { const val PICK_REQUEST = 7311 }
+
   override fun definition() = ModuleDefinition {
     Name("OcrNative")
 
@@ -45,6 +51,42 @@ class OcrNativeModule : Module() {
     // Captures a still in memory, reads it, returns structured evidence (numbers and text only).
     AsyncFunction("captureSheet") {
       CameraController.capture(appContext.reactContext ?: throw IllegalStateException("no context"))
+    }
+
+    // Lets the teacher pick an existing image of a sheet (system picker, no storage permission). The file is read
+    // straight into native memory, processed and released: never copied, cached, or shown to JS (ADR 0007).
+    AsyncFunction("pickAndReadSheet") { promise: Promise ->
+      val activity = appContext.currentActivity
+      if (activity == null) { promise.reject("NO_ACTIVITY", "no foreground activity", null); return@AsyncFunction }
+      pendingPick?.reject("PICK_SUPERSEDED", "another pick started", null)
+      pendingPick = promise
+      val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        addCategory(Intent.CATEGORY_OPENABLE)
+        type = "image/*"
+      }
+      activity.startActivityForResult(intent, PICK_REQUEST)
+    }
+
+    OnActivityResult { _, payload ->
+      if (payload.requestCode != PICK_REQUEST) return@OnActivityResult
+      val promise = pendingPick ?: return@OnActivityResult
+      pendingPick = null
+      val uri = payload.data?.data
+      if (payload.resultCode != Activity.RESULT_OK || uri == null) {
+        promise.reject("PICK_CANCELLED", "no file chosen", null)
+        return@OnActivityResult
+      }
+      val context = appContext.reactContext
+      if (context == null) { promise.reject("NO_CONTEXT", "no context", null); return@OnActivityResult }
+      Thread {
+        try {
+          val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            ?: throw IllegalStateException("IMAGE_UNREADABLE")
+          promise.resolve(CameraController.readEncoded(context, bytes))
+        } catch (e: Throwable) {
+          promise.reject("READ_FAILED", e.message ?: e.toString(), e)
+        }
+      }.start()
     }
 
     // Dev-only sheet pipeline test (spike task 10): still images from <filesDir>/ocr-lab/sheets.

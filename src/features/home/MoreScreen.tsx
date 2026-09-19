@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useActiveContext } from '@/data/context';
+
 import {
   Card,
   ListRow,
@@ -14,6 +16,7 @@ import { spacing } from '@/design-system/tokens';
 
 export function MoreScreen() {
   const router = useRouter();
+  const ctx = useActiveContext();
 
   return (
     <Screen edges={['top']}>
@@ -29,7 +32,7 @@ export function MoreScreen() {
           <ListRow
             icon="classes"
             onPress={() => router.push('/classes')}
-            subtitle="7-А · 25 учеников"
+            subtitle={ctx.className ? `${ctx.className} · ${ctx.progress.studentCount} учеников` : 'Создайте класс'}
             title="Классы"
             variant="plain"
           />

@@ -22,6 +22,7 @@ import org.opencv.objdetect.ArucoDetector
 import org.opencv.objdetect.DetectorParameters
 import org.opencv.objdetect.Objdetect
 import org.opencv.objdetect.QRCodeDetector
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -151,6 +152,39 @@ class SheetPipeline {
     return max(0, y0) + mm.maxLoc.y.toInt()
   }
 
+  /** 16 name cells from vertical grid lines in the name band, or null when 17 evenly spaced lines are not found. */
+  private fun nameCellsFromLines(vLines: Mat, nameTop: Int): List<Box>? {
+    // Only the strip just under the top border is used: printed grid lines run through it, while handwritten
+    // letters (inset from the border) do not, so tall strokes such as Н, И, Ш never look like grid lines.
+    val y0 = max(0, nameTop + 6); val y1 = min(vLines.rows(), nameTop + 13)
+    val x0 = 440; val x1 = min(vLines.cols(), 1960)
+    if (y1 <= y0 || x1 <= x0) return null
+    val sums = Mat()
+    Core.reduce(vLines.submat(y0, y1, x0, x1), sums, 0, Core.REDUCE_SUM, CvType.CV_32S)
+    val col = IntArray(x1 - x0); sums.get(0, 0, col); sums.release()
+    val threshold = 255 * 4
+    val centers = ArrayList<Double>()
+    var i = 0
+    while (i < col.size) {
+      if (col[i] > threshold) {
+        var j = i
+        while (j + 1 < col.size && col[j + 1] > threshold) j++
+        centers.add(x0 + (i + j) / 2.0)
+        i = j + 1
+      } else i++
+    }
+    if (centers.size < 17) return null
+    val diffs = (1 until centers.size).map { centers[it] - centers[it - 1] }
+    for (start in 0..centers.size - 17) {
+      val window = diffs.subList(start, start + 16)
+      val pitch = window.sorted()[8]
+      if (pitch in 70.0..100.0 && window.all { abs(it - pitch) <= 6.0 }) {
+        return (0 until 16).map { Box(centers[start + it].toInt(), nameTop, pitch.toInt(), pitch.toInt()) }
+      }
+    }
+    return null
+  }
+
   fun locate(rect: Mat, gray: Mat): Pair<List<Box>, List<Row>> {
     val thresh = Mat()
     Imgproc.adaptiveThreshold(gray, thresh, 255.0, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 25, 10.0)
@@ -161,7 +195,9 @@ class SheetPipeline {
     val sobel = Mat(); Core.absdiff(sob, Scalar(0.0), sobel); sob.release()
 
     val nameTop = rowMeanArgmax(sobel, 200, 245, 470, 1910)
-    val name = (0 until 16).map { Box((474 + it * 89.9).toInt(), nameTop, 90, 96) }
+    // The name field's pitch changed between backend template versions (9 mm -> 8 mm cells), so its cells are
+    // found from the printed vertical lines; the old fixed 89.9 px grid remains the fallback.
+    val name = nameCellsFromLines(vLines, nameTop) ?: (0 until 16).map { Box((474 + it * 89.9).toInt(), nameTop, 90, 96) }
 
     val markers = markerCorners(rect).filterKeys { it >= 11 }
     val rows = ArrayList<Row>()

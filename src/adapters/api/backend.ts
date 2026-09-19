@@ -10,6 +10,31 @@ export type RosterStudent = { studentId: string; fullName: string };
 export type ClassRoster = { classId: string; className: string; students: RosterStudent[] };
 export type TaskBankEntry = { taskId: string; prompt: string; expectedAnswer: string; cellCount: number; gradeLevel: number; topicTag: string; topicName: string };
 
+export type TestSummary = { testId: string; title: string; gradeLevel: number; questionsCount: number };
+export type TopicStat = { topicCode: string; topicName: string; failureRatePct: number; affectedStudents: number };
+export type ClassAnalytics = {
+  classId: string;
+  className: string;
+  studentsCount: number;
+  averageScorePct: number;
+  gradeDistribution: Record<string, number>;
+  topMistakes: TopicStat[];
+  difficultLetters: { letter: string; errorRatePct: number }[];
+};
+export type QuestionStat = { number: number; prompt: string; expectedAnswer: string; accuracyPct: number; wrongCount: number };
+export type AssignmentAnalytics = { assignmentId: string; title: string; totalSubmissions: number; averageScorePct: number; questions: QuestionStat[] };
+export type SubmissionRow = {
+  uuid: string;
+  studentId: string;
+  studentName: string;
+  variant: number;
+  checkedAt: string;
+  score: number;
+  maxScore: number;
+  grade: number;
+  reviewedFlags: number;
+};
+
 export function parseBundle(json: unknown): OfflineBundle {
   const b = obj(json, 'bundle');
   return {
@@ -88,6 +113,64 @@ function parseTasks(json: unknown): TaskBankEntry[] {
   });
 }
 
+function parseTests(json: unknown): TestSummary[] {
+  return arr(json, 'tests').map((raw) => {
+    const t = obj(raw, 'test');
+    return { testId: str(t.test_id, 'test_id'), title: str(t.title, 'title'), gradeLevel: num(t.grade_level, 'grade_level'), questionsCount: num(t.questions_count, 'questions_count') };
+  });
+}
+
+function parseClassAnalytics(json: unknown): ClassAnalytics {
+  const r = obj(json, 'class analytics');
+  const dist = r.grade_distribution === undefined ? {} : obj(r.grade_distribution, 'grade_distribution');
+  return {
+    classId: str(r.class_id, 'class_id'),
+    className: str(r.class_name, 'class_name'),
+    studentsCount: num(r.students_count, 'students_count'),
+    averageScorePct: num(r.average_class_score_pct, 'average_class_score_pct'),
+    gradeDistribution: Object.fromEntries(Object.entries(dist).map(([k, v]) => [k, num(v, 'grade count')])),
+    topMistakes: arr(r.top_class_mistakes ?? [], 'top_class_mistakes').map((raw) => {
+      const m = obj(raw, 'mistake');
+      return { topicCode: str(m.topic_code, 'topic_code'), topicName: str(m.topic_name_tt, 'topic_name_tt'), failureRatePct: num(m.failure_rate_pct, 'failure_rate_pct'), affectedStudents: num(m.affected_students_count, 'affected_students_count') };
+    }),
+    difficultLetters: arr(r.difficult_characters_across_class ?? [], 'difficult_characters').map((raw) => {
+      const c = obj(raw, 'char');
+      return { letter: str(c.letter, 'letter'), errorRatePct: num(c.error_rate_pct, 'error_rate_pct') };
+    }),
+  };
+}
+
+function parseAssignmentAnalytics(json: unknown): AssignmentAnalytics {
+  const r = obj(json, 'assignment analytics');
+  return {
+    assignmentId: str(r.assignment_id, 'assignment_id'),
+    title: str(r.title, 'title'),
+    totalSubmissions: num(r.total_submissions, 'total_submissions'),
+    averageScorePct: num(r.average_score_pct, 'average_score_pct'),
+    questions: arr(r.questions_analytics ?? [], 'questions_analytics').map((raw) => {
+      const q = obj(raw, 'question');
+      return { number: num(q.question_number, 'question_number'), prompt: str(q.prompt, 'prompt'), expectedAnswer: str(q.expected_answer, 'expected_answer'), accuracyPct: num(q.accuracy_pct, 'accuracy_pct'), wrongCount: arr(q.wrong_submissions ?? [], 'wrong_submissions').length };
+    }),
+  };
+}
+
+function parseSubmissions(json: unknown): SubmissionRow[] {
+  return arr(json, 'submissions').map((raw) => {
+    const s = obj(raw, 'submission');
+    return {
+      uuid: str(s.client_submission_uuid, 'client_submission_uuid'),
+      studentId: str(s.student_id, 'student_id'),
+      studentName: str(s.student_name, 'student_name'),
+      variant: num(s.variant, 'variant'),
+      checkedAt: str(s.checked_at, 'checked_at'),
+      score: num(s.overall_score, 'overall_score'),
+      maxScore: num(s.max_score, 'max_score'),
+      grade: num(s.final_grade, 'final_grade'),
+      reviewedFlags: typeof s.teacher_reviewed_flags === 'number' ? s.teacher_reviewed_flags : 0,
+    };
+  });
+}
+
 /**
  * Typed access to the backend endpoints the app uses. Server-side OCR endpoints (`/ocr/*`,
  * `/constructor/scan-task*`) are deliberately absent: no pixels leave the phone (ADR 0003).
@@ -144,5 +227,32 @@ export class BackendApi {
     return this.client.request('/api/v1/constructor/tasks', parseTasks, {
       query: { grade_level: query.gradeLevel, topic_tag: query.topicTag, query: query.query },
     });
+  }
+
+  /** Server-wide list of assembled tests (the live server does not scope it to the teacher). */
+  listTests(): Promise<ApiResult<TestSummary[]>> {
+    return this.client.request('/api/v1/constructor/ready-tests', parseTests);
+  }
+
+  classAnalytics(classId: string): Promise<ApiResult<ClassAnalytics>> {
+    return this.client.request(`/api/v1/analytics/classes/${encodeURIComponent(classId)}`, parseClassAnalytics);
+  }
+
+  assignmentAnalytics(assignmentId: string): Promise<ApiResult<AssignmentAnalytics>> {
+    return this.client.request(`/api/v1/analytics/assignments/${encodeURIComponent(assignmentId)}`, parseAssignmentAnalytics);
+  }
+
+  listSubmissions(filter: { classId?: string; assignmentId?: string; studentId?: string }): Promise<ApiResult<SubmissionRow[]>> {
+    return this.client.request('/api/v1/submissions', parseSubmissions, {
+      query: { class_id: filter.classId, assignment_id: filter.assignmentId, student_id: filter.studentId },
+    });
+  }
+
+  blankPdfTarget(assignmentId: string, variant: number) {
+    return this.client.downloadTarget(`/api/v1/assignments/${encodeURIComponent(assignmentId)}/blank.pdf`, { variant });
+  }
+
+  gradebookTarget(assignmentId: string, classId: string, format: 'xlsx' | 'csv') {
+    return this.client.downloadTarget(`/api/v1/reports/assignments/${encodeURIComponent(assignmentId)}/gradebook.xlsx`, { class_id: classId, format });
   }
 }

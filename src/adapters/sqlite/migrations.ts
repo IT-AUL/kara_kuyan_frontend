@@ -28,4 +28,14 @@ export const migrations: readonly Migration[] = [
       CREATE INDEX outbox_due_idx ON outbox (status, next_attempt_at);
     `,
   },
+  {
+    version: 2,
+    sql: `
+      CREATE TABLE kv (
+        key TEXT PRIMARY KEY NOT NULL,
+        value TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+    `,
+  },
 ];

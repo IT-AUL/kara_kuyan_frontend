@@ -177,22 +177,41 @@ object CameraController {
       }
       if (!latch.await(10, TimeUnit.SECONDS)) throw IllegalStateException("CAPTURE_TIMEOUT")
       error?.let { throw it }
-      val jpeg = bytes ?: throw IllegalStateException("CAPTURE_EMPTY")
-      val enc = Mat(1, jpeg.size, CvType.CV_8UC1); enc.put(0, 0, jpeg); jpeg.fill(0)
-      val img = Imgcodecs.imdecode(enc, Imgcodecs.IMREAD_COLOR); enc.release()
-      try {
-        val result = getReader(context).read(img)
-        if (result.method != "aruco-4-point" && result.method != "marker-homography") {
-          throw IllegalStateException("NOT_ALIGNED:${result.method}")
-        }
-        return result.evidence.toString()
-      } finally { img.release() }
+      return readEncoded(context, bytes ?: throw IllegalStateException("CAPTURE_EMPTY"))
     } finally {
       capturing = false
       // unbindAll must run on the main thread
       if (stopRequested) ContextCompat.getMainExecutor(context).execute { unbind() }
     }
   }
+
+  /**
+   * Decodes an encoded image (camera JPEG or a file the teacher picked), reads it and releases everything.
+   * The bytes are overwritten with zeros as soon as they are decoded; nothing is written anywhere.
+   * Images larger than [MAX_SIDE] px are scaled down first (bounds memory for full-resolution photos).
+   */
+  fun readEncoded(context: Context, encoded: ByteArray): String {
+    ensureOpenCv()
+    val enc = Mat(1, encoded.size, CvType.CV_8UC1); enc.put(0, 0, encoded); encoded.fill(0)
+    var img = Imgcodecs.imdecode(enc, Imgcodecs.IMREAD_COLOR); enc.release()
+    if (img.empty()) { img.release(); throw IllegalStateException("IMAGE_UNREADABLE") }
+    try {
+      val longest = maxOf(img.cols(), img.rows())
+      if (longest > MAX_SIDE) {
+        val scaled = Mat()
+        val f = MAX_SIDE.toDouble() / longest
+        Imgproc.resize(img, scaled, org.opencv.core.Size(img.cols() * f, img.rows() * f), 0.0, 0.0, Imgproc.INTER_AREA)
+        img.release(); img = scaled
+      }
+      val result = getReader(context).read(img)
+      if (result.method != "aruco-4-point" && result.method != "marker-homography") {
+        throw IllegalStateException("NOT_ALIGNED:${result.method}")
+      }
+      return result.evidence.toString()
+    } finally { img.release() }
+  }
+
+  private const val MAX_SIDE = 4200
 
   private fun getReader(context: Context): SheetReader {
     reader?.let { return it }

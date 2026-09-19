@@ -75,6 +75,18 @@ const TEACHER = '00000000-0000-4000-8000-00000000c0de';
     expect(second).toEqual({ kind: 'ok', inserted: 0, updated: 1 });
   });
 
+  it('parses every read endpoint the screens use', async () => {
+    const [tests, classes, bank, classA, assignA, subs] = await Promise.all([
+      api.listTests(), api.listClasses(), api.searchTasks({}), api.classAnalytics(CLASS), api.assignmentAnalytics(ASSIGNMENT),
+      api.listSubmissions({ classId: CLASS, assignmentId: ASSIGNMENT }),
+    ]);
+    for (const r of [tests, classes, bank, classA, assignA, subs]) expect(r).toEqual(expect.objectContaining({ ok: true }));
+    expect(tests.ok && tests.value.some((t) => t.testId === ASSIGNMENT)).toBe(true);
+    expect(subs.ok && subs.value.length).toBeGreaterThan(0);
+    const pdf = await api.blankPdfTarget(ASSIGNMENT, 1);
+    expect(pdf.url).toContain('/blank.pdf?variant=1');
+  });
+
   it('rejects a malformed request as final (4xx), not retryable', async () => {
     const gateway = new HttpGateway(client);
     const bad = { assignmentId: ASSIGNMENT, classId: CLASS, syncedAt: 'not-a-date', submission: {} as never };

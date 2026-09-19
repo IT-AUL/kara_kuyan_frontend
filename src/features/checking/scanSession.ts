@@ -1,14 +1,18 @@
 import { useSyncExternalStore } from 'react';
 
-import { newUuid, ocrEngine, offlineBundles, syncEngine, syncScheduler } from '@/composition';
-import { demoStudents } from '@/demo/demo-data';
-import { demoGradeForPercent, scorePercent } from '@/domain/assessment/grading';
+import { newUuid, ocrEngine, syncEngine, syncScheduler } from '@/composition';
+import { ensureBundle, knownBundles, loadBundleCatalog, rosterResource } from '@/data/hub';
+import { session as appSession } from '@/data/session';
+import { gradeForPercent, scorePercent } from '@/domain/assessment/grading';
+import type { OfflineBundle } from '@/domain/scan/bundle';
+import { parseQrSignature } from '@/domain/scan/bundle';
 import type { Override, SheetOutcome } from '@/domain/scan/evaluate';
 import { evaluateSheet, scoreOutcome } from '@/domain/scan/evaluate';
 import { buildSubmission } from '@/domain/sync/payload';
 import { matchStudent } from '@/domain/roster/match';
 import type { Student } from '@/domain/assessment/model';
-import type { AlignmentState, OcrSession } from '@/ports/ocr-engine';
+import { SheetPickCancelled, type AlignmentState, type OcrSession } from '@/ports/ocr-engine';
+import type { SheetEvidence } from '@/domain/ocr/evidence';
 
 export type ScanPhase = 'idle' | 'processing' | 'ready' | 'error';
 
@@ -27,9 +31,6 @@ const initial: State = {
   overrides: {}, captureMs: null,
 };
 
-/** Class id until the roster comes from the backend (slice 3). */
-const DEMO_CLASS_ID = 'cls_7a_2026';
-
 let state: State = initial;
 const listeners = new Set<() => void>();
 let session: OcrSession | null = null;
@@ -39,7 +40,7 @@ async function getSession(): Promise<OcrSession> {
     template: {
       format: 'A4',
       cellSizeMm: { width: 10, height: 10 },
-      questions: offlineBundles[0].variants[0].questions.map((q) => ({
+      questions: (knownBundles()[0]?.variants[0]?.questions ?? []).map((q) => ({
         questionNumber: q.questionNumber, markerId: q.markerId, cellCount: q.expectedCells.length,
       })),
     },
@@ -73,6 +74,55 @@ function rejectionMessage(check: Extract<SheetOutcome['check'], { ok: false }>):
   }
 }
 
+/** Students of the active class as the domain's `Student`; the backend roster has no printed code, so the id stands in. */
+export function currentRoster(variant: number): Student[] {
+  const classId = appSession.getState().activeClassId;
+  const roster = classId ? rosterResource(classId).getState().data : null;
+  return (roster?.students ?? []).map((s) => ({ id: s.studentId, name: s.fullName, code: s.studentId, variant }));
+}
+
+export type ScanResult = 'done' | 'cancelled';
+
+/** Reads a sheet (camera or picked file), then evaluates it against the cached assignment bundles. */
+async function processSheet(read: (session: OcrSession) => Promise<SheetEvidence>, phaseWhileReading: boolean): Promise<ScanResult> {
+  if (state.phase === 'processing') return 'done';
+  set({ phase: phaseWhileReading ? 'processing' : 'idle', error: null, outcome: null, overrides: {}, student: null, studentMatched: false });
+  const started = Date.now();
+  try {
+    const active = await getSession();
+    const evidence = await read(active);
+    const readStarted = Date.now();
+    set({ phase: 'processing' });
+    let catalog: OfflineBundle[] = knownBundles();
+    if (catalog.length === 0) catalog = await loadBundleCatalog();
+    let outcome = evaluateSheet(evidence, catalog);
+    if (!outcome.check.ok && outcome.check.reason === 'unknown-assignment') {
+      // a sheet of an assignment this phone has not cached yet: fetch it once and retry
+      const tid = parseQrSignature(evidence.qrPayload)?.assignmentId;
+      if (tid && (await ensureBundle(tid))) outcome = evaluateSheet(evidence, knownBundles());
+    }
+    if (!outcome.check.ok) {
+      console.log(`[scan] rejected: ${outcome.check.reason} (${outcome.check.detail})`);
+      set({ phase: 'error', error: rejectionMessage(outcome.check) });
+      return 'done';
+    }
+    const roster = currentRoster(outcome.variant);
+    const student = matchStudent(outcome.studentNameText, roster);
+    const captureMs = Date.now() - (phaseWhileReading ? started : readStarted);
+    console.log(`[scan] captured+evaluated in ${captureMs} ms; stages ${JSON.stringify(evidence.stageTimingsMs)}; method ${evidence.method}`);
+    set({ phase: 'ready', outcome, student, studentMatched: student !== null, captureMs });
+    return 'done';
+  } catch (e) {
+    if (e instanceof SheetPickCancelled) {
+      set({ phase: 'idle' });
+      return 'cancelled';
+    }
+    console.log(`[scan] failed: ${String(e)}`);
+    set({ phase: 'error', error: friendly(e) });
+    return 'done';
+  }
+}
+
 export const scanSession = {
   getState: () => state,
   subscribe(listener: () => void) {
@@ -84,26 +134,12 @@ export const scanSession = {
 
   /** Captures the current frame, reads it on the device and evaluates it against the bundle. */
   async run() {
-    if (state.phase === 'processing') return;
-    set({ phase: 'processing', error: null, outcome: null, overrides: {}, student: null, studentMatched: false });
-    const started = Date.now();
-    try {
-      const active = await getSession();
-      const evidence = await active.captureSheet();
-      const outcome = evaluateSheet(evidence, offlineBundles);
-      if (!outcome.check.ok) {
-        console.log(`[scan] rejected: ${outcome.check.reason} (${outcome.check.detail})`);
-        set({ phase: 'error', error: rejectionMessage(outcome.check) });
-        return;
-      }
-      const student = matchStudent(outcome.studentNameText, demoStudents);
-      const captureMs = Date.now() - started;
-      console.log(`[scan] captured+evaluated in ${captureMs} ms; stages ${JSON.stringify(evidence.stageTimingsMs)}; method ${evidence.method}`);
-      set({ phase: 'ready', outcome, student, studentMatched: student !== null, captureMs });
-    } catch (e) {
-      console.log(`[scan] failed: ${String(e)}`);
-      set({ phase: 'error', error: friendly(e) });
-    }
+    await processSheet((active) => active.captureSheet(), true);
+  },
+
+  /** Same as `run`, but the sheet is an image the teacher picks from the phone (never copied, ADR 0007). */
+  runFromFile(): Promise<ScanResult> {
+    return processSheet((active) => active.readSheetFromDevice(), false);
   },
 
   async watchAlignment(listener: (state: AlignmentState) => void): Promise<() => void> {
@@ -111,7 +147,7 @@ export const scanSession = {
   },
 
   selectStudent(id: string) {
-    set({ student: demoStudents.find((s) => s.id === id) ?? null, studentMatched: false });
+    set({ student: currentRoster(state.outcome?.variant ?? 1).find((s) => s.id === id) ?? null, studentMatched: false });
   },
 
   override(taskNumber: number, verdict: Override) {
@@ -123,16 +159,22 @@ export const scanSession = {
     const { outcome, student, overrides } = state;
     if (!outcome || !student) return;
     const { score, maxScore } = scoreOutcome(outcome, overrides);
+    const { profile, activeClassId } = appSession.getState();
+    if (!profile || !activeClassId) {
+      set({ error: 'Выберите класс, прежде чем сохранять результат.' });
+      return;
+    }
+    const classId = activeClassId;
     const uuid = newUuid();
     const now = Date.now();
     await syncEngine.enqueue({
       uuid,
       assignmentId: outcome.assignmentId,
-      classId: DEMO_CLASS_ID,
+      classId,
       savedAt: now,
       payload: buildSubmission({
         uuid, outcome, overrides, student, checkedAt: new Date(now),
-        grade: demoGradeForPercent(scorePercent(score, maxScore)),
+        grade: gradeForPercent(scorePercent(score, maxScore), profile.gradingScale),
       }),
     });
     set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null });

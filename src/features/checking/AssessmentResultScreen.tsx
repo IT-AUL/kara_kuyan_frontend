@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { demoGradeForPercent, scorePercent } from '@/domain/assessment/grading';
+import { session } from '@/data/session';
+import { defaultGradeScale, gradeForPercent, scorePercent } from '@/domain/assessment/grading';
 import type { AssessmentTask } from '@/domain/assessment/model';
 import { effectiveStatus, scoreOutcome } from '@/domain/scan/evaluate';
 import { Button, Card, Screen, ScreenHeader, SectionHeader, StatusPill } from '@/design-system';
@@ -54,7 +55,7 @@ export function AssessmentResultScreen() {
       />
 
       <ResultSummaryCard
-        grade={demoGradeForPercent(percent)}
+        grade={gradeForPercent(percent, session.getState().profile?.gradingScale ?? defaultGradeScale)}
         maxScore={maxScore}
         percent={percent}
         reviewLeft={reviewLeft}

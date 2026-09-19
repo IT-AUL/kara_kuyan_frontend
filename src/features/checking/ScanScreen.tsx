@@ -54,6 +54,14 @@ export function ScanScreen() {
     router.push('/processing');
   }, [router]);
 
+  const importFile = useCallback(async () => {
+    if (triggered.current) return;
+    triggered.current = true;
+    const result = await scanSession.runFromFile();
+    if (result === 'cancelled') triggered.current = false;
+    else router.push('/processing');
+  }, [router]);
+
   useEffect(() => {
     if (!focused || permission !== 'granted') return;
     let unsubscribe: (() => void) | undefined;
@@ -79,7 +87,12 @@ export function ScanScreen() {
 
   return (
     <Screen
-      footer={<Button disabled={permission !== 'granted'} icon="check" onPress={capture} title="Снять вручную" />}
+      footer={
+        <View style={styles.footer}>
+          <Button disabled={permission !== 'granted'} icon="check" onPress={capture} title="Снять вручную" />
+          <Button icon="download" onPress={() => void importFile()} title="Загрузить лист из файла" variant="secondary" />
+        </View>
+      }
     >
       <ScreenHeader
         eyebrow="Сканирование"
@@ -116,6 +129,7 @@ export function ScanScreen() {
 
 const styles = StyleSheet.create({
   denied: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: spacing.lg },
+  footer: { gap: spacing.sm },
   frame: {
     aspectRatio: 0.75,
     backgroundColor: colors.scanBackdrop,
