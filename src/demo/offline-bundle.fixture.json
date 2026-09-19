@@ -1,0 +1,375 @@
+{
+  "assignment_id": "TAT-2026-Q1",
+  "title": "Татар теле. 7 сыйныф. Исем килешләре",
+  "total_variants": 1,
+  "variants": [
+    {
+      "variant_id": 1,
+      "qr_signature": "{\"tid\":\"TAT-2026-Q1\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+      "template_geometry": {
+        "format": "A4",
+        "corner_aruco_dict": "DICT_4X4_50",
+        "corner_aruco_ids": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "cell_dimensions_mm": {
+          "width": 10.0,
+          "height": 10.0
+        }
+      },
+      "questions": [
+        {
+          "question_number": 1,
+          "marker_id": 11,
+          "prompt": "Куегыз сүзне юнәлеш килешендә: китап →",
+          "topic_tag": "case_dative",
+          "topic_name_tt": "Юнәлеш килеше",
+          "cell_count": 8,
+          "expected_answer": "КИТАПКА",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "К"
+            },
+            {
+              "index": 1,
+              "char": "И"
+            },
+            {
+              "index": 2,
+              "char": "Т"
+            },
+            {
+              "index": 3,
+              "char": "А"
+            },
+            {
+              "index": 4,
+              "char": "П"
+            },
+            {
+              "index": 5,
+              "char": "К"
+            },
+            {
+              "index": 6,
+              "char": "А"
+            },
+            {
+              "index": 7,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        },
+        {
+          "question_number": 2,
+          "marker_id": 12,
+          "prompt": "Куегыз сүзне чыгыш килешендә: өстәл →",
+          "topic_tag": "case_ablative",
+          "topic_name_tt": "Чыгыш килеше",
+          "cell_count": 9,
+          "expected_answer": "ӨСТӘЛДӘН",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "Ө"
+            },
+            {
+              "index": 1,
+              "char": "С"
+            },
+            {
+              "index": 2,
+              "char": "Т"
+            },
+            {
+              "index": 3,
+              "char": "Ә"
+            },
+            {
+              "index": 4,
+              "char": "Л"
+            },
+            {
+              "index": 5,
+              "char": "Д"
+            },
+            {
+              "index": 6,
+              "char": "Ә"
+            },
+            {
+              "index": 7,
+              "char": "Н"
+            },
+            {
+              "index": 8,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        },
+        {
+          "question_number": 3,
+          "marker_id": 13,
+          "prompt": "Сүзгә күплек сан кушымчасын ялгагыз: дус →",
+          "topic_tag": "plural_affixes",
+          "topic_name_tt": "Күплек сан",
+          "cell_count": 7,
+          "expected_answer": "ДУСЛАР",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "Д"
+            },
+            {
+              "index": 1,
+              "char": "У"
+            },
+            {
+              "index": 2,
+              "char": "С"
+            },
+            {
+              "index": 3,
+              "char": "Л"
+            },
+            {
+              "index": 4,
+              "char": "А"
+            },
+            {
+              "index": 5,
+              "char": "Р"
+            },
+            {
+              "index": 6,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        },
+        {
+          "question_number": 4,
+          "marker_id": 14,
+          "prompt": "Куегыз сүзне урын-вакыт килешендә: мәктәп →",
+          "topic_tag": "case_locative",
+          "topic_name_tt": "Урын-вакыт килеше",
+          "cell_count": 9,
+          "expected_answer": "МӘКТӘПТӘ",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "М"
+            },
+            {
+              "index": 1,
+              "char": "Ә"
+            },
+            {
+              "index": 2,
+              "char": "К"
+            },
+            {
+              "index": 3,
+              "char": "Т"
+            },
+            {
+              "index": 4,
+              "char": "Ә"
+            },
+            {
+              "index": 5,
+              "char": "П"
+            },
+            {
+              "index": 6,
+              "char": "Т"
+            },
+            {
+              "index": 7,
+              "char": "Ә"
+            },
+            {
+              "index": 8,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        },
+        {
+          "question_number": 5,
+          "marker_id": 15,
+          "prompt": "Тартым кушымчасын өстәгез (минем): китап →",
+          "topic_tag": "possessive",
+          "topic_name_tt": "Тартым кушымчалары",
+          "cell_count": 8,
+          "expected_answer": "КИТАБЫМ",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "К"
+            },
+            {
+              "index": 1,
+              "char": "И"
+            },
+            {
+              "index": 2,
+              "char": "Т"
+            },
+            {
+              "index": 3,
+              "char": "А"
+            },
+            {
+              "index": 4,
+              "char": "Б"
+            },
+            {
+              "index": 5,
+              "char": "Ы"
+            },
+            {
+              "index": 6,
+              "char": "М"
+            },
+            {
+              "index": 7,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        },
+        {
+          "question_number": 6,
+          "marker_id": 16,
+          "prompt": "Куегыз сүзне юнәлеш килешендә: өй →",
+          "topic_tag": "case_dative",
+          "topic_name_tt": "Юнәлеш килеше",
+          "cell_count": 5,
+          "expected_answer": "ӨЙГӘ",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "Ө"
+            },
+            {
+              "index": 1,
+              "char": "Й"
+            },
+            {
+              "index": 2,
+              "char": "Г"
+            },
+            {
+              "index": 3,
+              "char": "Ә"
+            },
+            {
+              "index": 4,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        },
+        {
+          "question_number": 7,
+          "marker_id": 17,
+          "prompt": "Сүзгә күплек сан кушымчасын ялгагыз: бала →",
+          "topic_tag": "plural_affixes",
+          "topic_name_tt": "Күплек сан",
+          "cell_count": 8,
+          "expected_answer": "БАЛАЛАР",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "Б"
+            },
+            {
+              "index": 1,
+              "char": "А"
+            },
+            {
+              "index": 2,
+              "char": "Л"
+            },
+            {
+              "index": 3,
+              "char": "А"
+            },
+            {
+              "index": 4,
+              "char": "Л"
+            },
+            {
+              "index": 5,
+              "char": "А"
+            },
+            {
+              "index": 6,
+              "char": "Р"
+            },
+            {
+              "index": 7,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        },
+        {
+          "question_number": 8,
+          "marker_id": 18,
+          "prompt": "Куегыз сүзне чыгыш килешендә: урман →",
+          "topic_tag": "case_ablative",
+          "topic_name_tt": "Чыгыш килеше",
+          "cell_count": 9,
+          "expected_answer": "УРМАННАН",
+          "expected_cells": [
+            {
+              "index": 0,
+              "char": "У"
+            },
+            {
+              "index": 1,
+              "char": "Р"
+            },
+            {
+              "index": 2,
+              "char": "М"
+            },
+            {
+              "index": 3,
+              "char": "А"
+            },
+            {
+              "index": 4,
+              "char": "Н"
+            },
+            {
+              "index": 5,
+              "char": "Н"
+            },
+            {
+              "index": 6,
+              "char": "А"
+            },
+            {
+              "index": 7,
+              "char": "Н"
+            },
+            {
+              "index": 8,
+              "char": " ",
+              "is_empty_allowed": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

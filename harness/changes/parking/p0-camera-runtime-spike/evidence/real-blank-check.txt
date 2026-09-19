@@ -1,0 +1,7 @@
+clean 300dpi: rows 4 x cells [8, 8, 8, 8], QR {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":4}, false non-empty cells 0/48 (name '', rows ['', '', '', ''])
+degraded seed 1: rows 4 x cells [8, 8, 8, 8], QR {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":4}, false non-empty cells 1/48 (name 'Г', rows ['', '', '', ''])
+degraded seed 2: rows 4 x cells [8, 8, 8, 8], QR {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":4}, false non-empty cells 0/48 (name '', rows ['', '', '', ''])
+degraded seed 3: rows 4 x cells [8, 8, 8, 8], QR {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":4}, false non-empty cells 0/48 (name '', rows ['', '', '', ''])
+degraded seed 4: rows 4 x cells [8, 8, 8, 8], QR {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":4}, false non-empty cells 0/48 (name '', rows ['', '', '', ''])
+degraded seed 5: rows 4 x cells [8, 8, 8, 8], QR {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":4}, false non-empty cells 0/48 (name '', rows ['', '', '', ''])
+degraded seed 6: rows 4 x cells [8, 8, 8, 8], QR {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":4}, false non-empty cells 0/48 (name '', rows ['', '', '', ''])

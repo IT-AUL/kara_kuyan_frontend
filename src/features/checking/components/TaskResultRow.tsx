@@ -7,6 +7,7 @@ import { colors, radius, spacing } from '@/design-system/tokens';
 const statusLabel: Record<ReviewStatus, string> = {
   correct: 'Верно',
   error: 'Ошибка',
+  missing: 'Не выполнено',
   pending: 'Ожидает',
   review: 'На проверку',
 };
@@ -14,6 +15,7 @@ const statusLabel: Record<ReviewStatus, string> = {
 const statusTone = {
   correct: 'success',
   error: 'error',
+  missing: 'neutral',
   pending: 'neutral',
   review: 'warning',
 } as const;
@@ -21,10 +23,11 @@ const statusTone = {
 type TaskResultRowProps = {
   task: AssessmentTask;
   reviewed?: boolean;
+  overridden?: 'accept' | 'reject';
   isLast?: boolean;
 };
 
-export function TaskResultRow({ task, reviewed = false, isLast = false }: TaskResultRowProps) {
+export function TaskResultRow({ task, reviewed = false, overridden, isLast = false }: TaskResultRowProps) {
   const resolvedReview = reviewed && task.status === 'review';
   return (
     <View style={[styles.row, !isLast && styles.divider]}>
@@ -44,7 +47,12 @@ export function TaskResultRow({ task, reviewed = false, isLast = false }: TaskRe
           </Text>
         </View>
       </View>
-      {resolvedReview ? (
+      {overridden ? (
+        <StatusPill
+          label={overridden === 'accept' ? 'Засчитано' : 'Не засчитано'}
+          tone={overridden === 'accept' ? 'success' : 'error'}
+        />
+      ) : resolvedReview ? (
         <StatusPill label="Проверено" tone="success" />
       ) : (
         <StatusPill label={statusLabel[task.status]} tone={statusTone[task.status]} />

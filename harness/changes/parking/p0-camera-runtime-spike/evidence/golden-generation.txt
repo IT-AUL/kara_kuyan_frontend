@@ -1,0 +1,3 @@
+fp32: accuracy on synthetic cells, observed order 1.000, guide order 0.026 (117 cells)
+int8: accuracy on synthetic cells, observed order 1.000, guide order 0.026 (117 cells)
+FP32 vs INT8 argmax agreement: 1.000

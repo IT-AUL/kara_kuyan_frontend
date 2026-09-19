@@ -14,6 +14,10 @@ routes → features/application → domain
 - **ports/** — interfaces the application layer calls (submission store, bundle store, OCR engine, clock, connectivity).
 - **adapters/** — concrete implementations of ports: expo-sqlite/Drizzle, backend API client, native OCR bridge, SecureStore, file/share utilities. Wired in at one app composition root.
 
+## Actual structure (2026-09-19)
+
+`app/` routes; `src/features/{home,checking,assignments,classes,analytics,ocr-lab}`; `src/domain/{assessment,ocr,scan,roster}`; `src/ports/ocr-engine.ts`; `src/adapters/ocr-native` (implements the port, native camera view); `src/composition.ts` (the single composition root); `src/demo` (fixtures: demo data, offline bundle catalog); `src/design-system`; `modules/ocr-native` (Kotlin: CameraX, OpenCV, ONNX Runtime). Still missing: SQLite/outbox adapters and a backend API adapter.
+
 ## Planned directories (at bootstrap)
 
 ```

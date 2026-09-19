@@ -1,12 +1,17 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { demoSheet } from '@/demo/demo-data';
+import type { Student } from '@/domain/assessment/model';
 import { AppIcon, Card, StatusPill, textStyles } from '@/design-system';
 import { colors, radius, spacing } from '@/design-system/tokens';
 
-export function StudentIdentityCard() {
-  const { student } = demoSheet;
+type StudentIdentityCardProps = {
+  student: Student | null;
+  matched: boolean;
+  nameText: string;
+  variant: number;
+};
 
+export function StudentIdentityCard({ student, matched, nameText, variant }: StudentIdentityCardProps) {
   return (
     <Card style={styles.card}>
       <View style={styles.identity}>
@@ -15,14 +20,19 @@ export function StudentIdentityCard() {
         </View>
         <View style={styles.copy}>
           <Text selectable style={textStyles.title}>
-            {student.name}
+            {student ? student.name : 'Ученик не определён'}
           </Text>
           <Text style={textStyles.bodySmall}>
-            {demoSheet.student.code} · Вариант {student.variant}
+            {student ? `${student.code} · ` : ''}Вариант {variant}
           </Text>
         </View>
       </View>
-      <StatusPill label="Ученик определён по QR" tone="success" />
+      {student ? (
+        <StatusPill label={matched ? 'Определён по имени на листе' : 'Выбран вручную'} tone={matched ? 'success' : 'neutral'} />
+      ) : (
+        <StatusPill label="Выберите ученика ниже" tone="warning" />
+      )}
+      {nameText ? <Text style={textStyles.caption}>На листе прочитано: {nameText}</Text> : null}
     </Card>
   );
 }
@@ -36,16 +46,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 64,
   },
-  card: {
-    gap: spacing.lg,
-  },
-  copy: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  identity: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
+  card: { gap: spacing.lg },
+  copy: { flex: 1, gap: spacing.xxs },
+  identity: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
 });

@@ -1,6 +1,18 @@
 # Quality Gates
 
-No application commands exist yet — every runnable command below is **TBD at bootstrap**. Gates define what must be true; the commands are filled in when the app is scaffolded.
+Gates define what must be true. Status on 2026-09-19 (items still marked "TBD at bootstrap" below are not set up yet):
+
+| Gate | State | Evidence / command |
+|---|---|---|
+| Static (lint, types, unit tests, deps, doctor) | ✅ passing | `pnpm run lint`, `pnpm run typecheck`, `pnpm test --runInBand` (26 tests), `pnpm run check-deps`, `pnpm run doctor` (21/21) |
+| Native build | ✅ | `cd android && ANDROID_HOME=~/Library/Android/sdk ./gradlew :app:installDebug` (BUILD SUCCESSFUL) |
+| OCR parity / model | ✅ | `harness/changes/parking/p0-camera-runtime-spike/evidence/device-selftest.md` |
+| Device performance | ✅ inference; ⚠️ end to end has 1 sample (1725 ms tap→result) | `evidence/benchmark.md`, `scan-check-flow/evidence/live-scan.md` |
+| Privacy (zero-photo) | ⚠️ files, gallery, logs clean; **network capture not done** | `scan-check-flow/evidence/live-scan.md` |
+| UI / accessibility | ⚠️ 48 dp and labels checked earlier; TalkBack on the real flow pending | `android-device-polish` |
+| E2E (Maestro), Storybook | ⏳ not set up | — |
+| Contract lint | ⚠️ live spec passes `openapi-spec-validator`; Redocly not run | `docs/contracts/contract-gaps.md` |
+
 
 ## 1. Docs / contracts
 

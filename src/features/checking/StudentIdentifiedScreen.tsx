@@ -1,18 +1,21 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { demoAssessment, demoSheet } from '@/demo/demo-data';
-import { Button, Card, Screen, ScreenHeader, StatusPill, textStyles } from '@/design-system';
-import { spacing } from '@/design-system/tokens';
+import { demoAssessment, demoStudents } from '@/demo/demo-data';
+import { AppIcon, Button, Card, Screen, ScreenHeader, SectionHeader, textStyles } from '@/design-system';
+import { colors, radius, spacing, touchTarget } from '@/design-system/tokens';
 import { StudentIdentityCard } from './components/StudentIdentityCard';
+import { scanSession, useScanSession } from './scanSession';
 
 export function StudentIdentifiedScreen() {
   const router = useRouter();
+  const { outcome, student, studentMatched } = useScanSession();
 
   return (
     <Screen
       footer={
         <Button
+          disabled={!student || !outcome}
           icon="arrowRight"
           onPress={() => router.push('/assessment-result')}
           title="Показать результат"
@@ -26,7 +29,12 @@ export function StudentIdentifiedScreen() {
         title="Лист распознан"
       />
 
-      <StudentIdentityCard />
+      <StudentIdentityCard
+        matched={studentMatched}
+        nameText={outcome?.studentNameText ?? ''}
+        student={student}
+        variant={outcome?.variant ?? 1}
+      />
 
       <Card style={styles.meta}>
         <View style={styles.row}>
@@ -36,35 +44,42 @@ export function StudentIdentifiedScreen() {
           </Text>
         </View>
         <View style={styles.row}>
-          <Text style={textStyles.bodySmall}>Класс</Text>
-          <Text style={textStyles.body}>{demoAssessment.className}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={textStyles.bodySmall}>Лист</Text>
-          <Text style={textStyles.body}>{demoSheet.student.code} · 1 из 2</Text>
+          <Text style={textStyles.bodySmall}>Шаблон</Text>
+          <Text style={textStyles.body}>{outcome?.qrRecognised ? 'QR распознан' : 'QR не прочитан'}</Text>
         </View>
       </Card>
 
-      <Card style={styles.fallback} tone="soft">
-        <StatusPill label="Если ученик не тот" tone="warning" />
-        <Text style={textStyles.bodySmall}>
-          Выбор ученика появится после подключения списка класса.
-        </Text>
-      </Card>
+      <View style={styles.section}>
+        <SectionHeader title="Изменить ученика" />
+        <Card style={styles.roster}>
+          {demoStudents.map((s) => (
+            <Pressable
+              accessibilityRole="button"
+              key={s.id}
+              onPress={() => scanSession.selectStudent(s.id)}
+              style={styles.rosterRow}
+            >
+              <Text style={textStyles.body}>{s.name}</Text>
+              {student?.id === s.id ? <AppIcon color={colors.primary} name="check" size={20} /> : null}
+            </Pressable>
+          ))}
+        </Card>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  fallback: {
-    gap: spacing.sm,
-  },
-  meta: {
-    gap: spacing.sm,
-  },
-  row: {
+  meta: { gap: spacing.sm },
+  roster: { gap: 0, paddingVertical: spacing.xxs },
+  row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  rosterRow: {
     alignItems: 'center',
+    borderRadius: radius.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    minHeight: touchTarget,
+    paddingHorizontal: spacing.xs,
   },
+  section: { gap: spacing.sm },
 });

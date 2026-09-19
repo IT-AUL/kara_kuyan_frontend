@@ -1,93 +1,51 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 
-import {
-  Button,
-  Card,
-  ProgressBar,
-  Screen,
-  ScreenHeader,
-  StatusPill,
-  textStyles,
-} from '@/design-system';
+import { Button, Card, Screen, ScreenHeader, StatusPill, textStyles } from '@/design-system';
 import { colors, spacing } from '@/design-system/tokens';
-
-const steps = [
-  'ArUco-маркеры найдены',
-  'Лист выровнен к шаблону A4',
-  'QR расшифрован',
-  '8 ячеек обработаны локально',
-] as const;
+import { scanSession, useScanSession } from './scanSession';
 
 export function ProcessingScreen() {
   const router = useRouter();
+  const { phase, error } = useScanSession();
+
+  useEffect(() => {
+    if (phase === 'ready') router.replace('/student-identified');
+  }, [phase, router]);
+
+  const retry = () => {
+    scanSession.reset();
+    router.back();
+  };
 
   return (
-    <Screen
-      footer={
-        <Button
-          icon="arrowRight"
-          onPress={() => router.push('/student-identified')}
-          title="Продолжить"
-        />
-      }
-    >
+    <Screen footer={phase === 'error' ? <Button icon="scan" onPress={retry} title="Сканировать заново" /> : undefined}>
       <ScreenHeader
         eyebrow="Обработка"
-        showBack
-        subtitle="Проверяем разметку и ответы на устройстве."
-        title="Лист обработан"
+        subtitle="Выравниваем лист и читаем ответы на устройстве."
+        title={phase === 'error' ? 'Не получилось' : 'Читаем лист'}
       />
 
       <Card style={styles.hero} tone="raised">
         <StatusPill label="100% локально" tone="success" />
-        <Text selectable style={textStyles.display}>
-          Результат готов
-        </Text>
-        <Text style={textStyles.bodySmall}>
-          Изображение не сохраняется. Дальше используются только распознанные ответы и отметки
-          качества.
-        </Text>
-        <ProgressBar percent={100} />
+        {phase === 'error' ? (
+          <Text selectable style={textStyles.title}>
+            {error}
+          </Text>
+        ) : (
+          <>
+            <ActivityIndicator color={colors.primary} size="large" />
+            <Text style={textStyles.bodySmall}>
+              Изображение не сохраняется. Дальше используются только распознанные ответы.
+            </Text>
+          </>
+        )}
       </Card>
-
-      <Card style={styles.stepsCard}>
-        {steps.map((step, index) => (
-          <View key={step} style={styles.stepRow}>
-            <View style={styles.stepIndex}>
-              <Text style={[textStyles.caption, styles.stepNumber]}>{index + 1}</Text>
-            </View>
-            <Text style={textStyles.body}>{step}</Text>
-          </View>
-        ))}
-      </Card>
-
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    backgroundColor: colors.surfaceRaised,
-    gap: spacing.md,
-  },
-  stepIndex: {
-    alignItems: 'center',
-    backgroundColor: colors.primarySoft,
-    borderRadius: 16,
-    height: 32,
-    justifyContent: 'center',
-    width: 32,
-  },
-  stepNumber: {
-    color: colors.primary,
-  },
-  stepRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  stepsCard: {
-    gap: spacing.sm,
-  },
+  hero: { backgroundColor: colors.surfaceRaised, gap: spacing.md },
 });

@@ -1,4 +1,4 @@
-export type ReviewStatus = 'correct' | 'review' | 'error' | 'pending';
+export type ReviewStatus = 'correct' | 'review' | 'error' | 'pending' | 'missing';
 
 export type Teacher = {
   id: string;

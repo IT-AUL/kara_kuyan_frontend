@@ -1,6 +1,8 @@
 # ADR 0005: ONNX Runtime first, benchmark-driven
 
-**Status:** Proposed (benchmark pending)
+**Status:** Accepted for the inference lane (2026-09-19, CPU benchmark on SM-S928B); camera choice is a separate decision
+
+**Evidence:** `harness/changes/active/p0-camera-runtime-spike/evidence/benchmark.md` — for one 72-cell sheet, FP32 + XNNPACK with 6 threads ≈ 110 ms warm median (p95 ≤ 128 ms); supplied dynamic INT8 on CPU best ≈ 148 ms (4 threads), slower above 4 threads; model + Kotlin preprocessing ≈ 140 ms of the 3 s budget. So FP32 + XNNPACK is the default lane; dynamic INT8 gives no benefit, and QNN/NPU, calibrated static INT8 and ExecuTorch are not needed unless the end-to-end measurement (camera, geometry, QR) misses the budget.
 
 ## Context
 

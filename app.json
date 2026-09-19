@@ -2,6 +2,8 @@
   "expo": {
     "name": "Кара Куян",
     "slug": "kara-kuyan",
+    "description": "Проверка рукописных работ по татарскому языку: сканируйте, оценивайте и видите, что повторить с классом. Фото не сохраняются.",
+    "primaryColor": "#25E38A",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,21 +11,33 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0B0F0D",
     "ios": {
+      "bundleIdentifier": "com.karakuyan.app",
       "supportsTablet": false
     },
     "android": {
       "package": "com.karakuyan.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0B0F0D",
+        "backgroundColor": "#25E38A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": true
+      "predictiveBackGestureEnabled": true,
+      "allowBackup": false,
+      "softwareKeyboardLayoutMode": "resize",
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Кара Куян",
+      "themeColor": "#0B0F0D",
+      "backgroundColor": "#0B0F0D",
+      "shortName": "Кара Куян"
     },
     "plugins": [
       "expo-router",
@@ -32,9 +46,12 @@
         {
           "backgroundColor": "#0B0F0D",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 200,
+          "resizeMode": "contain"
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

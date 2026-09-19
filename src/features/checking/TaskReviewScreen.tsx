@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { demoReviewTask } from '@/demo/demo-data';
 import {
   Button,
   Card,
@@ -11,6 +10,7 @@ import {
   textStyles,
 } from '@/design-system';
 import { colors, fontFamilies, radius, spacing } from '@/design-system/tokens';
+import { scanSession, useScanSession } from './scanSession';
 
 function CharacterCells({ expected, recognized }: { expected: string; recognized: string }) {
   const expectedChars = Array.from(expected);
@@ -48,34 +48,44 @@ function CharacterCells({ expected, recognized }: { expected: string; recognized
 
 export function TaskReviewScreen() {
   const router = useRouter();
+  const { outcome, overrides } = useScanSession();
+
+  const flagged = outcome?.tasks.filter((t) => t.status === 'review') ?? [];
+  const current = flagged.find((t) => !overrides[t.number]);
+  const position = flagged.filter((t) => overrides[t.number]).length + 1;
+
+  const decide = (verdict: 'accept' | 'reject') => {
+    if (!current) return;
+    scanSession.override(current.number, verdict);
+    if (flagged.filter((t) => !overrides[t.number]).length <= 1) router.replace('/assessment-result');
+  };
+
+  if (!current) {
+    return (
+      <Screen footer={<Button icon="check" onPress={() => router.replace('/assessment-result')} title="К результату" />}>
+        <ScreenHeader eyebrow="Проверка ответа" title="Всё проверено" subtitle="Отмеченных ответов больше нет." />
+      </Screen>
+    );
+  }
+
+  const expectedChars = Array.from(current.expected);
+  const recognizedChars = Array.from(current.recognized);
+  const differing = expectedChars.filter((ch, i) => ch !== recognizedChars[i]).length;
 
   return (
     <Screen
       footer={
         <View style={styles.actions}>
-          <Button
-            icon="check"
-            onPress={() =>
-              router.replace({ pathname: '/assessment-result', params: { reviewed: '1' } })
-            }
-            title="Засчитать ответ"
-          />
-          <Button
-            icon="close"
-            onPress={() =>
-              router.replace({ pathname: '/assessment-result', params: { reviewed: '1' } })
-            }
-            title="Не засчитывать"
-            variant="secondary"
-          />
+          <Button icon="check" onPress={() => decide('accept')} title="Засчитать ответ" />
+          <Button icon="close" onPress={() => decide('reject')} title="Не засчитывать" variant="secondary" />
         </View>
       }
     >
       <ScreenHeader
         eyebrow="Проверка ответа"
         showBack
-        subtitle="1 из 1 отмеченного ответа"
-        title={`Задание ${demoReviewTask.number}`}
+        subtitle={`${position} из ${flagged.length} отмеченных ответов`}
+        title={`Задание ${current.number}`}
       />
 
       <Card style={styles.reviewCard}>
@@ -84,15 +94,18 @@ export function TaskReviewScreen() {
           <Text style={textStyles.caption}>Решение принимает учитель</Text>
         </View>
         <Text selectable style={textStyles.title}>
-          {demoReviewTask.prompt}
+          {current.prompt}
         </Text>
-        <CharacterCells expected={demoReviewTask.expected} recognized={demoReviewTask.recognized} />
+        <CharacterCells expected={current.expected} recognized={current.recognized} />
       </Card>
 
       <Card tone="soft">
         <Text style={textStyles.bodySmall}>
-          Отличается одна буква окончания: <Text style={styles.expected}>Д</Text> вместо{' '}
-          <Text style={styles.recognized}>Т</Text>. Это типичная ошибка чыгыш килеше.
+          {differing > 0
+            ? `Отличается букв: ${differing}. Сравните написанное с правильным ответом.`
+            : recognizedChars.length > expectedChars.length
+              ? 'После ответа есть лишний знак — возможно, помарка. Подтвердите или не засчитывайте.'
+              : 'Буквы совпадают, но распознавание неуверенное — подтвердите ответ.'}
         </Text>
       </Card>
     </Screen>

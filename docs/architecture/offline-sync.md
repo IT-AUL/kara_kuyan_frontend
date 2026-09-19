@@ -1,5 +1,9 @@
 # Offline Sync
 
+## Implementation (2026-09-19, change `durable-outbox`)
+
+`src/domain/sync/outbox.ts` (pure state machine, backoff 5 s × 2ⁿ capped at 15 min, ±20% jitter, 8 attempts), `src/domain/sync/payload.ts` (submission JSON; cell statuses as the backend `checker.py`), `src/features/checking/sync/syncEngine.ts` (one request per submission, persists `syncing` before sending, recovery at start), `src/adapters/sqlite/*` (expo-sqlite + Drizzle, atomic `saveWithOutbox`), `src/adapters/sync/{fake-gateway,http-gateway,scheduler}.ts`, wired in `src/composition.ts`. The HTTP gateway is used only when `EXPO_PUBLIC_SYNC_URL` is set; otherwise a fake in-memory backend is used. Device evidence: `harness/changes/active/durable-outbox/evidence/device-outbox.md`. No connectivity listener yet (triggers: save, start/foreground, timer, manual retry).
+
 ## Ownership
 
 - **expo-sqlite is the durable source of truth** for assessments, submissions, review state, and the outbox. TanStack Query handles remote server state only and is never the unsynced outbox.
@@ -25,6 +29,8 @@ pending → syncing → synced
 - Backoff is capped; the demo batch (~25 sheets, ~35 KB) is small, so retries are cheap.
 
 ## Open semantics — backend decisions, not client inventions
+
+> Current server code (commit 796601e; `docs/contracts/ocr-server-pipeline-reference.md`): `batch-sync` upserts by global `client_submission_uuid`, last write wins, all-or-nothing request, `POST /submissions` always inserts. This is implementation behaviour, not a documented contract — confirm before relying on it.
 
 - **`client_submission_uuid` idempotency:** whether re-POSTing the same UUID upserts, conflicts, or duplicates is a **backend contract question** (tracked in `docs/contracts/contract-gaps.md`). The client guarantees a stable UUID per submission; dedup semantics must be confirmed.
 - **Re-checked sheets:** if a teacher re-checks a worksheet offline, whether the update is a new submission, a revision of the same UUID, or an ordered update is **backend-defined**. Recorded as an open item.

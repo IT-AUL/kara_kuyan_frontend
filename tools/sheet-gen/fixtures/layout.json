@@ -1,0 +1,184 @@
+{
+  "fixture_layout_assumption": true,
+  "units": "mm, origin top-left, y down",
+  "page": {
+    "format": "A4",
+    "width": 210.0,
+    "height": 297.0
+  },
+  "aruco": {
+    "dictionary": "DICT_4X4_50"
+  },
+  "corner_markers": [
+    {
+      "corner": "tl",
+      "id": 0,
+      "x": 6.0,
+      "y": 6.0,
+      "size": 14.0
+    },
+    {
+      "corner": "tr",
+      "id": 1,
+      "x": 190.0,
+      "y": 6.0,
+      "size": 14.0
+    },
+    {
+      "corner": "br",
+      "id": 3,
+      "x": 190.0,
+      "y": 277.0,
+      "size": 14.0
+    },
+    {
+      "corner": "bl",
+      "id": 2,
+      "x": 6.0,
+      "y": 277.0,
+      "size": 14.0
+    }
+  ],
+  "qr": {
+    "x": 23.0,
+    "y": 6.0,
+    "size": 18.0
+  },
+  "name_field": {
+    "x": 47.0,
+    "y": 21.7,
+    "cell": 9.0,
+    "count": 16
+  },
+  "cell_size": 10.0,
+  "questions": [
+    {
+      "question_number": 1,
+      "marker_id": 11,
+      "prompt_y": 39.0,
+      "marker": {
+        "x": 6.0,
+        "y": 42.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 47.5,
+        "pitch": 10.0,
+        "count": 8
+      }
+    },
+    {
+      "question_number": 2,
+      "marker_id": 12,
+      "prompt_y": 67.0,
+      "marker": {
+        "x": 6.0,
+        "y": 70.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 75.5,
+        "pitch": 10.0,
+        "count": 9
+      }
+    },
+    {
+      "question_number": 3,
+      "marker_id": 13,
+      "prompt_y": 95.0,
+      "marker": {
+        "x": 6.0,
+        "y": 98.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 103.5,
+        "pitch": 10.0,
+        "count": 7
+      }
+    },
+    {
+      "question_number": 4,
+      "marker_id": 14,
+      "prompt_y": 123.0,
+      "marker": {
+        "x": 6.0,
+        "y": 126.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 131.5,
+        "pitch": 10.0,
+        "count": 9
+      }
+    },
+    {
+      "question_number": 5,
+      "marker_id": 15,
+      "prompt_y": 151.0,
+      "marker": {
+        "x": 6.0,
+        "y": 154.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 159.5,
+        "pitch": 10.0,
+        "count": 8
+      }
+    },
+    {
+      "question_number": 6,
+      "marker_id": 16,
+      "prompt_y": 179.0,
+      "marker": {
+        "x": 6.0,
+        "y": 182.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 187.5,
+        "pitch": 10.0,
+        "count": 5
+      }
+    },
+    {
+      "question_number": 7,
+      "marker_id": 17,
+      "prompt_y": 207.0,
+      "marker": {
+        "x": 6.0,
+        "y": 210.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 215.5,
+        "pitch": 10.0,
+        "count": 8
+      }
+    },
+    {
+      "question_number": 8,
+      "marker_id": 18,
+      "prompt_y": 235.0,
+      "marker": {
+        "x": 6.0,
+        "y": 238.0,
+        "size": 11.0
+      },
+      "cells": {
+        "x": 22.0,
+        "y": 243.5,
+        "pitch": 10.0,
+        "count": 9
+      }
+    }
+  ]
+}

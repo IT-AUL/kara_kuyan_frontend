@@ -1,0 +1,3 @@
+pipeline                                       fp32   int8  mean top-1 p
+older guide (trim 4%, square pad)             1.000  1.000         0.997
+authors' source (classify_cell)               1.000  1.000         0.992

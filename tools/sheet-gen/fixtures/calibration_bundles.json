@@ -1,0 +1,3350 @@
+{
+ "layout": {
+  "fixture_layout_assumption": true,
+  "units": "mm, origin top-left, y down",
+  "page": {
+   "format": "A4",
+   "width": 210.0,
+   "height": 297.0
+  },
+  "aruco": {
+   "dictionary": "DICT_4X4_50"
+  },
+  "corner_markers": [
+   {
+    "corner": "tl",
+    "id": 0,
+    "x": 6.0,
+    "y": 6.0,
+    "size": 14.0
+   },
+   {
+    "corner": "tr",
+    "id": 1,
+    "x": 190.0,
+    "y": 6.0,
+    "size": 14.0
+   },
+   {
+    "corner": "br",
+    "id": 3,
+    "x": 190.0,
+    "y": 277.0,
+    "size": 14.0
+   },
+   {
+    "corner": "bl",
+    "id": 2,
+    "x": 6.0,
+    "y": 277.0,
+    "size": 14.0
+   }
+  ],
+  "qr": {
+   "x": 23.0,
+   "y": 6.0,
+   "size": 18.0
+  },
+  "name_field": {
+   "x": 47.0,
+   "y": 21.7,
+   "cell": 9.0,
+   "count": 16
+  },
+  "cell_size": 10.0,
+  "questions": [
+   {
+    "question_number": 1,
+    "marker_id": 11,
+    "prompt_y": 39.0,
+    "marker": {
+     "x": 6.0,
+     "y": 42.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 47.5,
+     "pitch": 10.0,
+     "count": 5
+    }
+   },
+   {
+    "question_number": 2,
+    "marker_id": 12,
+    "prompt_y": 67.0,
+    "marker": {
+     "x": 6.0,
+     "y": 70.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 75.5,
+     "pitch": 10.0,
+     "count": 5
+    }
+   },
+   {
+    "question_number": 3,
+    "marker_id": 13,
+    "prompt_y": 95.0,
+    "marker": {
+     "x": 6.0,
+     "y": 98.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 103.5,
+     "pitch": 10.0,
+     "count": 6
+    }
+   },
+   {
+    "question_number": 4,
+    "marker_id": 14,
+    "prompt_y": 123.0,
+    "marker": {
+     "x": 6.0,
+     "y": 126.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 131.5,
+     "pitch": 10.0,
+     "count": 6
+    }
+   },
+   {
+    "question_number": 5,
+    "marker_id": 15,
+    "prompt_y": 151.0,
+    "marker": {
+     "x": 6.0,
+     "y": 154.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 159.5,
+     "pitch": 10.0,
+     "count": 6
+    }
+   },
+   {
+    "question_number": 6,
+    "marker_id": 16,
+    "prompt_y": 179.0,
+    "marker": {
+     "x": 6.0,
+     "y": 182.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 187.5,
+     "pitch": 10.0,
+     "count": 7
+    }
+   },
+   {
+    "question_number": 7,
+    "marker_id": 17,
+    "prompt_y": 207.0,
+    "marker": {
+     "x": 6.0,
+     "y": 210.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 215.5,
+     "pitch": 10.0,
+     "count": 7
+    }
+   },
+   {
+    "question_number": 8,
+    "marker_id": 18,
+    "prompt_y": 235.0,
+    "marker": {
+     "x": 6.0,
+     "y": 238.0,
+     "size": 11.0
+    },
+    "cells": {
+     "x": 22.0,
+     "y": 243.5,
+     "pitch": 10.0,
+     "count": 8
+    }
+   }
+  ]
+ },
+ "bundles": [
+  {
+   "assignment_id": "TAT-CAL-01",
+   "title": "Калибровка почерка №1",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-01\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ЁЖ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 3,
+       "expected_answer": "ЁЖ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ё"
+        },
+        {
+         "index": 1,
+         "char": "Ж"
+        },
+        {
+         "index": 2,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ЪЬЫЭ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ЪЬЫЭ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ъ"
+        },
+        {
+         "index": 1,
+         "char": "Ь"
+        },
+        {
+         "index": 2,
+         "char": "Ы"
+        },
+        {
+         "index": 3,
+         "char": "Э"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ЮГАРЫ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЮГАРЫ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ю"
+        },
+        {
+         "index": 1,
+         "char": "Г"
+        },
+        {
+         "index": 2,
+         "char": "А"
+        },
+        {
+         "index": 3,
+         "char": "Р"
+        },
+        {
+         "index": 4,
+         "char": "Ы"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ЦИФЕР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЦИФЕР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ц"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "Ф"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "Р"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: СЕМЬЯ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "СЕМЬЯ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "С"
+        },
+        {
+         "index": 1,
+         "char": "Е"
+        },
+        {
+         "index": 2,
+         "char": "М"
+        },
+        {
+         "index": 3,
+         "char": "Ь"
+        },
+        {
+         "index": 4,
+         "char": "Я"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: ШӘҺӘР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ШӘҺӘР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ш"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "Һ"
+        },
+        {
+         "index": 3,
+         "char": "Ә"
+        },
+        {
+         "index": 4,
+         "char": "Р"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ОБЪЕКТ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ОБЪЕКТ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "О"
+        },
+        {
+         "index": 1,
+         "char": "Б"
+        },
+        {
+         "index": 2,
+         "char": "Ъ"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "К"
+        },
+        {
+         "index": 5,
+         "char": "Т"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: ФИЗИКА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ФИЗИКА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ф"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "З"
+        },
+        {
+         "index": 3,
+         "char": "И"
+        },
+        {
+         "index": 4,
+         "char": "К"
+        },
+        {
+         "index": 5,
+         "char": "А"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-02",
+   "title": "Калибровка почерка №2",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-02\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ЮЛ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 3,
+       "expected_answer": "ЮЛ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ю"
+        },
+        {
+         "index": 1,
+         "char": "Л"
+        },
+        {
+         "index": 2,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ӨЙГӘ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ӨЙГӘ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ө"
+        },
+        {
+         "index": 1,
+         "char": "Й"
+        },
+        {
+         "index": 2,
+         "char": "Г"
+        },
+        {
+         "index": 3,
+         "char": "Ә"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ЁЩЦЪЬ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЁЩЦЪЬ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ё"
+        },
+        {
+         "index": 1,
+         "char": "Щ"
+        },
+        {
+         "index": 2,
+         "char": "Ц"
+        },
+        {
+         "index": 3,
+         "char": "Ъ"
+        },
+        {
+         "index": 4,
+         "char": "Ь"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: МӘҢГЕ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "МӘҢГЕ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "М"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "Ң"
+        },
+        {
+         "index": 3,
+         "char": "Г"
+        },
+        {
+         "index": 4,
+         "char": "Е"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: ВАКЫТ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ВАКЫТ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "В"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "К"
+        },
+        {
+         "index": 3,
+         "char": "Ы"
+        },
+        {
+         "index": 4,
+         "char": "Т"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: ПӘРДӘ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ПӘРДӘ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "П"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Д"
+        },
+        {
+         "index": 4,
+         "char": "Ә"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ДУСЛАР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ДУСЛАР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Д"
+        },
+        {
+         "index": 1,
+         "char": "У"
+        },
+        {
+         "index": 2,
+         "char": "С"
+        },
+        {
+         "index": 3,
+         "char": "Л"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": "Р"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: ГАЗЕТА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ГАЗЕТА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Г"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "З"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "Т"
+        },
+        {
+         "index": 5,
+         "char": "А"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-03",
+   "title": "Калибровка почерка №3",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-03\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ЮК →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 3,
+       "expected_answer": "ЮК",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ю"
+        },
+        {
+         "index": 1,
+         "char": "К"
+        },
+        {
+         "index": 2,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: БОРЩ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "БОРЩ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Б"
+        },
+        {
+         "index": 1,
+         "char": "О"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Щ"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ЭЮЯФХ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЭЮЯФХ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Э"
+        },
+        {
+         "index": 1,
+         "char": "Ю"
+        },
+        {
+         "index": 2,
+         "char": "Я"
+        },
+        {
+         "index": 3,
+         "char": "Ф"
+        },
+        {
+         "index": 4,
+         "char": "Х"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ЧИСТА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЧИСТА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ч"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "С"
+        },
+        {
+         "index": 3,
+         "char": "Т"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: БУЛАҢ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "БУЛАҢ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Б"
+        },
+        {
+         "index": 1,
+         "char": "У"
+        },
+        {
+         "index": 2,
+         "char": "Л"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": "Ң"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: ВАТАН →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ВАТАН",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "В"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "Т"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": "Н"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ҺӘРКЕМ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ҺӘРКЕМ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Һ"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "К"
+        },
+        {
+         "index": 4,
+         "char": "Е"
+        },
+        {
+         "index": 5,
+         "char": "М"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: УЧИТЕЛЬ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "УЧИТЕЛЬ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "У"
+        },
+        {
+         "index": 1,
+         "char": "Ч"
+        },
+        {
+         "index": 2,
+         "char": "И"
+        },
+        {
+         "index": 3,
+         "char": "Т"
+        },
+        {
+         "index": 4,
+         "char": "Е"
+        },
+        {
+         "index": 5,
+         "char": "Л"
+        },
+        {
+         "index": 6,
+         "char": "Ь"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-04",
+   "title": "Калибровка почерка №4",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-04\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ЭШ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 3,
+       "expected_answer": "ЭШ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Э"
+        },
+        {
+         "index": 1,
+         "char": "Ш"
+        },
+        {
+         "index": 2,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ЯХШЫ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ЯХШЫ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Я"
+        },
+        {
+         "index": 1,
+         "char": "Х"
+        },
+        {
+         "index": 2,
+         "char": "Ш"
+        },
+        {
+         "index": 3,
+         "char": "Ы"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ВЖХФЦ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ВЖХФЦ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "В"
+        },
+        {
+         "index": 1,
+         "char": "Ж"
+        },
+        {
+         "index": 2,
+         "char": "Х"
+        },
+        {
+         "index": 3,
+         "char": "Ф"
+        },
+        {
+         "index": 4,
+         "char": "Ц"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ҮРДӘК →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ҮРДӘК",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ү"
+        },
+        {
+         "index": 1,
+         "char": "Р"
+        },
+        {
+         "index": 2,
+         "char": "Д"
+        },
+        {
+         "index": 3,
+         "char": "Ә"
+        },
+        {
+         "index": 4,
+         "char": "К"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: ЩЕТКА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЩЕТКА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Щ"
+        },
+        {
+         "index": 1,
+         "char": "Е"
+        },
+        {
+         "index": 2,
+         "char": "Т"
+        },
+        {
+         "index": 3,
+         "char": "К"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: НҢЖҖХҺ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "НҢЖҖХҺ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Н"
+        },
+        {
+         "index": 1,
+         "char": "Ң"
+        },
+        {
+         "index": 2,
+         "char": "Ж"
+        },
+        {
+         "index": 3,
+         "char": "Җ"
+        },
+        {
+         "index": 4,
+         "char": "Х"
+        },
+        {
+         "index": 5,
+         "char": "Һ"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ЖУРНАЛ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ЖУРНАЛ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ж"
+        },
+        {
+         "index": 1,
+         "char": "У"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Н"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": "Л"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: ЯКШӘМБЕ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "ЯКШӘМБЕ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Я"
+        },
+        {
+         "index": 1,
+         "char": "К"
+        },
+        {
+         "index": 2,
+         "char": "Ш"
+        },
+        {
+         "index": 3,
+         "char": "Ә"
+        },
+        {
+         "index": 4,
+         "char": "М"
+        },
+        {
+         "index": 5,
+         "char": "Б"
+        },
+        {
+         "index": 6,
+         "char": "Е"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-05",
+   "title": "Калибровка почерка №5",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-05\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ЩИ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 3,
+       "expected_answer": "ЩИ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Щ"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ЁЛКА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ЁЛКА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ё"
+        },
+        {
+         "index": 1,
+         "char": "Л"
+        },
+        {
+         "index": 2,
+         "char": "К"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ӨЙРӘН →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ӨЙРӘН",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ө"
+        },
+        {
+         "index": 1,
+         "char": "Й"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Ә"
+        },
+        {
+         "index": 4,
+         "char": "Н"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ҖӨМЛӘ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ҖӨМЛӘ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Җ"
+        },
+        {
+         "index": 1,
+         "char": "Ө"
+        },
+        {
+         "index": 2,
+         "char": "М"
+        },
+        {
+         "index": 3,
+         "char": "Л"
+        },
+        {
+         "index": 4,
+         "char": "Ә"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: КИТАП →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "КИТАП",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "К"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "Т"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": "П"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: АӘОӨУҮ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "АӘОӨУҮ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "А"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "О"
+        },
+        {
+         "index": 3,
+         "char": "Ө"
+        },
+        {
+         "index": 4,
+         "char": "У"
+        },
+        {
+         "index": 5,
+         "char": "Ү"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ҖЫЕЛЫШ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ҖЫЕЛЫШ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Җ"
+        },
+        {
+         "index": 1,
+         "char": "Ы"
+        },
+        {
+         "index": 2,
+         "char": "Е"
+        },
+        {
+         "index": 3,
+         "char": "Л"
+        },
+        {
+         "index": 4,
+         "char": "Ы"
+        },
+        {
+         "index": 5,
+         "char": "Ш"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: ПОДЪЕЗД →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "ПОДЪЕЗД",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "П"
+        },
+        {
+         "index": 1,
+         "char": "О"
+        },
+        {
+         "index": 2,
+         "char": "Д"
+        },
+        {
+         "index": 3,
+         "char": "Ъ"
+        },
+        {
+         "index": 4,
+         "char": "Е"
+        },
+        {
+         "index": 5,
+         "char": "З"
+        },
+        {
+         "index": 6,
+         "char": "Д"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-06",
+   "title": "Калибровка почерка №6",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-06\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: СҮЗ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 4,
+       "expected_answer": "СҮЗ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "С"
+        },
+        {
+         "index": 1,
+         "char": "Ү"
+        },
+        {
+         "index": 2,
+         "char": "З"
+        },
+        {
+         "index": 3,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ӨЧЕН →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ӨЧЕН",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ө"
+        },
+        {
+         "index": 1,
+         "char": "Ч"
+        },
+        {
+         "index": 2,
+         "char": "Е"
+        },
+        {
+         "index": 3,
+         "char": "Н"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ХЖВЗЭ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ХЖВЗЭ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Х"
+        },
+        {
+         "index": 1,
+         "char": "Ж"
+        },
+        {
+         "index": 2,
+         "char": "В"
+        },
+        {
+         "index": 3,
+         "char": "З"
+        },
+        {
+         "index": 4,
+         "char": "Э"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ҺӘЗЕР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ҺӘЗЕР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Һ"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "З"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "Р"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: ЭКРАН →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЭКРАН",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Э"
+        },
+        {
+         "index": 1,
+         "char": "К"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": "Н"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: СҮЗЛӘР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "СҮЗЛӘР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "С"
+        },
+        {
+         "index": 1,
+         "char": "Ү"
+        },
+        {
+         "index": 2,
+         "char": "З"
+        },
+        {
+         "index": 3,
+         "char": "Л"
+        },
+        {
+         "index": 4,
+         "char": "Ә"
+        },
+        {
+         "index": 5,
+         "char": "Р"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ЗИЯРАТ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ЗИЯРАТ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "З"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "Я"
+        },
+        {
+         "index": 3,
+         "char": "Р"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": "Т"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: МАЛЬЧИК →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "МАЛЬЧИК",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "М"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "Л"
+        },
+        {
+         "index": 3,
+         "char": "Ь"
+        },
+        {
+         "index": 4,
+         "char": "Ч"
+        },
+        {
+         "index": 5,
+         "char": "И"
+        },
+        {
+         "index": 6,
+         "char": "К"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-07",
+   "title": "Калибровка почерка №7",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-07\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ҖӘЙ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 4,
+       "expected_answer": "ҖӘЙ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Җ"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "Й"
+        },
+        {
+         "index": 3,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ҮЗЕМ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ҮЗЕМ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ү"
+        },
+        {
+         "index": 1,
+         "char": "З"
+        },
+        {
+         "index": 2,
+         "char": "Е"
+        },
+        {
+         "index": 3,
+         "char": "М"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: БӨТЕН →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "БӨТЕН",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Б"
+        },
+        {
+         "index": 1,
+         "char": "Ө"
+        },
+        {
+         "index": 2,
+         "char": "Т"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "Н"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ЯЙЛАУ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЯЙЛАУ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Я"
+        },
+        {
+         "index": 1,
+         "char": "Й"
+        },
+        {
+         "index": 2,
+         "char": "Л"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": "У"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: КОФТА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "КОФТА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "К"
+        },
+        {
+         "index": 1,
+         "char": "О"
+        },
+        {
+         "index": 2,
+         "char": "Ф"
+        },
+        {
+         "index": 3,
+         "char": "Т"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: ШИГЫРЬ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ШИГЫРЬ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ш"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "Г"
+        },
+        {
+         "index": 3,
+         "char": "Ы"
+        },
+        {
+         "index": 4,
+         "char": "Р"
+        },
+        {
+         "index": 5,
+         "char": "Ь"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ЭЛЕКТР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ЭЛЕКТР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Э"
+        },
+        {
+         "index": 1,
+         "char": "Л"
+        },
+        {
+         "index": 2,
+         "char": "Е"
+        },
+        {
+         "index": 3,
+         "char": "К"
+        },
+        {
+         "index": 4,
+         "char": "Т"
+        },
+        {
+         "index": 5,
+         "char": "Р"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: ОКТЯБРЬ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "ОКТЯБРЬ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "О"
+        },
+        {
+         "index": 1,
+         "char": "К"
+        },
+        {
+         "index": 2,
+         "char": "Т"
+        },
+        {
+         "index": 3,
+         "char": "Я"
+        },
+        {
+         "index": 4,
+         "char": "Б"
+        },
+        {
+         "index": 5,
+         "char": "Р"
+        },
+        {
+         "index": 6,
+         "char": "Ь"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-08",
+   "title": "Калибровка почерка №8",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-08\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ҖИҢҮ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ҖИҢҮ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Җ"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "Ң"
+        },
+        {
+         "index": 3,
+         "char": "Ү"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ҺАВА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ҺАВА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Һ"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "В"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ЯҢГЫР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЯҢГЫР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Я"
+        },
+        {
+         "index": 1,
+         "char": "Ң"
+        },
+        {
+         "index": 2,
+         "char": "Г"
+        },
+        {
+         "index": 3,
+         "char": "Ы"
+        },
+        {
+         "index": 4,
+         "char": "Р"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ЦЕНТР →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЦЕНТР",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ц"
+        },
+        {
+         "index": 1,
+         "char": "Е"
+        },
+        {
+         "index": 2,
+         "char": "Н"
+        },
+        {
+         "index": 3,
+         "char": "Т"
+        },
+        {
+         "index": 4,
+         "char": "Р"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: ЙӨРЕК →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЙӨРЕК",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Й"
+        },
+        {
+         "index": 1,
+         "char": "Ө"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "К"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: СЪЕМКА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "СЪЕМКА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "С"
+        },
+        {
+         "index": 1,
+         "char": "Ъ"
+        },
+        {
+         "index": 2,
+         "char": "Е"
+        },
+        {
+         "index": 3,
+         "char": "М"
+        },
+        {
+         "index": 4,
+         "char": "К"
+        },
+        {
+         "index": 5,
+         "char": "А"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: ҢАРДАН →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ҢАРДАН",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ң"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Д"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": "Н"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: ФАБРИКА →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "ФАБРИКА",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ф"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "Б"
+        },
+        {
+         "index": 3,
+         "char": "Р"
+        },
+        {
+         "index": 4,
+         "char": "И"
+        },
+        {
+         "index": 5,
+         "char": "К"
+        },
+        {
+         "index": 6,
+         "char": "А"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-09",
+   "title": "Калибровка почерка №9",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-09\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ЩШЧЦ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ЩШЧЦ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Щ"
+        },
+        {
+         "index": 1,
+         "char": "Ш"
+        },
+        {
+         "index": 2,
+         "char": "Ч"
+        },
+        {
+         "index": 3,
+         "char": "Ц"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ЫСУЛ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ЫСУЛ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ы"
+        },
+        {
+         "index": 1,
+         "char": "С"
+        },
+        {
+         "index": 2,
+         "char": "У"
+        },
+        {
+         "index": 3,
+         "char": "Л"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ӨСТӘЛ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ӨСТӘЛ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ө"
+        },
+        {
+         "index": 1,
+         "char": "С"
+        },
+        {
+         "index": 2,
+         "char": "Т"
+        },
+        {
+         "index": 3,
+         "char": "Ә"
+        },
+        {
+         "index": 4,
+         "char": "Л"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ЧЫГЫШ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЧЫГЫШ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ч"
+        },
+        {
+         "index": 1,
+         "char": "Ы"
+        },
+        {
+         "index": 2,
+         "char": "Г"
+        },
+        {
+         "index": 3,
+         "char": "Ы"
+        },
+        {
+         "index": 4,
+         "char": "Ш"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: ДӘРЕС →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ДӘРЕС",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Д"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "С"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: ЙОКЛАУ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ЙОКЛАУ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Й"
+        },
+        {
+         "index": 1,
+         "char": "О"
+        },
+        {
+         "index": 2,
+         "char": "К"
+        },
+        {
+         "index": 3,
+         "char": "Л"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": "У"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: МӘКТӘП →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "МӘКТӘП",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "М"
+        },
+        {
+         "index": 1,
+         "char": "Ә"
+        },
+        {
+         "index": 2,
+         "char": "К"
+        },
+        {
+         "index": 3,
+         "char": "Т"
+        },
+        {
+         "index": 4,
+         "char": "Ә"
+        },
+        {
+         "index": 5,
+         "char": "П"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: БЕРЕНЧЕ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "БЕРЕНЧЕ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Б"
+        },
+        {
+         "index": 1,
+         "char": "Е"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "Н"
+        },
+        {
+         "index": 5,
+         "char": "Ч"
+        },
+        {
+         "index": 6,
+         "char": "Е"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "assignment_id": "TAT-CAL-10",
+   "title": "Калибровка почерка №10",
+   "total_variants": 1,
+   "variants": [
+    {
+     "variant_id": 1,
+     "qr_signature": "{\"tid\":\"TAT-CAL-10\",\"var\":1,\"page\":1,\"tot\":1,\"n_q\":8}",
+     "template_geometry": {
+      "format": "A4",
+      "corner_aruco_dict": "DICT_4X4_50",
+      "corner_aruco_ids": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "cell_dimensions_mm": {
+       "width": 10.0,
+       "height": 10.0
+      }
+     },
+     "questions": [
+      {
+       "question_number": 1,
+       "marker_id": 11,
+       "prompt": "Күчереп языгыз: ЯҺУД →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ЯҺУД",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Я"
+        },
+        {
+         "index": 1,
+         "char": "Һ"
+        },
+        {
+         "index": 2,
+         "char": "У"
+        },
+        {
+         "index": 3,
+         "char": "Д"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 2,
+       "marker_id": 12,
+       "prompt": "Күчереп языгыз: ЙОРТ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 5,
+       "expected_answer": "ЙОРТ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Й"
+        },
+        {
+         "index": 1,
+         "char": "О"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "Т"
+        },
+        {
+         "index": 4,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 3,
+       "marker_id": 13,
+       "prompt": "Күчереп языгыз: ҖАВАП →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ҖАВАП",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Җ"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "В"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": "П"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 4,
+       "marker_id": 14,
+       "prompt": "Күчереп языгыз: ЖИРАФ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "ЖИРАФ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Ж"
+        },
+        {
+         "index": 1,
+         "char": "И"
+        },
+        {
+         "index": 2,
+         "char": "Р"
+        },
+        {
+         "index": 3,
+         "char": "А"
+        },
+        {
+         "index": 4,
+         "char": "Ф"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 5,
+       "marker_id": 15,
+       "prompt": "Күчереп языгыз: КӨҢЕЛ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 6,
+       "expected_answer": "КӨҢЕЛ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "К"
+        },
+        {
+         "index": 1,
+         "char": "Ө"
+        },
+        {
+         "index": 2,
+         "char": "Ң"
+        },
+        {
+         "index": 3,
+         "char": "Е"
+        },
+        {
+         "index": 4,
+         "char": "Л"
+        },
+        {
+         "index": 5,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 6,
+       "marker_id": 16,
+       "prompt": "Күчереп языгыз: ПОЧМАК →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "ПОЧМАК",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "П"
+        },
+        {
+         "index": 1,
+         "char": "О"
+        },
+        {
+         "index": 2,
+         "char": "Ч"
+        },
+        {
+         "index": 3,
+         "char": "М"
+        },
+        {
+         "index": 4,
+         "char": "А"
+        },
+        {
+         "index": 5,
+         "char": "К"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 7,
+       "marker_id": 17,
+       "prompt": "Күчереп языгыз: РАХМӘТ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 7,
+       "expected_answer": "РАХМӘТ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "Р"
+        },
+        {
+         "index": 1,
+         "char": "А"
+        },
+        {
+         "index": 2,
+         "char": "Х"
+        },
+        {
+         "index": 3,
+         "char": "М"
+        },
+        {
+         "index": 4,
+         "char": "Ә"
+        },
+        {
+         "index": 5,
+         "char": "Т"
+        },
+        {
+         "index": 6,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      },
+      {
+       "question_number": 8,
+       "marker_id": 18,
+       "prompt": "Күчереп языгыз: УКЫТУЧЫ →",
+       "topic_tag": "copy",
+       "topic_name_tt": "Күчереп язу",
+       "cell_count": 8,
+       "expected_answer": "УКЫТУЧЫ",
+       "expected_cells": [
+        {
+         "index": 0,
+         "char": "У"
+        },
+        {
+         "index": 1,
+         "char": "К"
+        },
+        {
+         "index": 2,
+         "char": "Ы"
+        },
+        {
+         "index": 3,
+         "char": "Т"
+        },
+        {
+         "index": 4,
+         "char": "У"
+        },
+        {
+         "index": 5,
+         "char": "Ч"
+        },
+        {
+         "index": 6,
+         "char": "Ы"
+        },
+        {
+         "index": 7,
+         "char": " ",
+         "is_empty_allowed": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

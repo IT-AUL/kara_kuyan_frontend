@@ -58,13 +58,15 @@ calibration:                        # UNRESOLVED — no dataset/split/matrix sup
 
 - `finetuned_uppercase39.pth`: 3,312,616 B, SHA-256 `b55481b407751ece8237c77bbfa6270cc3a271d73d04b3ef58a4c25ee01361d3`.
 
-### Class order (verified, index → char)
+### Class order (measured on the models, index → char)
+
+The order previously recorded here came from the integration guide (`Ә` at 38) and is **wrong for the supplied models**: on 117 synthetic printed cells it scores 2.6%, versus 100% for the order below (FP32 and INT8; evidence in `harness/changes/active/p0-camera-runtime-spike/evidence/class-order-finding.md`). Confirmed by the authors' pipeline description (`docs/contracts/ocr-server-pipeline-reference.md`); still to verify on handwriting.
 
 ```
-0 А   1 Б   2 В   3 Г   4 Д   5 Е   6 Ё   7 Ж   8 Җ   9 З
-10 И  11 Й  12 К  13 Л  14 М  15 Н  16 Ң  17 О  18 Ө  19 П
-20 Р  21 С  22 Т  23 У  24 Ү  25 Ф  26 Х  27 Һ  28 Ц  29 Ч
-30 Ш  31 Щ  32 Ъ  33 Ы  34 Ь  35 Э  36 Ю  37 Я  38 Ә
+0 А   1 Ә   2 Б   3 В   4 Г   5 Д   6 Е   7 Ё   8 Ж   9 Җ
+10 З  11 И  12 Й  13 К  14 Л  15 М  16 Н  17 Ң  18 О  19 Ө
+20 П  21 Р  22 С  23 Т  24 У  25 Ү  26 Ф  27 Х  28 Һ  29 Ц
+30 Ч  31 Ш  32 Щ  33 Ъ  34 Ы  35 Ь  36 Э  37 Ю  38 Я
 ```
 
 This order is a versioned contract — app/native code must consume it from the manifest, never hardcode a second copy.
@@ -72,6 +74,8 @@ This order is a versioned contract — app/native code must consume it from the 
 ### Preprocessing contract (verified from integration guide)
 
 Trim 3–5% border → aspect-preserving square pad (edge-median background) → grayscale, percentile-2/98 contrast stretch → `INTER_AREA` 64×64 → normalize `[-1,1]`, paper ≈ +1, ink ≈ −1.
+
+- On-disk check 2026-09-19 (`shasum -a 256`, `ls -l`): FP32, INT8 and `.pth` files in `~/Downloads/iMe Desktop/` match the sizes and SHA-256 values above. Graph inputs/outputs still to be confirmed by loading the models (spike task 2).
 
 ## Unresolved
 

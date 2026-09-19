@@ -1,0 +1,56 @@
+{
+  "manifest_version": 1,
+  "note": "Spike manifest. Class order measured on the models and confirmed by the authors' registry (Ә at index 1). See docs/contracts/model-manifest.md.",
+  "template_version": "tatar-ocr-a4-v1",
+  "alphabet": [
+    "А",
+    "Ә",
+    "Б",
+    "В",
+    "Г",
+    "Д",
+    "Е",
+    "Ё",
+    "Ж",
+    "Җ",
+    "З",
+    "И",
+    "Й",
+    "К",
+    "Л",
+    "М",
+    "Н",
+    "Ң",
+    "О",
+    "Ө",
+    "П",
+    "Р",
+    "С",
+    "Т",
+    "У",
+    "Ү",
+    "Ф",
+    "Х",
+    "Һ",
+    "Ц",
+    "Ч",
+    "Ш",
+    "Щ",
+    "Ъ",
+    "Ы",
+    "Ь",
+    "Э",
+    "Ю",
+    "Я"
+  ],
+  "models": {
+    "fp32": {
+      "file": "tatar_ocr_uppercase39_fp32.onnx",
+      "sha256": "fafcbf65c2953a45ad5001764831ee7cd6c099d609dccfcc53ee5bc8866e322c"
+    },
+    "int8": {
+      "file": "tatar_ocr_uppercase39_int8.onnx",
+      "sha256": "0dbbf6304d6e2053c8b6f4c9a978dbb426d4a5dd3c08b34dd883aa237cd68de9"
+    }
+  }
+}

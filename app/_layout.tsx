@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { syncScheduler } from '@/composition';
 import { colors } from '@/design-system';
 
 void SplashScreen.preventAutoHideAsync();
@@ -23,6 +24,11 @@ export default function RootLayout() {
     Onest_600SemiBold,
     Onest_700Bold,
   });
+
+  useEffect(() => {
+    void syncScheduler.start();
+    return () => syncScheduler.stop();
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {

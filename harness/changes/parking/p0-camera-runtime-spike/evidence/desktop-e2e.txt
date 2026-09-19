@@ -1,0 +1,33 @@
+--- clean 300dpi seed=None
+   name field read: 'ГАЛИЕВАМИРР'  QR: {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":8}
+   Q1 marker 11 cells 8: expected КИТАПКА    read КИТАПКА
+   Q2 marker 12 cells 9: expected ӨСТӘЛДӘН   read ӨСТӘЛТӘН   <-- differs
+   Q3 marker 13 cells 7: expected ДУСЛАР     read ДУСЛАР
+   Q4 marker 14 cells 9: expected МӘКТӘПТӘ   read МӘКТӘПТӘ
+   Q5 marker 15 cells 8: expected КИТАБЫМ    read КИТАБЫМ
+   Q6 marker 16 cells 5: expected ӨЙГӘ       read ӨЙГӘ
+   Q7 marker 17 cells 8: expected БАЛАЛАР    read БАЛАЛАР
+   Q8 marker 18 cells 9: expected УРМАННАН   read УРМАННАН
+   rows found 8/8, answers exact 7/8; ms (desktop): rectify 90, locate cells 38, preprocess+infer 122
+--- degraded photo-like seed=1
+   name field read: 'ГАЛИЕВАМИРР'  QR: {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":8}
+   Q1 marker 11 cells 8: expected КИТАПКА    read КИТАПКА
+   Q2 marker 12 cells 9: expected ӨСТӘЛДӘН   read ӨСТӘЛТӘН   <-- differs
+   Q3 marker 13 cells 7: expected ДУСЛАР     read ДУСЛАР
+   Q4 marker 14 cells 9: expected МӘКТӘПТӘ   read МӘКТӘПТӘ
+   Q5 marker 15 cells 8: expected КИТАБЫМ    read КИТАБЫМ
+   Q6 marker 16 cells 5: expected ӨЙГӘ       read ӨЙГӘ
+   Q7 marker 17 cells 8: expected БАЛАЛАР    read БАЛАЛАР
+   Q8 marker 18 cells 9: expected УРМАННАН   read УРМАННАН
+   rows found 8/8, answers exact 7/8; ms (desktop): rectify 126, locate cells 32, preprocess+infer 116
+--- degraded photo-like seed=2
+   name field read: 'ГАЛИЕВАМИРР'  QR: {"tid":"TAT-2026-Q1","var":1,"page":1,"tot":1,"n_q":8}
+   Q1 marker 11 cells 8: expected КИТАПКА    read КИТАПКА
+   Q2 marker 12 cells 9: expected ӨСТӘЛДӘН   read ӨСТӘЛТӘН   <-- differs
+   Q3 marker 13 cells 7: expected ДУСЛАР     read ДУСЛАР
+   Q4 marker 14 cells 9: expected МӘКТӘПТӘ   read МӘКТӘПТӘ
+   Q5 marker 15 cells 8: expected КИТАБЫМ    read КИТАБЫМ
+   Q6 marker 16 cells 5: expected ӨЙГӘ       read ӨЙГӘ
+   Q7 marker 17 cells 8: expected БАЛАЛАР    read БАЛАЛАР
+   Q8 marker 18 cells 9: expected УРМАННАН   read УРМАННАН
+   rows found 8/8, answers exact 7/8; ms (desktop): rectify 112, locate cells 32, preprocess+infer 189

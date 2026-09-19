@@ -27,7 +27,7 @@ Camera images never leave the teacher's phone. Rectification, QR decoding, cell 
 
 ## Status
 
-**Planning foundation; application not scaffolded.** There is no app code, build, or test suite yet.
+**Working prototype.** The Expo app (custom dev client, Android) scans a printed worksheet with the phone camera, recognises the answers on the device (nothing image-derived is stored or sent), shows per-task results, lets the teacher review uncertain answers, and saves in memory. Backend sync, persistence, constructor/print and analytics wiring are not done yet. Current state: `docs/STATUS.md`.
 
 ## Documentation
 

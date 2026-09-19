@@ -3,14 +3,14 @@
 ## Project
 - Kara Kuyan: Android-first Expo app for Tatar language teachers; scans paper worksheets, grades, and surfaces class insight.
 - Zero-photo: camera frames are processed in native memory and discarded; they are never persisted or transmitted.
-- Expo SDK 57 static UI prototype exists; camera, OCR, backend, persistence, and sync are not implemented yet.
+- Expo SDK 57 app: the scan → result → review → save flow runs on a real camera with on-device OCR (in-memory save); backend client, persistence and sync are not implemented yet. See `docs/STATUS.md`.
 
 ## Context Loading
 - Order: `AGENTS.md` → `docs/ECL.md` → active change in `harness/changes/active/` (if present) → `docs/STATUS.md` → task-specific docs.
 - Read `docs/adr/` before touching anything an ADR covers.
 
 ## Current State
-- Expo custom-development-client scaffold and approved static demo UI exist; see `docs/STATUS.md`.
+- Expo custom-development client, approved demo UI, native OCR module (`modules/ocr-native`) and the real scan flow exist; see `docs/STATUS.md`.
 - Package manager: `pnpm`. Core gates: `pnpm run lint`, `pnpm run typecheck`, `pnpm test --runInBand`, `pnpm run check-deps`, `pnpm run doctor`.
 
 ## Boundaries

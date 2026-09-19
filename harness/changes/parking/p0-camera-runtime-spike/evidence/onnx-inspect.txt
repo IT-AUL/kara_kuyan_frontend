@@ -1,0 +1,20 @@
+== tatar_ocr_uppercase39_fp32.onnx
+size 3292452 sha256 fafcbf65c2953a45ad5001764831ee7cd6c099d609dccfcc53ee5bc8866e322c
+ir_version 8 opset [('ai.onnx', 17)]
+producer pytorch 2.4.1
+input input FLOAT ['batch_size', 1, 64, 64]
+output logits FLOAT ['batch_size', 39]
+nodes 20 {'Conv': 6, 'Relu': 7, 'MaxPool': 2, 'AveragePool': 1, 'Flatten': 1, 'Gemm': 2, 'BatchNormalization': 1}
+batch 1 -> (1, 39) float32
+batch 8 -> (8, 39) float32
+batch 64 -> (64, 39) float32
+== tatar_ocr_uppercase39_int8.onnx
+size 844010 sha256 0dbbf6304d6e2053c8b6f4c9a978dbb426d4a5dd3c08b34dd883aa237cd68de9
+ir_version 8 opset [('ai.onnx', 17)]
+producer onnx.quantize 0.1.0
+input input FLOAT ['batch_size', 1, 64, 64]
+output logits FLOAT ['batch_size', 39]
+nodes 66 {'DynamicQuantizeLinear': 8, 'Reshape': 6, 'Mul': 16, 'ConvInteger': 6, 'Cast': 8, 'Add': 8, 'Relu': 7, 'MaxPool': 2, 'AveragePool': 1, 'Flatten': 1, 'MatMulInteger': 2, 'BatchNormalization': 1}
+batch 1 -> (1, 39) float32
+batch 8 -> (8, 39) float32
+batch 64 -> (64, 39) float32
