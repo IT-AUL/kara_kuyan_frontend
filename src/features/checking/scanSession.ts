@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
-import { newUuid, ocrEngine, syncEngine, syncScheduler } from '@/composition';
-import { ensureBundle, knownBundles, loadBundleCatalog, rosterResource } from '@/data/hub';
+import { backendApi, newUuid, ocrEngine, syncEngine, syncScheduler } from '@/composition';
+import { classAssignmentsResource, ensureBundle, knownBundles, loadBundleCatalog, rosterResource } from '@/data/hub';
 import { session as appSession } from '@/data/session';
 import { gradeForPercent, scorePercent } from '@/domain/assessment/grading';
 import type { OfflineBundle } from '@/domain/scan/bundle';
@@ -132,6 +132,23 @@ async function processSheet(read: (session: OcrSession) => Promise<SheetEvidence
   }
 }
 
+const assigning = new Set<string>();
+
+/**
+ * The first saved sheet of a test in a class assigns the test to that class on the server, so its per-class progress
+ * exists. Only when the class list is already known and lacks the test; a failure changes nothing (the sheet is saved).
+ */
+function ensureAssigned(classId: string, assignmentId: string): void {
+  const known = classAssignmentsResource(classId).getState().data;
+  const key = `${classId}|${assignmentId}`;
+  if (!backendApi || !known || known.some((a) => a.assignmentId === assignmentId) || assigning.has(key)) return;
+  assigning.add(key);
+  void backendApi
+    .assignToClass(classId, assignmentId)
+    .then(() => classAssignmentsResource(classId).refresh())
+    .finally(() => assigning.delete(key));
+}
+
 export const scanSession = {
   getState: () => state,
   subscribe(listener: () => void) {
@@ -215,6 +232,7 @@ export const scanSession = {
         grade: gradeForPercent(scorePercent(score, maxScore), profile.gradingScale),
       }),
     });
+    ensureAssigned(classId, outcome.assignmentId);
     lastEvidence = null;
     set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null, rejection: null });
     void syncScheduler.trigger();

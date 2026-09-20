@@ -47,6 +47,9 @@ export function TestFormScreen() {
       return;
     }
     bundleResource(result.value.assignmentId).put(result.value);
+    const classId = session.getState().activeClassId;
+    // a new test goes to the class the teacher is working with, so it shows up as assigned with progress
+    if (classId) await backendApi.assignToClass(classId, result.value.assignmentId);
     await testsResource.refresh();
     session.selectAssignment(result.value.assignmentId);
     testDraft.clear();

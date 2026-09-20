@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useActiveContext } from '@/data/context';
+import { backendApi } from '@/composition';
+import { classAssignmentsResource, testsResource } from '@/data/hub';
 import { hiddenTests, useHiddenTests } from '@/data/hiddenTests';
 import { session } from '@/data/session';
 import { useTestOverview } from '@/data/testOverview';
@@ -11,7 +13,7 @@ import { AppIcon, BarChart, Button, Card, EmptyState, MetricTile, Notice, Screen
 import { colors, fontFamilies, hairline, radius, spacing } from '@/design-system/tokens';
 
 import { TaskRow } from './components/TaskRow';
-import { shareBlank } from './print';
+import { shareBlank, shareClassBlanks } from './print';
 
 const TABS = ['Итоги', 'Задания', 'Ученики', 'Бланк'] as const;
 
@@ -32,6 +34,11 @@ export function TestDetailScreen() {
 
   const test = ctx.tests.find((t) => t.testId === id);
   const isCurrent = ctx.assignmentId === id;
+  const serverAssignment = ctx.classAssignments.find((a) => a.assignmentId === id);
+  const assigned = !!serverAssignment || (!!test?.assignedClasses && !!ctx.classId && test.assignedClasses.includes(ctx.classId));
+  const due = serverAssignment?.dueDate ? new Date(serverAssignment.dueDate) : null;
+  const dueText = due && !Number.isNaN(due.getTime()) ? due.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : null;
+  const [assigning, setAssigning] = useState(false);
   const variants = o.bundle?.variants ?? [];
   const variant = variants[Math.min(variantIndex, Math.max(variants.length - 1, 0))];
   const hitsByTask = new Map(o.hits.map((h) => [h.number, h]));
@@ -40,6 +47,20 @@ export function TestDetailScreen() {
   const scan = () => {
     session.selectAssignment(id);
     router.push('/scan');
+  };
+  const assign = async () => {
+    if (!backendApi || !ctx.classId) return;
+    setAssigning(true);
+    const r = await backendApi.assignToClass(ctx.classId, id);
+    if (r.ok) await Promise.all([testsResource.refresh(), classAssignmentsResource(ctx.classId).refresh()]);
+    setAssigning(false);
+    setMessage(r.ok ? null : 'Не удалось назначить тест классу: сервер не принял запрос.');
+  };
+  const printClass = async () => {
+    if (!ctx.classId) return;
+    setMessage('Готовим бланки для класса…');
+    const r = await shareClassBlanks(ctx.classId, id);
+    setMessage(r.ok ? null : `Не удалось получить бланки: ${r.message}`);
   };
   const print = async () => {
     if (!variant) return;
@@ -55,7 +76,15 @@ export function TestDetailScreen() {
       refreshing={o.bundleState.status === 'loading'}
     >
       <ScreenHeader showBack size="compact" titleLines={2} subtitle={test ? `${test.gradeLevel} класс · ${test.questionsCount} заданий` : undefined} title={test?.title ?? o.bundle?.title ?? 'Тест'} />
-      {isCurrent ? <View style={styles.pill}><StatusPill icon="checkCircle" label="Текущий тест" tone="info" /></View> : null}
+      <View style={styles.pills}>
+        {isCurrent ? <StatusPill icon="checkCircle" label="Текущий тест" tone="info" /> : null}
+        {assigned ? <StatusPill icon="classes" label={`Назначен: ${ctx.className}`} tone="neutral" /> : null}
+        {dueText ? <StatusPill icon="time" label={`Срок: ${dueText}`} tone="warning" /> : null}
+        {serverAssignment && ['completed', 'closed', 'archived', 'done', 'finished'].includes(serverAssignment.status.toLowerCase()) ? <StatusPill label="Завершён" tone="neutral" /> : null}
+      </View>
+      {ctx.classId && test?.assignedClasses && !assigned ? (
+        <Button disabled={assigning} icon="classes" onPress={() => void assign()} title={assigning ? 'Назначаем…' : `Назначить классу ${ctx.className}`} variant="secondary" />
+      ) : null}
       {o.offline ? <Notice message="Нет связи: показаны сохранённые данные." /> : null}
 
       <View style={styles.kpis}>
@@ -175,6 +204,8 @@ export function TestDetailScreen() {
               <Text style={textStyles.bodySmall}>На бланке у каждого варианта свой QR-код: по нему приложение узнаёт работу при сканировании.</Text>
               {variants.length > 1 ? <SegmentedTabs activeIndex={variantIndex} onTabChange={setVariantIndex} tabs={variants.map((v) => `Вариант ${v.variantId}`)} /> : null}
               <Button disabled={!variant} icon="print" onPress={() => void print()} title={variant ? `Бланк (PDF), вариант ${variant.variantId}` : 'Бланк'} variant="secondary" />
+              {ctx.classId ? <Button icon="classes" onPress={() => void printClass()} title={`Бланки на весь класс ${ctx.className}`} variant="secondary" /> : null}
+              {ctx.classId ? <Text style={textStyles.caption}>В PDF у каждого ученика свой бланк с подписанным именем.</Text> : null}
             </View>
           </Card>
           {message ? <Notice message={message} tone="info" /> : null}
@@ -205,7 +236,7 @@ const styles = StyleSheet.create({
   kpis: { flexDirection: 'row', gap: spacing.sm },
   list: { paddingHorizontal: 0, paddingVertical: 0 },
   number: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: 15, minWidth: 18 },
-  pill: { alignItems: 'flex-start' },
+  pills: { alignItems: 'flex-start', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   printBox: { gap: spacing.sm, padding: spacing.md },
   score: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: 14, fontVariant: ['tabular-nums'] },
   studentRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, minHeight: 56, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },

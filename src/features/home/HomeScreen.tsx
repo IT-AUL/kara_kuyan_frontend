@@ -14,6 +14,7 @@ import { colors, hairline, radius, spacing } from '@/design-system/tokens';
 
 import { CheckHero } from './components/CheckHero';
 import { InsightCard } from './components/InsightCard';
+import { Shortcuts } from './components/Shortcuts';
 
 function greeting(date = new Date()): string {
   const h = date.getHours();
@@ -130,6 +131,11 @@ export function HomeScreen() {
         </Reveal>
       ) : null}
 
+      {ctx.classId ? (
+        <Reveal index={3}>
+          <Shortcuts studentCount={ctx.progress.studentCount} />
+        </Reveal>
+      ) : null}
     </Screen>
   );
 }

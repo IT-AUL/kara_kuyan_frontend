@@ -11,6 +11,12 @@ import { colors, hairline, radius, spacing } from '@/design-system/tokens';
 
 import { TestCard } from './components/TestCard';
 
+const dueLabel = (iso: string | null): string | undefined => {
+  if (!iso) return undefined;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? undefined : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+};
+
 /**
  * Tests: what the teacher checks now and what the teacher builds. The bank of tasks lives inside the
  * constructor (a task is a part of a test); choosing the current test happens here and on the test page.
@@ -21,15 +27,43 @@ export function AssignmentsScreen() {
   const draft = useTestDraft();
   const hidden = useHiddenTests();
   const [query, setQuery] = useState('');
-  const [showHidden, setShowHidden] = useState(false);
+  const [chosenView, setChosenView] = useState<'class' | 'all' | 'hidden' | null>(null);
 
   const q = query.trim().toLowerCase();
-  const visible = ctx.tests.filter((t) => hidden.includes(t.testId) === showHidden && t.title.toLowerCase().includes(q));
   const current = ctx.tests.find((t) => t.testId === ctx.assignmentId);
   const hiddenCount = ctx.tests.filter((t) => hidden.includes(t.testId)).length;
   const hasDraft = draft.tasks.length > 0 || draft.title.trim().length > 0;
   const open = (id: string) => router.push({ pathname: '/test-detail', params: { id } });
-  const others = visible.filter((t) => t.testId !== ctx.assignmentId || showHidden);
+  const serverByTest = new Map(ctx.classAssignments.map((a) => [a.assignmentId, a]));
+  // the server's per-class list is authoritative; the test list's `assigned_classes` is the fallback
+  const assignedHere = (t: { testId: string; assignedClasses?: string[] }) =>
+    serverByTest.has(t.testId) || (!!ctx.classId && !!t.assignedClasses?.includes(ctx.classId));
+  const notHidden = ctx.tests.filter((t) => !hidden.includes(t.testId));
+  const assignedCount = notHidden.filter(assignedHere).length;
+  // by default show what belongs to the class; everything else (the server's list is shared) is one chip away
+  const view = chosenView === 'hidden' && hiddenCount === 0 ? null : (chosenView ?? (assignedCount > 0 ? 'class' : 'all'));
+  const showHidden = view === 'hidden';
+  const pool = view === 'hidden' ? ctx.tests.filter((t) => hidden.includes(t.testId)) : view === 'class' ? notHidden.filter(assignedHere) : notHidden;
+  const others = pool.filter((t) => (t.testId !== ctx.assignmentId || showHidden) && t.title.toLowerCase().includes(q));
+  /** The current test shows local progress (it includes sheets not yet sent); others show the server's numbers. */
+  const progressFor = (id: string) => {
+    if (id === ctx.assignmentId) return { checked: ctx.progress.checkedCount, total: ctx.progress.studentCount, averagePct: null };
+    const a = serverByTest.get(id);
+    return a ? { checked: a.checked, total: a.totalStudents, averagePct: Math.round(a.averageScorePct) } : undefined;
+  };
+  const card = (t: (typeof others)[number]) => (
+    <TestCard
+      current={t.testId === ctx.assignmentId}
+      gradeLevel={t.gradeLevel}
+      key={t.testId}
+      muted={showHidden}
+      due={dueLabel(serverByTest.get(t.testId)?.dueDate ?? null)}
+      onPress={() => open(t.testId)}
+      progress={progressFor(t.testId)}
+      taskCount={t.questionsCount}
+      title={t.title}
+    />
+  );
 
   return (
     <Screen
@@ -42,7 +76,7 @@ export function AssignmentsScreen() {
 
       {ctx.testsState.offline ? <Notice message="Нет связи: показаны сохранённые тесты." /> : null}
 
-      {current && ctx.classId && !showHidden ? (
+      {current && ctx.classId && view !== 'hidden' ? (
         <Pressable
           accessibilityHint="Открывает страницу теста: итоги, задания, ученики, бланк"
           accessibilityLabel={`${current.title}. Сейчас проверяем. Проверено ${ctx.progress.checkedCount} из ${ctx.progress.studentCount}`}
@@ -62,7 +96,7 @@ export function AssignmentsScreen() {
         </Pressable>
       ) : null}
 
-      {hasDraft && !showHidden ? (
+      {hasDraft && view !== 'hidden' ? (
         <Pressable accessibilityLabel={`Черновик: ${draft.title.trim() || 'без названия'}`} accessibilityRole="button" android_ripple={{ color: 'rgba(244, 248, 245, 0.08)' }} onPress={() => router.push('/test-form')} style={styles.draft}>
           <AppIcon color={colors.warning} name="edit" size={22} />
           <View style={styles.grow}>
@@ -73,12 +107,15 @@ export function AssignmentsScreen() {
         </Pressable>
       ) : null}
 
-      {hiddenCount > 0 ? (
+      {assignedCount > 0 || hiddenCount > 0 ? (
         <Chips
-          items={[{ key: 'hidden', label: `Скрытые · ${hiddenCount}` }]}
-          allLabel="Все тесты"
-          onSelect={(key) => setShowHidden(key === 'hidden')}
-          selected={showHidden ? 'hidden' : null}
+          items={[
+            ...(assignedCount > 0 ? [{ key: 'class', label: `Класса ${ctx.className} · ${assignedCount}` }] : []),
+            { key: 'all', label: `Все · ${notHidden.length}` },
+            ...(hiddenCount > 0 ? [{ key: 'hidden', label: `Скрытые · ${hiddenCount}` }] : []),
+          ]}
+          onSelect={(key) => setChosenView((key as 'class' | 'all' | 'hidden' | null) ?? 'all')}
+          selected={view}
         />
       ) : null}
       {ctx.tests.length > 6 ? <SearchBar onChangeText={setQuery} placeholder="Поиск по названию" value={query} /> : null}
@@ -86,20 +123,10 @@ export function AssignmentsScreen() {
       {ctx.tests.length === 0 ? (
         <EmptyState actionLabel="Создать тест" body="Соберите тест из банка заданий или сгенерируйте: бланк для печати создаст сервер." icon="library" onAction={() => router.push('/test-form')} title="Пока нет тестов" />
       ) : others.length === 0 ? (
-        <Text style={textStyles.bodySmall}>{showHidden ? 'Скрытых тестов нет.' : 'Других тестов нет.'}</Text>
+        <Text style={textStyles.bodySmall}>{showHidden ? 'Скрытых тестов нет.' : view === 'class' ? 'Других тестов у этого класса нет. Откройте «Все», чтобы назначить.' : 'Других тестов нет.'}</Text>
       ) : (
         <View style={styles.list}>
-          {others.map((t) => (
-            <TestCard
-              current={t.testId === ctx.assignmentId}
-              gradeLevel={t.gradeLevel}
-              key={t.testId}
-              muted={showHidden}
-              onPress={() => open(t.testId)}
-              taskCount={t.questionsCount}
-              title={t.title}
-            />
-          ))}
+          {others.map(card)}
         </View>
       )}
     </Screen>

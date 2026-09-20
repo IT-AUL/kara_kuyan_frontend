@@ -10,11 +10,15 @@ type TestCardProps = {
   gradeLevel: number;
   current?: boolean;
   muted?: boolean;
+  /** Progress of the class on this test (server numbers, or local for the current test). */
+  progress?: { checked: number; total: number; averagePct: number | null };
+  /** Human-readable due date, when the assignment has one. */
+  due?: string;
   onPress: () => void;
 };
 
 /** A test in the list: task-count tile, title, grade. The current test is outlined in green. */
-export function TestCard({ title, taskCount, gradeLevel, current = false, muted = false, onPress }: TestCardProps) {
+export function TestCard({ title, taskCount, gradeLevel, current = false, muted = false, progress, due, onPress }: TestCardProps) {
   return (
     <Pressable
       accessibilityLabel={`${title}. ${taskCount} заданий, ${gradeLevel} класс${current ? '. Текущий тест' : ''}`}
@@ -29,7 +33,11 @@ export function TestCard({ title, taskCount, gradeLevel, current = false, muted 
       </View>
       <View style={styles.copy}>
         <Text numberOfLines={2} style={styles.title}>{title}</Text>
-        <Text style={textStyles.caption}>{gradeLevel} класс</Text>
+        <Text style={textStyles.caption}>
+          {gradeLevel} класс
+          {progress ? ` · проверено ${progress.checked} из ${progress.total}${progress.averagePct !== null && progress.checked > 0 ? ` · ${progress.averagePct}%` : ''}` : ''}
+          {due ? ` · до ${due}` : ''}
+        </Text>
       </View>
       {current ? <StatusPill label="Текущий" tone="info" /> : <AppIcon color={colors.textFaint} name="chevronRight" size={20} />}
     </Pressable>

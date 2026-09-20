@@ -2,6 +2,7 @@ import type { ApiResult } from '@/adapters/api/client';
 import type {
   AssignmentAnalytics,
   ClassAnalytics,
+  ClassAssignment,
   ClassRoster,
   ClassSummary,
   ModelManifest,
@@ -43,6 +44,9 @@ export const rosterResource = memo<string, ClassRoster>(
 );
 export const bundleResource = memo<string, OfflineBundle>(
   (id) => new Resource(`bundle:${id}`, () => backendApi?.fetchBundle(id) ?? offline(), kvStore),
+);
+export const classAssignmentsResource = memo<string, ClassAssignment[]>(
+  (classId) => new Resource(`class-assignments:${classId}`, () => backendApi?.listClassAssignments(classId) ?? offline(), kvStore),
 );
 export const classAnalyticsResource = memo<string, ClassAnalytics>(
   (classId) => new Resource(`analytics-class:${classId}`, () => backendApi?.classAnalytics(classId) ?? offline(), kvStore),

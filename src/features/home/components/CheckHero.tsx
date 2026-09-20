@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { studentsText } from '@/domain/format/plural';
 import { AppIcon, Button, GlowLayer, StatusPill, StudentDots, textStyles } from '@/design-system';
 import { withAlpha } from '@/design-system/color';
 import { colors, fontFamilies, fontSizes, hairline, radius, spacing } from '@/design-system/tokens';
@@ -21,6 +22,8 @@ type CheckHeroProps = {
 /** The focal point of Home: what is being checked, how far along, and the one next action. */
 export function CheckHero({ className, assignmentTitle, gradeLevel, checkedCount, studentCount, onScan, onOpenTest }: CheckHeroProps) {
   const done = studentCount > 0 && checkedCount >= studentCount;
+  const started = checkedCount > 0;
+  const status = done ? { label: 'Все работы проверены', tone: 'success' as const, icon: 'checkCircle' as const } : started ? { label: 'Идёт проверка', tone: 'info' as const, icon: 'scan' as const } : { label: 'Ещё не начинали', tone: 'neutral' as const, icon: 'time' as const };
   const subtitle = [className, gradeLevel ? `${gradeLevel} класс` : null].filter(Boolean).join(' · ');
 
   return (
@@ -28,7 +31,7 @@ export function CheckHero({ className, assignmentTitle, gradeLevel, checkedCount
       <GlowLayer color={colors.primary} size={280} style={styles.glow} />
       <View style={styles.topLine} />
 
-      <StatusPill icon={done ? 'checkCircle' : 'scan'} label={done ? 'Все работы проверены' : 'Идёт проверка'} tone={done ? 'success' : 'info'} />
+      <StatusPill icon={status.icon} label={status.label} tone={status.tone} />
 
       <Pressable accessibilityHint="Открывает страницу теста" accessibilityLabel={`${assignmentTitle}. ${subtitle}`} accessibilityRole="button" onPress={onOpenTest} style={styles.titleBlock}>
         <View style={styles.titleRow}>
@@ -40,19 +43,29 @@ export function CheckHero({ className, assignmentTitle, gradeLevel, checkedCount
         <Text style={textStyles.bodySmall}>{subtitle}</Text>
       </Pressable>
 
-      <View accessible accessibilityLabel={`Проверено ${checkedCount} из ${studentCount}`} style={styles.numberRow}>
-        <CountUp style={styles.big} value={checkedCount} />
-        <View style={styles.of}>
-          <Text style={styles.ofText}>из {studentCount}</Text>
-          <Text style={textStyles.caption}>проверено</Text>
+      {started ? (
+        <View accessible accessibilityLabel={`Проверено ${checkedCount} из ${studentCount}`} style={styles.numberRow}>
+          <CountUp style={styles.big} value={checkedCount} />
+          <View style={styles.of}>
+            <Text style={styles.ofText}>из {studentCount}</Text>
+            <Text style={textStyles.caption}>проверено</Text>
+          </View>
         </View>
-      </View>
+      ) : (
+        <Text style={textStyles.body}>
+          {studentCount > 0 ? `Отсканируйте бланки: ${studentsText(studentCount)}. Результаты появятся здесь.` : 'В классе пока нет учеников. Добавьте их во вкладке «Ещё» → «Классы».'}
+        </Text>
+      )}
 
-      <StudentDots checked={checkedCount} total={studentCount} />
+      {studentCount > 0 ? <StudentDots checked={checkedCount} total={studentCount} /> : null}
 
       <View style={styles.cta}>
         <View pointerEvents="none" style={styles.ctaGlow} />
-        <Button icon="scan" onPress={onScan} title="Сканировать лист" />
+        {done ? (
+          <Button icon="analytics" onPress={onOpenTest} title="Открыть итоги" />
+        ) : (
+          <Button icon="scan" onPress={onScan} title={started ? 'Сканировать следующий лист' : 'Сканировать первый лист'} />
+        )}
       </View>
     </View>
   );
@@ -62,9 +75,9 @@ const styles = StyleSheet.create({
   big: {
     color: colors.text,
     fontFamily: fontFamilies.bold,
-    fontSize: 64,
+    fontSize: 48,
     fontVariant: ['tabular-nums'],
-    lineHeight: 70,
+    lineHeight: 54,
     minWidth: 44,
   },
   card: {

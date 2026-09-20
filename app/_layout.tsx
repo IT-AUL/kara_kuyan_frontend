@@ -72,6 +72,7 @@ export default function RootLayout() {
             <Stack.Screen name="task-picker" />
             <Stack.Screen name="task-generate" />
             <Stack.Screen name="task-new" />
+            <Stack.Screen name="task-photo" />
           </Stack.Protected>
           <Stack.Screen name="ocr-lab" />
         </Stack>

@@ -72,6 +72,15 @@ Still open: repo has no licence (permission to reuse needed); accuracy claims co
 
 - **29. Template drift:** the live `blank.pdf` now has 8 mm name cells (was 9 mm); bundle/manifest carry no template version or geometry. The client now finds the name cells from printed lines, but a versioned template (gap 15) is still needed.
 
+## Live spec update 2 (2026-09-20, `openapi-live-2026-09-20.json`, SHA-256 `e7501c5d…`)
+
+- **Added (5 operations, nothing removed or changed):** `GET /assignments` (filters `class_id`, `status`; items carry `assigned_classes`, `total_variants`; response schema untyped in the spec), `POST /classes/{id}/assignments` (assign a test: `assignment_id`, `due_date`, `status`), `GET /classes/{id}/assignments` (per-class list with `total_students`, `checked_submissions_count`, `pending_submissions_count`, `average_score_pct`), `GET /classes/{id}/assignments/{aid}/batch-blanks.pdf` and its alias `GET /assignments/{aid}/batch-blanks.pdf?class_id=`. Verified live: assign → list shows the test with progress (1 student, 1 checked, 100%); batch PDF 200 `application/pdf`.
+- **Answers to our requests:** #2 (assign a test to a class, list with progress) ✅, #11 (batch blanks for the class) ✅, #3 (assignment list) only partly: `GET /assignments` is **not teacher-scoped** (a random UUID and even no header get all 9 tests; `ready-tests` too).
+- **30. Isolation still missing:** `GET /classes` is scoped by teacher, but `GET /classes/{id}/students` and `GET /submissions?class_id=` answer any UUID for someone else's class (checked with a random UUID against the probe class). Same as gap 14, now concrete.
+- **31.** `assigned_classes` items and `GET /assignments` response shape are undocumented (untyped schema); the app parses them defensively. `questions_count` is absent from `/assignments` (only in `ready-tests`), so the app calls both.
+
+- **32. `POST /constructor/scan-task` (photo of a textbook exercise → tasks) is now used by the app** (ADR 0009, consented, teaching material only). Probed with a synthetic image (`save_to_bank=false`): 200, `is_supported`, three sub-tasks with answers, `raw_ocr_text`, `confidence` 0.95. **Answers can be wrong** (МӘКТӘП → «МӘКТӘПКА», should be «МӘКТӘПКӘ»), so the app makes the teacher review each one. Open for the backend owners: how long uploaded images are kept, whether they reach YandexGPT verbatim, and a per-item confidence.
+
 ## Consequence
 
 **Codegen is blocked.** Orval/generated client work may not start until the contract passes lint and the semantic questions above are answered by the backend. Track answers here or in an updated contract revision; do not invent semantics client-side.

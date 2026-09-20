@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import type { RosterStudent, SubmissionRow } from '@/adapters/api/backend';
 import { useSyncState } from '@/data/syncState';
 
-import { assignmentAnalyticsResource, bundleResource, classesResource, rosterResource, submissionsResource, testsResource } from './hub';
+import { assignmentAnalyticsResource, bundleResource, classAssignmentsResource, classesResource, rosterResource, submissionsResource, testsResource } from './hub';
 import { useResource } from './resource';
 import { session, useSession } from './session';
 
@@ -35,6 +35,7 @@ export function useActiveContext() {
   const roster = useResource(classId ? rosterResource(classId) : null);
   const remote = useResource(classId && assignmentId ? submissionsResource(`${classId}|${assignmentId}`) : null);
   const analytics = useResource(assignmentId ? assignmentAnalyticsResource(assignmentId) : null);
+  const classAssignments = useResource(classId ? classAssignmentsResource(classId) : null);
   const { rows: localRows } = useSyncState();
 
   const submissions = useMemo<SubmissionRow[]>(() => {
@@ -77,9 +78,11 @@ export function useActiveContext() {
     submissions,
     submissionsState: remote,
     analytics: analytics.data,
+    /** Server view of the tests assigned to the active class, with per-class progress (empty until loaded). */
+    classAssignments: classAssignments.data ?? [],
     progress,
     refreshAll: async () => {
-      await Promise.all([classes.refresh(), tests.refresh(), roster.refresh(), remote.refresh(), analytics.refresh()]);
+      await Promise.all([classes.refresh(), tests.refresh(), roster.refresh(), remote.refresh(), analytics.refresh(), classAssignments.refresh()]);
     },
   };
 }

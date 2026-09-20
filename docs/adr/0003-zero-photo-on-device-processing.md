@@ -15,3 +15,6 @@ All pixel handling — ArUco rectification, QR decode, cell crops, OCR inference
 - Positive: strongest possible privacy story; no server-side image liability; offline grading by construction.
 - Negative: all CV/OCR work must happen natively (more complex pipeline); no server fallback for hard cases — review queue absorbs uncertainty.
 - Verification: filesystem/network/log evidence gates in `docs/architecture/security-privacy.md` and `docs/delivery/quality-gates.md`.
+
+> **Amendment (2026-09-20):** [ADR 0009](0009-textbook-exercise-photo-import.md) allows one explicit, consented upload of a photo of *teaching material* (textbook exercise) to `POST /constructor/scan-task`. Student sheets are unchanged: they never leave the phone.
+

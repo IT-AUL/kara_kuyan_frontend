@@ -52,7 +52,15 @@
       ],
       "expo-sqlite",
       "expo-secure-store",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Камера нужна, чтобы сфотографировать упражнение из учебника и добавить его в тест. Листы учеников так не снимаются.",
+          "photosPermission": "Доступ к фото нужен, чтобы выбрать снимок упражнения из учебника.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

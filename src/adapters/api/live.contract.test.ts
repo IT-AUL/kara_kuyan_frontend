@@ -86,6 +86,10 @@ const TEACHER = '00000000-0000-4000-8000-00000000c0de';
     const [types, manifest] = await Promise.all([api.taskTypes(), api.modelManifest()]);
     expect(types).toEqual(expect.objectContaining({ ok: true }));
     expect(manifest.ok && manifest.value.alphabet.length).toBe(39);
+    const withMeta = tests.ok ? tests.value.filter((t) => t.assignedClasses !== undefined) : [];
+    expect(withMeta.length).toBeGreaterThan(0);
+    const ca = await api.listClassAssignments(CLASS);
+    expect(ca).toEqual(expect.objectContaining({ ok: true }));
     const pdf = await api.blankPdfTarget(ASSIGNMENT, 1);
     expect(pdf.url).toContain('/blank.pdf?variant=1');
   });
@@ -106,6 +110,16 @@ const TEACHER = '00000000-0000-4000-8000-00000000c0de';
     console.log('LIVE test', test.value.assignmentId, 'questions', test.value.variants[0].questions.length, JSON.stringify(answers));
     expect(test.value.variants[0].questions.length).toBe(ids.length);
     expect(answers).toContain('КИТАП');
+  });
+
+  (process.env.LIVE_WRITE ? it : it.skip)('assigns a test to a class and lists it with progress', async () => {
+    const assigned = await api.assignToClass(CLASS, ASSIGNMENT);
+    expect(assigned).toEqual(expect.objectContaining({ ok: true }));
+    const list = await api.listClassAssignments(CLASS);
+    expect(list.ok && list.value.some((a) => a.assignmentId === ASSIGNMENT)).toBe(true);
+    if (list.ok) console.log('LIVE class assignments', JSON.stringify(list.value.map((a) => [a.assignmentId, a.totalStudents, a.checked, a.pending, a.averageScorePct])));
+    const tests = await api.listTests();
+    expect(tests.ok && tests.value.find((t) => t.testId === ASSIGNMENT)?.assignedClasses).toContain(CLASS);
   });
 
   it('rejects a malformed request as final (4xx), not retryable', async () => {
