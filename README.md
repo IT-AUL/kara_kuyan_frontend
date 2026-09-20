@@ -1,39 +1,67 @@
-# Kara Kuyan
+# Кара Куян · Kara Kuyan
 
-Kara Kuyan is an Android-first mobile companion for Tatar language teachers that turns a phone camera into a fast, private checker for paper-based assessments.
+> Android-приложение для учителей татарского языка: мгновенная проверка бумажных проверочных работ через камеру смартфона, аналитика класса и полная приватность.
 
-Teacher workflow:
+[![Release](https://img.shields.io/github/v/release/IT-AUL/kara_kuyan_frontend?color=25E38A&label=Релиз)](https://github.com/IT-AUL/kara_kuyan_frontend/releases)
+[![Platform](https://img.shields.io/badge/Платформа-Android%207%2B-blue)](https://it-aul.github.io/kara_kuyan_frontend/)
+[![Architecture](https://img.shields.io/badge/Приватность-Zero--Photo-brightgreen)](docs/adr/0003-zero-photo-on-device-processing.md)
+[![Team](https://img.shields.io/badge/Команда-IT--AUL-yellow)](https://it-aul.com/)
 
-> **Prepare → Print → Scan → Review → Grade → Understand → Act**
+---
 
-## Hackathon MVP
+## ⚡ О проекте
 
-- Teacher-only demo with a preconfigured teacher; no authentication screen.
-- Create or pick an assessment, print personalized worksheets, scan completed sheets, review uncertain tasks, save, and see class insight.
-- Works offline in the classroom; results sync when connectivity returns.
+**Кара Куян** автоматизирует рутинную проверку тестов и контрольных по татарскому языку: учитель наводит камеру на стопку работ и за секунды получает проверенный класс с журналом оценок и списком тем для повторения.
 
-## Zero-photo promise
+- **3 секунды на лист** — локальный OCR-движок на базе ONNX распознаёт рукописные ответы на татарском алфавите (`Ә`, `Ө`, `Ү`, `Җ`, `Ң`, `Һ`) прямо на процессоре смартфона.
+- **Zero-Photo (152-ФЗ)** — кадры камеры обрабатываются исключительно в RAM и тут же стираются. Фотографии работ не сохраняются в память телефона и не отправляются на сервера.
+- **Офлайн-первичность** — проверка работает в любом кабинете без Wi-Fi и сотовой связи. Результаты сохраняются в локальный SQLite-аутбокс и синхронизируются при появлении сети.
+- **Аналитика пробелов** — автоматический расчет среднего балла, выявление тем с частыми ошибками и экспорт ведомостей в XLSX/CSV.
+- **Самообновление** — приложение самостоятельно проверяет и скачивает новые релизы из GitHub Releases без Google Play.
 
-Camera images never leave the teacher's phone. Rectification, QR decoding, cell cropping, and OCR inference run on-device in memory; only structured results (letters, statuses, scores) are stored and synced. See `docs/architecture/security-privacy.md`.
+---
 
-## Demo story
+## 📲 Ссылки
 
-1. Open the active assessment.
-2. Scan a personalized worksheet — student and variant are identified automatically.
-3. See the full result: tasks, points, percentage, grade.
-4. Review one uncertain task; the teacher has the final say.
-5. Save and scan the next sheet.
-6. Show class analytics, a teaching recommendation, and gradebook export.
+- 🌐 **[Официальный сайт и скачать APK](https://it-aul.github.io/kara_kuyan_frontend/)**
+- 📦 **[GitHub Releases](https://github.com/IT-AUL/kara_kuyan_frontend/releases)**
+- 🏢 **[IT-AUL](https://it-aul.com/)**
 
-## Status
+---
 
-**Working prototype.** The Expo app (custom dev client, Android) scans a printed worksheet with the phone camera, recognises the answers on the device (nothing image-derived is stored or sent), shows per-task results, lets the teacher review uncertain answers, and saves in memory. Backend sync, persistence, constructor/print and analytics wiring are not done yet. Current state: `docs/STATUS.md`.
+## 🛠 Стек технологий
 
-## Documentation
+| Слой | Технологии |
+|---|---|
+| **App / UI** | React Native, Expo SDK 57, TypeScript, Custom Dev Client |
+| **OCR & Native** | Kotlin, CameraX, ArUco rectification, ONNX Runtime (XNNPACK) |
+| **Данные и синхронизация** | SQLite (Durable Outbox), REST API |
+| **Дистрибуция** | GitHub Actions, ABI split-APKs (`arm64-v8a`, `armeabi-v7a`, `x86_64`, `universal`) |
 
-- `AGENTS.md` — agent operating guide
-- `docs/STATUS.md` — current state and open items
-- `docs/product/product-brief.md` — full product brief
-- `docs/architecture/mobile.md` — mobile architecture
-- `docs/design/design-direction.md` — design direction
-- `docs/delivery/roadmap.md` — delivery plan
+---
+
+## 🚀 Разработка
+
+```bash
+# Установка зависимостей (pnpm 12.4.1)
+pnpm install
+
+# Запуск локального Expo-сервера
+pnpm run start
+
+# Проверка качества кода (обязательные гейты)
+pnpm run lint
+pnpm run typecheck
+pnpm test --runInBand
+pnpm run check-deps
+pnpm run doctor
+```
+
+---
+
+## 📚 Документация
+
+- [`docs/STATUS.md`](docs/STATUS.md) — текущий статус реализации и открытые задачи
+- [`docs/adr/`](docs/adr/) — архитектурные решения (ADRs 0001–0009)
+- [`docs/contracts/`](docs/contracts/) — контракты API и спецификации бланков
+- [`AGENTS.md`](AGENTS.md) — регламент для AI-ассистентов и разработки
