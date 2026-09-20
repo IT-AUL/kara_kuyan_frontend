@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Кара Куян — проверка работ по татарскому языку</title>
+<meta name="description" content="Сканируйте рукописные работы, оценивайте за секунды, видите что повторить с классом. Фото не сохраняются.">
+<meta name="theme-color" content="#0B0F0D">
+<meta property="og:title" content="Кара Куян">
+<meta property="og:description" content="Приложение для учителей татарского языка: сканирование, проверка и аналитика рукописных работ.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://api.github.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0B0F0D;--bg2:#141A16;--bg3:#1C241E;
+  --accent:#25E38A;--accent-dim:#1a9e61;
+  --text:#F0F4F1;--text2:#8A9B8F;--text3:#5A6B5F;
+  --radius:16px;--radius-sm:10px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Onest',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);
+  line-height:1.5;min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ---- Layout ---- */
+.wrapper{max-width:800px;margin:0 auto;padding:0 20px}
+section{padding:48px 0}
+
+/* ---- Hero ---- */
+.hero{
+  min-height:100dvh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  padding:60px 20px 40px;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(37,227,138,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.logo-glyph{
+  width:80px;height:80px;margin-bottom:24px;
+  filter:drop-shadow(0 0 40px rgba(37,227,138,.25));
+  animation:float 6s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero h1{
+  font-size:clamp(2rem,5vw,3rem);font-weight:700;
+  letter-spacing:-.02em;margin-bottom:8px;
+}
+.hero h1 span{color:var(--accent)}
+.hero .tagline{
+  font-size:clamp(1rem,2.5vw,1.25rem);color:var(--text2);
+  max-width:480px;margin-bottom:36px;
+}
+
+/* ---- Download button ---- */
+.dl-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.dl-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--accent);color:var(--bg);
+  font-family:inherit;font-size:1.05rem;font-weight:600;
+  padding:16px 36px;border-radius:60px;border:none;cursor:pointer;
+  transition:transform .15s,box-shadow .25s;
+  box-shadow:0 0 0 0 rgba(37,227,138,.3);
+  text-decoration:none;
+}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(37,227,138,.25);text-decoration:none}
+.dl-btn:active{transform:translateY(0)}
+.dl-btn svg{width:22px;height:22px;fill:currentColor}
+.dl-meta{font-size:.82rem;color:var(--text3);text-align:center}
+.dl-meta a{color:var(--text2);text-decoration:underline;text-underline-offset:2px}
+#dl-status{display:none;font-size:.85rem;color:var(--text2);margin-top:4px}
+#dl-status.show{display:block}
+.dl-other{margin-top:6px}
+
+/* ---- Features ---- */
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:32px}
+.feat{
+  background:var(--bg2);border:1px solid var(--bg3);
+  border-radius:var(--radius);padding:24px;
+  transition:border-color .2s;
+}
+.feat:hover{border-color:var(--accent-dim)}
+.feat-icon{font-size:1.6rem;margin-bottom:8px}
+.feat h3{font-size:.95rem;font-weight:600;margin-bottom:4px}
+.feat p{font-size:.85rem;color:var(--text2);line-height:1.4}
+
+/* ---- Screenshots ---- */
+.screens-section{padding:48px 0 32px}
+.screens-section h2{text-align:center;font-size:1.5rem;font-weight:600;margin-bottom:24px}
+.screens-track{
+  display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  padding:0 max(20px,calc((100vw - 800px)/2)) 16px;
+  scrollbar-width:none;
+}
+.screens-track::-webkit-scrollbar{display:none}
+.screens-track img{
+  flex:0 0 auto;width:220px;border-radius:var(--radius);
+  scroll-snap-align:center;
+  box-shadow:0 4px 24px rgba(0,0,0,.4);
+  transition:transform .25s;
+}
+.screens-track img:hover{transform:scale(1.03)}
+.scroll-hint{
+  text-align:center;font-size:.8rem;color:var(--text3);
+  margin-top:8px;
+}
+
+/* ---- Privacy pill ---- */
+.privacy{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg2);border:1px solid var(--bg3);
+  border-radius:60px;padding:10px 20px;
+  font-size:.85rem;color:var(--text2);
+  max-width:max-content;margin:32px auto 0;
+}
+.privacy svg{flex-shrink:0;width:18px;height:18px;fill:var(--accent)}
+
+/* ---- QR ---- */
+.qr-section{text-align:center;padding:40px 0 60px}
+.qr-section h2{font-size:1.25rem;font-weight:600;margin-bottom:16px;color:var(--text2)}
+.qr-box{
+  display:inline-block;background:#fff;border-radius:var(--radius);
+  padding:16px;
+}
+.qr-box img{width:180px;height:180px;display:block}
+
+/* ---- Footer ---- */
+footer{
+  text-align:center;padding:24px 20px 40px;
+  font-size:.8rem;color:var(--text3);border-top:1px solid var(--bg3);
+}
+footer a{color:var(--text2)}
+
+/* ---- Non-Android banner ---- */
+.not-android{
+  display:none;background:var(--bg2);border:1px solid var(--bg3);
+  border-radius:var(--radius-sm);padding:14px 18px;
+  font-size:.85rem;color:var(--text2);text-align:center;
+  margin-top:16px;max-width:420px;
+}
+.not-android.show{display:block}
+
+/* ---- Responsive ---- */
+@media(max-width:480px){
+  .hero{padding:40px 16px 32px}
+  .dl-btn{padding:14px 28px;font-size:1rem}
+  .screens-track img{width:180px}
+  .features{grid-template-columns:1fr}
+}
+@media(min-width:1024px){
+  .screens-track img{width:260px}
+}
+
+/* ---- Skeleton / loading ---- */
+.skeleton{
+  background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;
+  border-radius:8px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <svg class="logo-glyph" viewBox="0 0 270 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M135.329 51.8627C38.8055 51.8627 14.263 137.317 0 269.995V185.067L0.000206172 184.676C0.0974945 0.112732 0.0975545 0 135.327 0C205.669 0 239.422 0.0305074 255.633 26.0355C265.418 41.7326 270 51.7038 270 107.225C255.633 116.478 236.961 122.011 219.531 89.1463C215.253 91.7223 217.704 98.5144 221.382 108.705C225.318 119.611 230.659 134.411 230.659 152.1C230.659 166.328 225.691 177.51 221.02 188.023C215.479 200.493 210.356 212.023 214.44 226.581C223.49 258.836 255.633 269.995 255.633 269.995C255.633 269.995 221.092 269.995 210.191 269.995C199.289 269.995 196.909 261.984 195.082 255.236C193.254 248.488 190.683 239.131 187.161 226.581C186.446 224.032 185.737 221.371 185.009 218.64C178.075 192.629 169.481 160.39 138.672 160.39C165.684 184.676 161.182 226.581 135.329 244.558C167.857 245.259 177.132 246.43 183.965 269.995H64.7416C64.502 269.995 64.2469 269.996 63.9773 269.997C54.2809 270.042 25.8913 270.173 32.2704 218.64C38.8268 165.675 51.2534 110.68 100.599 96.1856C149.193 79.1862 171.526 51.8627 135.329 51.8627Z" fill="#25E38A"/>
+  </svg>
+
+  <h1><span>Кара Куян</span></h1>
+  <p class="tagline">Сканируйте рукописные работы по татарскому языку,&nbsp;оценивайте за&nbsp;секунды и&nbsp;видьте, что&nbsp;повторить с&nbsp;классом.</p>
+
+  <div class="dl-wrap">
+    <a id="dl-btn" class="dl-btn" href="#" aria-label="Скачать APK">
+      <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.17v6h5V9h3.17L12 2z"/></svg>
+      <span id="dl-label">Загрузка…</span>
+    </a>
+    <div class="dl-meta">
+      <span id="dl-version"></span>
+      <span id="dl-size"></span>
+    </div>
+    <div class="dl-meta dl-other" id="dl-other"></div>
+    <div id="dl-status"></div>
+    <div class="not-android" id="not-android">
+      Приложение работает на Android&nbsp;7+. Откройте эту страницу на&nbsp;телефоне или&nbsp;отсканируйте QR&#8209;код ниже.
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREENSHOTS ============ -->
+<section class="screens-section">
+  <h2>Как это выглядит</h2>
+  <div class="screens-track" id="screens">
+    <img src="assets/device/01-device.jpg" alt="Лист распознан" width="220" height="489" loading="lazy">
+    <img src="assets/device/02-device.jpg" alt="Результат проверки" width="220" height="489" loading="lazy">
+    <img src="assets/device/05-device.jpg" alt="Сохранить и сканировать дальше" width="220" height="489" loading="lazy">
+    <img src="assets/device/06-device.jpg" alt="Все ответы проверены" width="220" height="489" loading="lazy">
+    <img src="assets/device/07-device.jpg" alt="Очередь проверки" width="220" height="489" loading="lazy">
+    <img src="assets/device/08-device.jpg" alt="Аналитика класса" width="220" height="489" loading="lazy">
+    <img src="assets/device/10-device.jpg" alt="Распределение оценок" width="220" height="489" loading="lazy">
+    <img src="assets/device/09-device.jpg" alt="Экспорт журнала" width="220" height="489" loading="lazy">
+  </div>
+  <p class="scroll-hint">← листайте →</p>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section>
+  <div class="wrapper">
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">📷</div>
+        <h3>Сканирование за 3 секунды</h3>
+        <p>Наведите камеру — OCR на&nbsp;устройстве распознает лист мгновенно.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">✅</div>
+        <h3>Автопроверка и рецензия</h3>
+        <p>Оценка ставится сразу. Спорные ответы — на ваш контроль.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📊</div>
+        <h3>Аналитика класса</h3>
+        <p>Средний результат, проблемные темы и рекомендация что повторить.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔒</div>
+        <h3>Zero-photo</h3>
+        <p>Фотографии учеников не&nbsp;сохраняются и&nbsp;не&nbsp;покидают телефон.</p>
+      </div>
+    </div>
+
+    <div class="privacy">
+      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 16l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/></svg>
+      Разбор идёт на телефоне. Данные учеников не уходят в сеть.
+    </div>
+  </div>
+</section>
+
+<!-- ============ QR ============ -->
+<section class="qr-section" id="qr">
+  <h2>Откройте на телефоне</h2>
+  <div class="qr-box">
+    <img src="assets/qr-code-high-contrast.svg" alt="QR-код для скачивания" width="180" height="180">
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <p>Кара Куян · 2026 · <a href="https://github.com/IT-AUL/kara_kuyan_frontend" target="_blank" rel="noopener">GitHub</a></p>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  const REPO = 'IT-AUL/kara_kuyan_frontend';
+  const API  = `https://api.github.com/repos/${REPO}/releases/latest`;
+
+  const $btn   = document.getElementById('dl-btn');
+  const $label = document.getElementById('dl-label');
+  const $ver   = document.getElementById('dl-version');
+  const $size  = document.getElementById('dl-size');
+  const $other = document.getElementById('dl-other');
+  const $notAn = document.getElementById('not-android');
+
+  /* ---- Detect platform ---- */
+  const ua = navigator.userAgent || '';
+  const isAndroid = /android/i.test(ua);
+
+  if (!isAndroid) {
+    $notAn.classList.add('show');
+  }
+
+  /* ---- Detect architecture ---- */
+  async function detectArch() {
+    // Try User-Agent Client Hints (Chromium 90+)
+    if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+      try {
+        const h = await navigator.userAgentData.getHighEntropyValues(['architecture','bitness']);
+        if (h.architecture === 'arm' && h.bitness === '64') return 'arm64-v8a';
+        if (h.architecture === 'arm') return 'armeabi-v7a';
+        if (h.architecture === 'x86' && h.bitness === '64') return 'x86_64';
+      } catch(e) { /* permission denied or unsupported */ }
+    }
+    // Fallback: nearly all modern Android phones are arm64
+    if (isAndroid) return 'arm64-v8a';
+    return 'universal';
+  }
+
+  function fmtSize(bytes) {
+    if (bytes > 1e9) return (bytes / 1e9).toFixed(1) + ' ГБ';
+    return (bytes / 1e6).toFixed(1) + ' МБ';
+  }
+
+  const ABI_LABELS = {
+    'arm64-v8a': 'arm64',
+    'armeabi-v7a': 'arm32',
+    'x86_64': 'x86_64',
+    'universal': 'universal'
+  };
+
+  async function init() {
+    const arch = await detectArch();
+    let release;
+    try {
+      const res = await fetch(API, {headers:{Accept:'application/vnd.github+json'}});
+      if (!res.ok) throw new Error(res.status);
+      release = await res.json();
+    } catch(e) {
+      $label.textContent = 'Скачать APK';
+      $btn.href = `https://github.com/${REPO}/releases/latest`;
+      $ver.textContent = '';
+      return;
+    }
+
+    const tag = release.tag_name || '';
+    const version = tag.replace(/^v/, '');
+    const assets = (release.assets || []).filter(a => a.name.endsWith('.apk'));
+
+    // Find best match
+    const best = assets.find(a => a.name.includes(arch))
+              || assets.find(a => a.name.includes('universal'))
+              || assets[0];
+
+    if (best) {
+      $btn.href = best.browser_download_url;
+      $label.textContent = `Скачать ${version}`;
+      $ver.textContent = `Версия ${version}`;
+      $size.textContent = ` · ${fmtSize(best.size)} (${ABI_LABELS[arch] || arch})`;
+    } else {
+      $label.textContent = `Скачать ${version}`;
+      $btn.href = `https://github.com/${REPO}/releases/tag/${tag}`;
+    }
+
+    // Other architectures
+    const others = assets.filter(a => a !== best && !a.name.includes('universal'));
+    if (others.length) {
+      const links = others.map(a => {
+        const m = a.name.match(/v[\d.]+-(.+?)\.apk$/);
+        const label = m ? ABI_LABELS[m[1]] || m[1] : a.name;
+        return `<a href="${a.browser_download_url}">${label}</a>`;
+      }).join(' · ');
+      $other.innerHTML = 'Другие: ' + links +
+        ` · <a href="https://github.com/${REPO}/releases/tag/${tag}">все файлы</a>`;
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
