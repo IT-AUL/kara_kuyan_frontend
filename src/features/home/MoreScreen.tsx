@@ -2,8 +2,10 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useActiveContext } from '@/data/context';
+import { retryFailedSheets, useSyncState } from '@/data/syncState';
 
 import {
+  Button,
   Card,
   ListRow,
   Screen,
@@ -17,6 +19,8 @@ import { spacing } from '@/design-system/tokens';
 export function MoreScreen() {
   const router = useRouter();
   const ctx = useActiveContext();
+  const { counts } = useSyncState();
+  const waiting = counts.pending + counts.syncing;
 
   return (
     <Screen edges={['top']}>
@@ -67,7 +71,7 @@ export function MoreScreen() {
           Приватность
         </Text>
         <Text style={textStyles.bodySmall}>
-          Фотографии не сохраняются и не отправляются.
+          Листы учеников не сохраняются и не отправляются: разбор идёт на телефоне. Фото задания из учебника уходит на сервер только с вашего согласия.
         </Text>
       </Card>
 
@@ -75,10 +79,14 @@ export function MoreScreen() {
         <Text selectable style={textStyles.titleSmall}>
           Синхронизация
         </Text>
-        <StatusPill label="Ожидают отправки: 3" tone="neutral" />
+        <StatusPill
+          label={counts.failed > 0 ? `Не отправлено: ${counts.failed}` : waiting > 0 ? `Ожидают отправки: ${waiting}` : 'Всё отправлено'}
+          tone={counts.failed > 0 ? 'warning' : waiting > 0 ? 'neutral' : 'success'}
+        />
         <Text style={textStyles.bodySmall}>
-          Проверенные работы ждут восстановления сети. Сканирование не блокируется.
+          {waiting > 0 || counts.failed > 0 ? 'Проверенные работы отправятся, когда появится связь. Сканирование не блокируется.' : 'Проверенные работы сохранены на сервере.'}
         </Text>
+        {counts.failed > 0 ? <Button onPress={() => void retryFailedSheets()} title="Повторить отправку" variant="secondary" /> : null}
       </Card>
     </Screen>
   );

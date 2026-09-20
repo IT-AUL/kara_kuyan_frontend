@@ -16,3 +16,10 @@
 - [x] 13. C: roster fetch + cache + matchStudent
 - [ ] 14. Docs sync (offline-sync, contract-gaps, STATUS, roadmap slice 3) and independent review
 - [ ] 15. Import a sheet image from the phone (ADR 0007): native picker + reader, «Загрузить лист из файла» — device evidence pending
+- [x] 16. Constructor UX (builder, bank, generator, own task) + live write path verified
+- [x] 17. Screen roles: Home / Проверка / Тесты + test page; hide tests locally
+- [x] 18. Class assignments (assign, list with progress, batch blanks) wired; live suite 6/6
+- [x] 19. Forced check of a refused sheet (domain + UI); domain tests
+- [ ] 20. «Из фото» (ADR 0009, `scan-task`): implemented, built into the debug APK; device evidence pending
+- [ ] 21. Device evidence: forced-check result, batch PDF, auto-assign; privacy audits (tasks 9, 10)
+

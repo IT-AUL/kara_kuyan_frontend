@@ -20,6 +20,9 @@ export async function downloadAndShare(
     await Sharing.shareAsync(saved.uri, { mimeType, dialogTitle: filename });
     return { ok: true };
   } catch (e) {
-    return { ok: false, message: e instanceof Error ? e.message : String(e) };
+    const raw = e instanceof Error ? e.message : String(e);
+    const status = /status: (\d+)/.exec(raw)?.[1];
+    if (status) return { ok: false, message: Number(status) >= 500 ? 'Сервер сейчас недоступен, попробуйте позже.' : `Сервер отклонил запрос (код ${status}).` };
+    return { ok: false, message: /network|connect|resolve|timeout/i.test(raw) ? 'Нет связи с сервером.' : raw };
   }
 }

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { backendApi } from '@/composition';
 import { downloadAndShare } from '@/adapters/files/downloads';
 import { useActiveContext } from '@/data/context';
+import { useSyncState } from '@/data/syncState';
 import {
   AppIcon,
   Button,
@@ -26,6 +27,8 @@ export function ExportGradebookScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ctx = useActiveContext();
+  const { counts } = useSyncState();
+  const unsent = counts.pending + counts.syncing + counts.failed;
   const ready = !!ctx.classId && !!ctx.assignmentId;
 
   const prepare = async () => {
@@ -93,6 +96,9 @@ export function ExportGradebookScreen() {
           В файл войдут оценки учеников класса без фотографий и данных распознавания.
         </Text>
       </Card>
+
+      {ready && ctx.progress.checkedCount === 0 ? <Notice message="В этом тесте ещё нет проверенных работ: в файле будут только заголовки." /> : null}
+      {unsent > 0 ? <Notice message={`Ещё не отправлено на сервер: ${unsent}. В журнал они попадут после отправки.`} /> : null}
 
       {prepared ? (
         <Card style={styles.prepared}>

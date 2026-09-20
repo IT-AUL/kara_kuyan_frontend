@@ -8,3 +8,6 @@
 - **Blocker (if parked):** live `offline-bundle` returns HTTP 500 (contract-gaps 21); backend answers to gaps 15–24 pending. Phases A–B do not need them.
 
 Live facts (2026-09-19): `/health` 200; `GET /assignments/TAT-2026-Q1` 200 (2 variants); `GET /assignments/TAT-2026-Q1/offline-bundle` 500; live OpenAPI saved in `docs/contracts/openapi-live-2026-09-19.json`.
+
+**Status 2026-09-20:** implemented and released in 0.1.4 (commit `cb0d0c1`); remaining work is device evidence and privacy audits (tasks 9, 10, 20, 21) and the independent review (14). Backend gaps live in `docs/contracts/contract-gaps.md` (27–32).
+

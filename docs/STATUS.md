@@ -1,13 +1,14 @@
 # Status
 
-## State (updated 2026-09-19)
+## State (updated 2026-09-20)
 
-- Planning foundation, bootstrap, design refresh, Android device polish, Figma alignment: **complete and archived** (see "Completed changes").
-- **Scan flow is real** (`harness/changes/parking/scan-check-flow/`, parked; roadmap slice 4): live CameraX preview → auto-capture → on-device recognition (ONNX Runtime + OpenCV in `modules/ocr-native`) → per-task results → teacher review/override → save, running end to end on SM-S928B. Sheets are matched to a known assignment through the QR and rejected when unknown. Evidence: `harness/changes/active/scan-check-flow/evidence/` (`live-scan.md`, `paper-handwriting.md`).
-- **Camera/runtime spike** (`harness/changes/parking/p0-camera-runtime-spike/`, parked): inference lane decided by benchmark (FP32 + XNNPACK 6 threads ≈110 ms per 72-cell sheet; ADR 0005), Kotlin preprocessing bit-exact vs the authors' pipeline, geometry + QR on device, backend source and live API reviewed. Remaining there: handwriting calibration (10 calibration sheets and a scoring script are ready, photos pending), network zero-photo audit, review.
-- **Durable outbox** (`harness/changes/active/durable-outbox/`, slice 5, active): saved results go to SQLite together with an outbox row in one transaction, a sync engine with backoff and start-up recovery sends them (fake in-memory backend by default; real HTTP gateway only with `EXPO_PUBLIC_SYNC_URL`). Verified on the device: atomic rollback, 25 sheets saved offline then synced with no loss or duplicates, persistence across restart, kill during `syncing` recovered and delivered once (`evidence/device-outbox.md`). Not verified: a real scan → save through the UI after the wiring, the `failed`/retry UI on the device, any call to the real server.
-- **Not started:** backend client / offline-bundle store (slice 3), constructor and print (6), analytics and export wiring (7). The assignment catalog is a demo fixture because the live `offline-bundle` returns HTTP 500.
-- Static gates on 2026-09-19: lint, typecheck and `pnpm test --runInBand` (44 tests) pass; `check-deps`/`doctor` last passed before `expo-sqlite`, `expo-crypto` and `drizzle-orm` were added — re-run them.
+- **Released:** 0.1.4 (GitHub Release, in-app updater); `main` == `origin/main`, tree clean at `4d46804`. The test phone runs a **debug** 0.1.0 build (release 0.1.3 was replaced at the user's request; app data was reset).
+- **Product is wired to the live backend** (`https://tatar-ocr.duckdns.org`): handshake/onboarding, classes and roster, offline bundles (cached), scan → evaluate → save → outbox → `batch-sync`, tests hub and test page, constructor (bank / generator / own task / textbook photo, ADR 0009), class assignments with progress, blanks and batch blanks PDF, analytics and gradebook export. Demo data is gone from product code.
+- **On-device OCR**: CameraX, ArUco rectify, ONNX FP32+XNNPACK (≈0.4 s native per sheet), file import (ADR 0007), name-cell detection from printed lines, forced check of a refused sheet with warnings.
+- **Screen roles**: Главная (next action), Проверка (class queue), Тесты → test page, Ещё (class, analytics, export).
+- **Gates (2026-09-20):** `typecheck`, `lint`, `pnpm test --runInBand` (80 passed, 6 opt-in live skipped by default), `check-deps`, `doctor` pass; live suite 6/6 (with `LIVE_WRITE=1`).
+- **Not verified on the phone:** textbook-photo flow end to end (+ no image left in cache), «Всё равно проверить» result and banners, batch-blanks PDF, first-sheet auto-assign. Network-capture and filesystem privacy audits still TBD (task 10 of `backend-integration`).
+- **Open with others:** user's 10 handwritten calibration sheets; backend answers (isolation by teacher, template version/geometry, preprocessing 11 %/35 px vs our 8 %/30, retention of textbook photos) — `docs/contracts/contract-gaps.md` items 27–32 and `docs/contracts/backend-requests-2026-09-19.md`.
 
 ## Available inputs
 
@@ -54,9 +55,11 @@
 
 ## Next recommended action
 
-1. **Close slice 5:** re-run `pnpm run check-deps` and `pnpm run doctor`; drive a real scan → «Сохранить» → checking list on the phone; show the `failed` state and retry button; add the payload-vs-live-schema conformance test (drafted, not added); independent review; the user archives `durable-outbox`.
-2. **Finish slice 2 (parked changes):** score the 10 calibration sheets (`tools/ocr-lab/score_photos.py`, photos in `tools/ocr-lab/fixtures-private/photos/`) and set thresholds from data; network capture during a scan; review.
-3. **Slice 3** — plan is in `harness/changes/parking/backend-integration/` (phases A–B need no backend answers: HTTP client, identity, real batch-sync smoke; phase C waits for) the backend answers `docs/contracts/contract-gaps.md` items 15–24 and fixes the `offline-bundle` 500.
+1. **Finish device evidence for `backend-integration`:** run the textbook-photo flow (consent → camera/gallery → review → add), confirm the cache holds no image afterwards; forced check of a sheet with no QR (`Download/kk-test-kr5-noqr.png`) and the warning banners; «Бланки на весь класс»; save a sheet of an unassigned test and see auto-assign; then network capture (one multipart request only for the photo flow, no image bytes elsewhere) and a filesystem diff. Record in `harness/changes/active/backend-integration/evidence/`.
+2. **Handwriting calibration:** score the 10 sheets (`tools/ocr-lab/score_photos.py`) and set decision thresholds from data (contract-gaps 9, 16, 18, 27).
+3. **Backend follow-ups (user relays):** isolation by teacher, template version in the bundle/manifest, preprocessing spec, retention of textbook photos; then wire whatever they add (delete/edit tests, server-side «review» status).
+4. **Housekeeping:** independent review and archival of `backend-integration` and parked changes (lead's decision); optional `docs/delivery/risks.md` and `demo-runbook.md` refresh.
+
 
 - Backend request list (what the backend must add for full functionality): `docs/contracts/backend-requests-2026-09-19.md`; front↔back audit: `harness/changes/active/backend-integration/evidence/audit-2026-09-19.md`.
 - **Backend wiring (2026-09-19):** all product screens use the live backend via `src/data/*` (cache + network); demo data removed from product code; evidence `harness/changes/active/backend-integration/evidence/wiring-2026-09-19.md`. Not yet exercised on a phone (none connected at the time). `check-deps` and `doctor` pass.
