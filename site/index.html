@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Кара Куян — проверка работ по татарскому языку</title>
-<meta name="description" content="Сканируйте рукописные работы учеников, оценивайте за секунды и видьте, что повторить с классом. Фото не сохраняются. Android 7+.">
-<meta name="robots" content="index,follow">
-<meta name="theme-color" content="#0B0F0D">
-<link rel="canonical" href="https://it-aul.github.io/kara_kuyan_frontend/">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="apple-touch-icon" href="assets/og-card.jpg">
-<!-- Open Graph -->
-<meta property="og:title" content="Кара Куян — проверка работ по татарскому языку">
-<meta property="og:description" content="Приложение для учителей татарского языка: сканирование, автопроверка и аналитика рукописных работ. Фото учеников не сохраняются.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://it-aul.github.io/kara_kuyan_frontend/">
-<meta property="og:image" content="https://it-aul.github.io/kara_kuyan_frontend/assets/og-card.jpg">
-<meta property="og:image:width" content="1456">
-<meta property="og:image:height" content="816">
-<meta property="og:locale" content="ru_RU">
-<meta property="og:site_name" content="Кара Куян">
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Кара Куян — проверка работ по татарскому языку">
-<meta name="twitter:description" content="Сканируйте рукописные работы, оценивайте за секунды. Android 7+.">
-<meta name="twitter:image" content="https://it-aul.github.io/kara_kuyan_frontend/assets/og-card.jpg">
-<!-- JSON-LD Structured Data -->
-<script type="application/ld+json">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Кара Куян — проверка работ по татарскому языку</title>
+  <meta name="description"
+    content="Сканируйте рукописные работы учеников, оценивайте за секунды и видьте, что повторить с классом. Фото не сохраняются. Android 7+.">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0B0F0D">
+  <link rel="canonical" href="https://it-aul.github.io/kara_kuyan_frontend/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="assets/og-card.jpg">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Кара Куян — проверка работ по татарскому языку">
+  <meta property="og:description"
+    content="Приложение для учителей татарского языка: сканирование, автопроверка и аналитика рукописных работ. Фото учеников не сохраняются.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://it-aul.github.io/kara_kuyan_frontend/">
+  <meta property="og:image" content="https://it-aul.github.io/kara_kuyan_frontend/assets/og-card.jpg">
+  <meta property="og:image:width" content="1456">
+  <meta property="og:image:height" content="816">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="Кара Куян">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Кара Куян — проверка работ по татарскому языку">
+  <meta name="twitter:description" content="Сканируйте рукописные работы, оценивайте за секунды. Android 7+.">
+  <meta name="twitter:image" content="https://it-aul.github.io/kara_kuyan_frontend/assets/og-card.jpg">
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
 {
   "@context":"https://schema.org",
   "@type":"SoftwareApplication",
@@ -40,499 +43,841 @@
   "inLanguage":["tt","ru"]
 }
 </script>
-<link rel="preconnect" href="https://api.github.com">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-/* ================================================================
+  <link rel="preconnect" href="https://api.github.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ================================================================
    RESET & TOKENS
    ================================================================ */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0B0F0D;
-  --surface:#131916;
-  --surface2:#1A2220;
-  --border:#243029;
-  --accent:#25E38A;
-  --accent-glow:rgba(37,227,138,.15);
-  --accent-hover:#2CF99A;
-  --text:#EDF5F0;
-  --text2:#8FA698;
-  --text3:#54695C;
-  --radius:20px;
-  --radius-sm:14px;
-  --radius-xs:10px;
-  --font:'Onest',system-ui,-apple-system,sans-serif;
-  --transition:cubic-bezier(.4,0,.2,1);
-}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{
-  font-family:var(--font);background:var(--bg);color:var(--text);
-  line-height:1.55;min-height:100dvh;overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-}
-a{color:var(--accent);text-decoration:none;transition:color .2s var(--transition)}
-a:hover{color:var(--accent-hover)}
-img{display:block;max-width:100%}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ================================================================
+    :root {
+      --bg: #0B0F0D;
+      --surface: #131916;
+      --surface2: #1A2220;
+      --border: #243029;
+      --accent: #25E38A;
+      --accent-glow: rgba(37, 227, 138, .15);
+      --accent-hover: #2CF99A;
+      --text: #EDF5F0;
+      --text2: #8FA698;
+      --text3: #54695C;
+      --radius: 20px;
+      --radius-sm: 14px;
+      --radius-xs: 10px;
+      --font: 'Onest', system-ui, -apple-system, sans-serif;
+      --transition: cubic-bezier(.4, 0, .2, 1);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color .2s var(--transition)
+    }
+
+    a:hover {
+      color: var(--accent-hover)
+    }
+
+    img {
+      display: block;
+      max-width: 100%
+    }
+
+    /* ================================================================
    LAYOUT
    ================================================================ */
-.container{max-width:720px;margin:0 auto;padding:0 24px}
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px
+    }
 
-/* ================================================================
+    /* ================================================================
    HERO — full viewport, single focused CTA
    ================================================================ */
-.hero{
-  min-height:100dvh;display:flex;flex-direction:column;
-  justify-content:center;align-items:center;text-align:center;
-  padding:80px 24px 60px;position:relative;overflow:hidden;
-}
-/* Ambient glow behind the logo */
-.hero::before{
-  content:'';position:absolute;top:-30%;left:50%;transform:translateX(-50%);
-  width:min(700px,140vw);height:min(700px,140vw);
-  background:radial-gradient(circle,var(--accent-glow) 0%,transparent 65%);
-  pointer-events:none;z-index:0;
-}
-.hero>*{position:relative;z-index:1}
+    .hero {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 80px 24px 60px;
+      position: relative;
+      overflow: hidden;
+    }
 
-.logo{
-  width:72px;height:72px;margin-bottom:28px;
-  filter:drop-shadow(0 0 48px rgba(37,227,138,.3));
-  animation:float 5s ease-in-out infinite;
-}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    /* Ambient glow behind the logo */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(700px, 140vw);
+      height: min(700px, 140vw);
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-.hero h1{
-  font-size:clamp(1.85rem,5vw,2.75rem);font-weight:800;
-  letter-spacing:-.03em;line-height:1.15;margin-bottom:16px;
-}
-.hero h1 .accent{color:var(--accent)}
+    .hero>* {
+      position: relative;
+      z-index: 1
+    }
 
-.hero .subtitle{
-  font-size:clamp(.95rem,2.2vw,1.15rem);color:var(--text2);
-  max-width:440px;margin:0 auto 40px;line-height:1.55;
-}
+    .logo {
+      width: 72px;
+      height: 72px;
+      margin-bottom: 28px;
+      filter: drop-shadow(0 0 48px rgba(37, 227, 138, .3));
+      animation: float 5s ease-in-out infinite;
+    }
 
-/* ---- Primary CTA ---- */
-.cta-group{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+    @keyframes float {
 
-.btn-primary{
-  display:inline-flex;align-items:center;justify-content:center;gap:10px;
-  background:var(--accent);color:var(--bg);
-  font-family:var(--font);font-size:1.05rem;font-weight:700;
-  padding:18px 40px;border-radius:60px;border:none;cursor:pointer;
-  transition:transform .2s var(--transition),box-shadow .3s var(--transition),background .2s;
-  box-shadow:0 0 0 0 rgba(37,227,138,.4);
-  text-decoration:none;min-width:240px;
-  /* Thumb-zone friendly: large hit target */
-  min-height:56px;
-}
-.btn-primary:hover{
-  transform:translateY(-2px);
-  box-shadow:0 12px 40px rgba(37,227,138,.25);
-  background:var(--accent-hover);
-  text-decoration:none;color:var(--bg);
-}
-.btn-primary:active{transform:translateY(0);box-shadow:0 4px 16px rgba(37,227,138,.2)}
-.btn-primary .icon{width:20px;height:20px;flex-shrink:0}
+      0%,
+      100% {
+        transform: translateY(0)
+      }
 
-.meta{font-size:.82rem;color:var(--text3);text-align:center;line-height:1.5}
-.meta a{color:var(--text2);text-underline-offset:2px}
-.meta a:hover{text-decoration:underline}
+      50% {
+        transform: translateY(-6px)
+      }
+    }
 
-.not-android{
-  display:none;background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-xs);padding:14px 20px;
-  font-size:.85rem;color:var(--text2);text-align:center;max-width:400px;
-}
-.not-android.show{display:block}
+    .hero h1 {
+      font-size: clamp(1.85rem, 5vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
 
-/* Scroll hint arrow */
-.scroll-arrow{
-  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
-  animation:bounce 2s ease-in-out infinite;opacity:.3;
-}
-.scroll-arrow svg{width:28px;height:28px;stroke:var(--text2);stroke-width:2;fill:none}
-@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+    .hero h1 .accent {
+      color: var(--accent)
+    }
 
-/* ================================================================
+    .hero .subtitle {
+      font-size: clamp(.95rem, 2.2vw, 1.15rem);
+      color: var(--text2);
+      max-width: 440px;
+      margin: 0 auto 40px;
+      line-height: 1.55;
+    }
+
+    /* ---- Primary CTA ---- */
+    .cta-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: 100%
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--accent);
+      color: var(--bg);
+      font-family: var(--font);
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 18px 40px;
+      border-radius: 60px;
+      border: none;
+      cursor: pointer;
+      transition: transform .2s var(--transition), box-shadow .3s var(--transition), background .2s;
+      box-shadow: 0 0 0 0 rgba(37, 227, 138, .4);
+      text-decoration: none;
+      min-width: 240px;
+      /* Thumb-zone friendly: large hit target */
+      min-height: 56px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(37, 227, 138, .25);
+      background: var(--accent-hover);
+      text-decoration: none;
+      color: var(--bg);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 16px rgba(37, 227, 138, .2)
+    }
+
+    .btn-primary .icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0
+    }
+
+    .meta {
+      font-size: .82rem;
+      color: var(--text3);
+      text-align: center;
+      line-height: 1.5
+    }
+
+    .meta a {
+      color: var(--text2);
+      text-underline-offset: 2px
+    }
+
+    .meta a:hover {
+      text-decoration: underline
+    }
+
+    .not-android {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 14px 20px;
+      font-size: .85rem;
+      color: var(--text2);
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .not-android.show {
+      display: block
+    }
+
+    /* Scroll hint arrow */
+    .scroll-arrow {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: bounce 2s ease-in-out infinite;
+      opacity: .3;
+    }
+
+    .scroll-arrow svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--text2);
+      stroke-width: 2;
+      fill: none
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0)
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(6px)
+      }
+    }
+
+    /* ================================================================
    SCREENSHOTS — horizontal scroll with snap
    ================================================================ */
-.screens{padding:64px 0 48px;overflow:hidden}
-.screens h2{
-  text-align:center;font-size:clamp(1.25rem,3vw,1.5rem);font-weight:700;
-  margin-bottom:8px;letter-spacing:-.02em;
-}
-.screens .screens-sub{
-  text-align:center;font-size:.9rem;color:var(--text2);margin-bottom:28px;
-}
-.screens-track{
-  display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch;
-  padding:0 max(24px,calc((100vw - 720px)/2)) 20px;
-  scrollbar-width:none;
-}
-.screens-track::-webkit-scrollbar{display:none}
-.screen-card{
-  flex:0 0 auto;width:200px;border-radius:var(--radius);overflow:hidden;
-  scroll-snap-align:center;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
-  transition:transform .3s var(--transition);
-  background:var(--surface);
-}
-.screen-card:hover{transform:scale(1.04)}
-.screen-card img{width:100%;height:auto;display:block}
-.scroll-dots{display:flex;justify-content:center;gap:6px;margin-top:16px}
-.scroll-dots span{
-  width:6px;height:6px;border-radius:50%;background:var(--text3);
-  transition:background .2s,transform .2s;
-}
-.scroll-dots span.active{background:var(--accent);transform:scale(1.3)}
+    .screens {
+      padding: 64px 0 48px;
+      overflow: hidden
+    }
 
-/* ================================================================
+    .screens h2 {
+      text-align: center;
+      font-size: clamp(1.25rem, 3vw, 1.5rem);
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -.02em;
+    }
+
+    .screens .screens-sub {
+      text-align: center;
+      font-size: .9rem;
+      color: var(--text2);
+      margin-bottom: 28px;
+    }
+
+    .screens-track {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 max(24px, calc((100vw - 720px)/2)) 20px;
+      scrollbar-width: none;
+    }
+
+    .screens-track::-webkit-scrollbar {
+      display: none
+    }
+
+    .screen-card {
+      flex: 0 0 auto;
+      width: 200px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      scroll-snap-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+      transition: transform .3s var(--transition);
+      background: var(--surface);
+    }
+
+    .screen-card:hover {
+      transform: scale(1.04)
+    }
+
+    .screen-card img {
+      width: 100%;
+      height: auto;
+      display: block
+    }
+
+    .scroll-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px
+    }
+
+    .scroll-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text3);
+      transition: background .2s, transform .2s;
+    }
+
+    .scroll-dots span.active {
+      background: var(--accent);
+      transform: scale(1.3)
+    }
+
+    /* ================================================================
    FEATURES — benefit-oriented, icon + text
    ================================================================ */
-.features{padding:32px 0 64px}
-.features-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-}
-.feat-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:24px 20px;
-  transition:border-color .25s var(--transition),transform .25s var(--transition);
-}
-.feat-card:hover{border-color:rgba(37,227,138,.3);transform:translateY(-2px)}
-.feat-icon{
-  width:40px;height:40px;border-radius:12px;
-  background:var(--accent-glow);
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:14px;
-}
-.feat-icon svg{width:20px;height:20px;stroke:var(--accent);stroke-width:2;fill:none}
-.feat-card h3{font-size:.92rem;font-weight:600;margin-bottom:4px;line-height:1.3}
-.feat-card p{font-size:.82rem;color:var(--text2);line-height:1.45}
+    .features {
+      padding: 32px 0 64px
+    }
 
-/* ================================================================
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      transition: border-color .25s var(--transition), transform .25s var(--transition);
+    }
+
+    .feat-card:hover {
+      border-color: rgba(37, 227, 138, .3);
+      transform: translateY(-2px)
+    }
+
+    .feat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .feat-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--accent);
+      stroke-width: 2;
+      fill: none
+    }
+
+    .feat-card h3 {
+      font-size: .92rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      line-height: 1.3
+    }
+
+    .feat-card p {
+      font-size: .82rem;
+      color: var(--text2);
+      line-height: 1.45
+    }
+
+    /* ================================================================
    TRUST BAR — privacy, compact
    ================================================================ */
-.trust{padding:0 0 64px}
-.trust-pill{
-  display:flex;align-items:center;gap:12px;
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:60px;padding:12px 24px 12px 16px;
-  max-width:max-content;margin:0 auto;
-  font-size:.88rem;color:var(--text2);
-}
-.trust-pill .trust-icon{
-  width:36px;height:36px;border-radius:50%;flex-shrink:0;
-  background:var(--accent-glow);
-  display:flex;align-items:center;justify-content:center;
-}
-.trust-pill .trust-icon svg{width:18px;height:18px;stroke:var(--accent);stroke-width:2;fill:none}
+    .trust {
+      padding: 0 0 64px
+    }
 
-/* ================================================================
+    .trust-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      padding: 12px 24px 12px 16px;
+      max-width: max-content;
+      margin: 0 auto;
+      font-size: .88rem;
+      color: var(--text2);
+    }
+
+    .trust-pill .trust-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trust-pill .trust-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--accent);
+      stroke-width: 2;
+      fill: none
+    }
+
+    /* ================================================================
    QR SECTION — for pitch
    ================================================================ */
-.qr-section{
-  text-align:center;padding:0 0 80px;
-}
-.qr-section h2{
-  font-size:1.1rem;font-weight:600;color:var(--text2);margin-bottom:6px;
-}
-.qr-section p{font-size:.82rem;color:var(--text3);margin-bottom:20px}
-.qr-frame{
-  display:inline-block;background:#fff;border-radius:var(--radius);padding:16px;
-  box-shadow:0 8px 32px rgba(0,0,0,.3);
-}
-.qr-frame img{width:160px;height:160px;display:block}
+    .qr-section {
+      text-align: center;
+      padding: 0 0 80px;
+    }
 
-/* ================================================================
+    .qr-section h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+
+    .qr-section p {
+      font-size: .82rem;
+      color: var(--text3);
+      margin-bottom: 20px
+    }
+
+    .qr-frame {
+      display: inline-block;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+    }
+
+    .qr-frame img {
+      width: 160px;
+      height: 160px;
+      display: block
+    }
+
+    /* ================================================================
    FOOTER — minimal
    ================================================================ */
-footer{
-  text-align:center;padding:24px 24px 40px;
-  font-size:.78rem;color:var(--text3);
-  border-top:1px solid var(--border);
-  display:flex;flex-direction:column;align-items:center;gap:16px;
-}
-footer a{color:var(--text2)}
-.footer-team{
-  display:flex;align-items:center;gap:8px;
-  color:var(--text3);font-size:.75rem;letter-spacing:.02em;
-  transition:opacity .2s var(--transition);
-  opacity:.55;
-}
-.footer-team:hover{opacity:.85}
-.footer-team img{height:22px;width:auto}
+    footer {
+      text-align: center;
+      padding: 24px 24px 40px;
+      font-size: .78rem;
+      color: var(--text3);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
 
-/* ================================================================
+    footer a {
+      color: var(--text2)
+    }
+
+    .footer-team {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text3);
+      font-size: .75rem;
+      letter-spacing: .02em;
+      transition: opacity .2s var(--transition);
+      opacity: .55;
+    }
+
+    .footer-team:hover {
+      opacity: .85
+    }
+
+    .footer-team img {
+      height: 22px;
+      width: auto
+    }
+
+    /* ================================================================
    RESPONSIVE
    ================================================================ */
-@media(max-width:520px){
-  .hero{padding:60px 20px 48px}
-  .btn-primary{padding:16px 32px;font-size:1rem;min-width:auto;width:100%;max-width:320px}
-  .features-grid{grid-template-columns:1fr}
-  .screen-card{width:170px}
-  .feat-card{padding:20px 16px}
-}
-@media(min-width:768px){
-  .screen-card{width:240px}
-}
-@media(min-width:1024px){
-  .screen-card{width:260px}
-}
-</style>
+    @media(max-width:520px) {
+      .hero {
+        padding: 60px 20px 48px
+      }
+
+      .btn-primary {
+        padding: 16px 32px;
+        font-size: 1rem;
+        min-width: auto;
+        width: 100%;
+        max-width: 320px
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr
+      }
+
+      .screen-card {
+        width: 170px
+      }
+
+      .feat-card {
+        padding: 20px 16px
+      }
+    }
+
+    @media(min-width:768px) {
+      .screen-card {
+        width: 240px
+      }
+    }
+
+    @media(min-width:1024px) {
+      .screen-card {
+        width: 260px
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ========================================
+  <!-- ========================================
      HERO
      ======================================== -->
-<section class="hero" id="top">
-  <!-- Logo glyph -->
-  <svg class="logo" viewBox="0 0 270 270" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M135.329 51.8627C38.8055 51.8627 14.263 137.317 0 269.995V185.067L0.000206172 184.676C0.0974945 0.112732 0.0975545 0 135.327 0C205.669 0 239.422 0.0305074 255.633 26.0355C265.418 41.7326 270 51.7038 270 107.225C255.633 116.478 236.961 122.011 219.531 89.1463C215.253 91.7223 217.704 98.5144 221.382 108.705C225.318 119.611 230.659 134.411 230.659 152.1C230.659 166.328 225.691 177.51 221.02 188.023C215.479 200.493 210.356 212.023 214.44 226.581C223.49 258.836 255.633 269.995 255.633 269.995C255.633 269.995 221.092 269.995 210.191 269.995C199.289 269.995 196.909 261.984 195.082 255.236C193.254 248.488 190.683 239.131 187.161 226.581C186.446 224.032 185.737 221.371 185.009 218.64C178.075 192.629 169.481 160.39 138.672 160.39C165.684 184.676 161.182 226.581 135.329 244.558C167.857 245.259 177.132 246.43 183.965 269.995H64.7416C64.502 269.995 64.2469 269.996 63.9773 269.997C54.2809 270.042 25.8913 270.173 32.2704 218.64C38.8268 165.675 51.2534 110.68 100.599 96.1856C149.193 79.1862 171.526 51.8627 135.329 51.8627Z" fill="#25E38A"/>
-  </svg>
+  <section class="hero" id="top">
+    <!-- Logo glyph -->
+    <svg class="logo" viewBox="0 0 270 270" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M135.329 51.8627C38.8055 51.8627 14.263 137.317 0 269.995V185.067L0.000206172 184.676C0.0974945 0.112732 0.0975545 0 135.327 0C205.669 0 239.422 0.0305074 255.633 26.0355C265.418 41.7326 270 51.7038 270 107.225C255.633 116.478 236.961 122.011 219.531 89.1463C215.253 91.7223 217.704 98.5144 221.382 108.705C225.318 119.611 230.659 134.411 230.659 152.1C230.659 166.328 225.691 177.51 221.02 188.023C215.479 200.493 210.356 212.023 214.44 226.581C223.49 258.836 255.633 269.995 255.633 269.995C255.633 269.995 221.092 269.995 210.191 269.995C199.289 269.995 196.909 261.984 195.082 255.236C193.254 248.488 190.683 239.131 187.161 226.581C186.446 224.032 185.737 221.371 185.009 218.64C178.075 192.629 169.481 160.39 138.672 160.39C165.684 184.676 161.182 226.581 135.329 244.558C167.857 245.259 177.132 246.43 183.965 269.995H64.7416C64.502 269.995 64.2469 269.996 63.9773 269.997C54.2809 270.042 25.8913 270.173 32.2704 218.64C38.8268 165.675 51.2534 110.68 100.599 96.1856C149.193 79.1862 171.526 51.8627 135.329 51.8627Z"
+        fill="#25E38A" />
+    </svg>
 
-  <h1><span class="accent">Кара Куян</span></h1>
-  <p class="subtitle">Сканируйте рукописные работы по&nbsp;татарскому языку, оценивайте за&nbsp;секунды и&nbsp;видьте, что&nbsp;повторить с&nbsp;классом.</p>
+    <h1><span class="accent">Кара Куян</span></h1>
+    <p class="subtitle">Сканируйте рукописные работы по&nbsp;татарскому языку, оценивайте за&nbsp;секунды и&nbsp;видьте,
+      что&nbsp;повторить с&nbsp;классом.</p>
 
-  <div class="cta-group">
-    <a id="dl-btn" class="btn-primary" href="#" aria-label="Скачать APK">
-      <!-- Lucide-style download icon -->
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      <span id="dl-label">Загрузка…</span>
-    </a>
-    <div class="meta">
-      <span id="dl-version"></span><span id="dl-size"></span>
+    <div class="cta-group">
+      <a id="dl-btn" class="btn-primary" href="#" aria-label="Скачать APK">
+        <!-- Lucide-style download icon -->
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span id="dl-label">Загрузка…</span>
+      </a>
+      <div class="meta">
+        <span id="dl-version"></span><span id="dl-size"></span>
+      </div>
+      <div class="meta" id="dl-other"></div>
+      <div class="not-android" id="not-android">
+        Приложение для&nbsp;Android&nbsp;7+.&nbsp;Откройте на&nbsp;телефоне или&nbsp;отсканируйте QR&#8209;код
+        ниже&nbsp;↓
+      </div>
     </div>
-    <div class="meta" id="dl-other"></div>
-    <div class="not-android" id="not-android">
-      Приложение для&nbsp;Android&nbsp;7+.&nbsp;Откройте на&nbsp;телефоне или&nbsp;отсканируйте QR&#8209;код ниже&nbsp;↓
+
+    <div class="scroll-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
     </div>
-  </div>
+  </section>
 
-  <div class="scroll-arrow" aria-hidden="true">
-    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-  </div>
-</section>
-
-<!-- ========================================
+  <!-- ========================================
      SCREENSHOTS
      ======================================== -->
-<section class="screens">
-  <h2>Как это работает</h2>
-  <p class="screens-sub">Наведите камеру → проверьте → сохраните</p>
-  <div class="screens-track" id="screens-track">
-    <div class="screen-card"><img src="assets/device/01-device.jpg" alt="Лист распознан — ученик определён по имени на листе" width="200" height="444" loading="lazy"></div>
-    <div class="screen-card"><img src="assets/device/02-device.jpg" alt="Результат: 3 из 4, оценка после проверки" width="200" height="444" loading="lazy"></div>
-    <div class="screen-card"><img src="assets/device/05-device.jpg" alt="Все ответы проверены — сохранить и сканировать дальше" width="200" height="444" loading="lazy"></div>
-    <div class="screen-card"><img src="assets/device/06-device.jpg" alt="Детальный разбор каждого задания" width="200" height="444" loading="lazy"></div>
-    <div class="screen-card"><img src="assets/device/07-device.jpg" alt="Очередь проверки класса" width="200" height="444" loading="lazy"></div>
-    <div class="screen-card"><img src="assets/device/08-device.jpg" alt="Аналитика: средний результат и темы для повторения" width="200" height="444" loading="lazy"></div>
-    <div class="screen-card"><img src="assets/device/10-device.jpg" alt="Распределение оценок в классе" width="200" height="444" loading="lazy"></div>
-    <div class="screen-card"><img src="assets/device/09-device.jpg" alt="Экспорт журнала оценок в XLSX или CSV" width="200" height="444" loading="lazy"></div>
-  </div>
-  <div class="scroll-dots" id="scroll-dots"></div>
-</section>
+  <section class="screens">
+    <h2>Как это работает</h2>
+    <p class="screens-sub">Наведите камеру → проверьте → сохраните</p>
+    <div class="screens-track" id="screens-track">
+      <div class="screen-card"><img src="assets/device/01-device.jpg"
+          alt="Лист распознан — ученик определён по имени на листе" width="200" height="444" loading="lazy"></div>
+      <div class="screen-card"><img src="assets/device/02-device.jpg" alt="Результат: 3 из 4, оценка после проверки"
+          width="200" height="444" loading="lazy"></div>
+      <div class="screen-card"><img src="assets/device/05-device.jpg"
+          alt="Все ответы проверены — сохранить и сканировать дальше" width="200" height="444" loading="lazy"></div>
+      <div class="screen-card"><img src="assets/device/06-device.jpg" alt="Детальный разбор каждого задания" width="200"
+          height="444" loading="lazy"></div>
+      <div class="screen-card"><img src="assets/device/07-device.jpg" alt="Очередь проверки класса" width="200"
+          height="444" loading="lazy"></div>
+      <div class="screen-card"><img src="assets/device/08-device.jpg"
+          alt="Аналитика: средний результат и темы для повторения" width="200" height="444" loading="lazy"></div>
+      <div class="screen-card"><img src="assets/device/10-device.jpg" alt="Распределение оценок в классе" width="200"
+          height="444" loading="lazy"></div>
+      <div class="screen-card"><img src="assets/device/09-device.jpg" alt="Экспорт журнала оценок в XLSX или CSV"
+          width="200" height="444" loading="lazy"></div>
+    </div>
+    <div class="scroll-dots" id="scroll-dots"></div>
+  </section>
 
-<!-- ========================================
+  <!-- ========================================
      FEATURES — benefit-oriented
      ======================================== -->
-<section class="features">
-  <div class="container">
-    <div class="features-grid">
+  <section class="features">
+    <div class="container">
+      <div class="features-grid">
 
-      <div class="feat-card">
-        <div class="feat-icon">
-          <!-- Scan / viewfinder -->
-          <svg viewBox="0 0 24 24"><path d="M2 7V2h5"/><path d="M22 7V2h-5"/><path d="M2 17v5h5"/><path d="M22 17v5h-5"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <!-- Scan / viewfinder -->
+            <svg viewBox="0 0 24 24">
+              <path d="M2 7V2h5" />
+              <path d="M22 7V2h-5" />
+              <path d="M2 17v5h5" />
+              <path d="M22 17v5h-5" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </div>
+          <h3>3 секунды на лист</h3>
+          <p>OCR прямо на&nbsp;телефоне — без&nbsp;интернета, без&nbsp;задержек.</p>
         </div>
-        <h3>3 секунды на лист</h3>
-        <p>OCR прямо на&nbsp;телефоне — без&nbsp;интернета, без&nbsp;задержек.</p>
-      </div>
 
-      <div class="feat-card">
-        <div class="feat-icon">
-          <!-- Check / verified -->
-          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <!-- Check / verified -->
+            <svg viewBox="0 0 24 24">
+              <path d="M9 12l2 2 4-4" />
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+          </div>
+          <h3>Автопроверка + контроль</h3>
+          <p>Оценка ставится сразу. Спорные ответы — на&nbsp;ваше решение.</p>
         </div>
-        <h3>Автопроверка + контроль</h3>
-        <p>Оценка ставится сразу. Спорные ответы — на&nbsp;ваше решение.</p>
-      </div>
 
-      <div class="feat-card">
-        <div class="feat-icon">
-          <!-- Bar chart -->
-          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <!-- Bar chart -->
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+          </div>
+          <h3>Аналитика класса</h3>
+          <p>Средний балл, слабые темы, рекомендация что повторить.</p>
         </div>
-        <h3>Аналитика класса</h3>
-        <p>Средний балл, слабые темы, рекомендация что повторить.</p>
-      </div>
 
-      <div class="feat-card">
-        <div class="feat-icon">
-          <!-- Shield -->
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <!-- Shield -->
+            <svg viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h3>Данные не уходят</h3>
+          <p>Листы учеников обрабатываются на&nbsp;устройстве и&nbsp;не&nbsp;сохраняются.</p>
         </div>
-        <h3>Данные не уходят</h3>
-        <p>Листы учеников обрабатываются на&nbsp;устройстве и&nbsp;не&nbsp;сохраняются.</p>
-      </div>
 
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ========================================
+  <!-- ========================================
      TRUST BAR
      ======================================== -->
-<section class="trust">
-  <div class="container">
-    <div class="trust-pill">
-      <div class="trust-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+  <section class="trust">
+    <div class="container">
+      <div class="trust-pill">
+        <div class="trust-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+        </div>
+        <span>Zero-photo: фотографии учеников не покидают телефон</span>
       </div>
-      <span>Zero-photo: фотографии учеников не покидают телефон</span>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ========================================
+  <!-- ========================================
      QR — for pitch presentations
      ======================================== -->
-<section class="qr-section" id="qr">
-  <h2>Откройте на телефоне</h2>
-  <p>Наведите камеру на QR-код</p>
-  <div class="qr-frame">
-    <img src="assets/qr-code-high-contrast.svg" alt="QR-код для скачивания Кара Куян" width="160" height="160">
-  </div>
-</section>
+  <section class="qr-section" id="qr">
+    <h2>Откройте на телефоне</h2>
+    <p>Наведите камеру на QR-код</p>
+    <div class="qr-frame">
+      <img src="assets/qr-code-high-contrast.svg" alt="QR-код для скачивания Кара Куян" width="160" height="160">
+    </div>
+  </section>
 
-<!-- ========================================
+  <!-- ========================================
      FOOTER
      ======================================== -->
-<footer>
-  <a class="footer-team" href="https://it-aul.com/" target="_blank" rel="noopener" aria-label="Команда IT-AUL">
-    <img src="assets/it-aul-logo.svg" alt="IT-AUL" width="44" height="22">
-    <span>разработка IT-AUL</span>
-  </a>
-  <p>Кара Куян · 2026 · <a href="https://github.com/IT-AUL/kara_kuyan_frontend" target="_blank" rel="noopener">GitHub</a></p>
-</footer>
+  <footer>
+    <a class="footer-team" href="https://it-aul.com/" target="_blank" rel="noopener" aria-label="Команда IT-AUL">
+      <img src="assets/it-aul-logo.svg" alt="IT-AUL" width="44" height="22">
+      <span>разработка IT-AUL</span>
+    </a>
+    <p>Кара Куян · 2026 · <a href="https://github.com/IT-AUL/kara_kuyan_frontend" target="_blank"
+        rel="noopener">GitHub</a></p>
+  </footer>
 
-<!-- ================================================================
+  <!-- ================================================================
      SCRIPT — fetch latest release, detect architecture, scroll dots
      ================================================================ -->
-<script>
-(function(){
-  'use strict';
-  var REPO='IT-AUL/kara_kuyan_frontend';
-  var API='https://api.github.com/repos/'+REPO+'/releases/latest';
+  <script>
+    (function () {
+      'use strict';
+      var REPO = 'IT-AUL/kara_kuyan_frontend';
+      var API = 'https://api.github.com/repos/' + REPO + '/releases/latest';
 
-  var $btn=document.getElementById('dl-btn');
-  var $label=document.getElementById('dl-label');
-  var $ver=document.getElementById('dl-version');
-  var $size=document.getElementById('dl-size');
-  var $other=document.getElementById('dl-other');
-  var $notAn=document.getElementById('not-android');
+      var $btn = document.getElementById('dl-btn');
+      var $label = document.getElementById('dl-label');
+      var $ver = document.getElementById('dl-version');
+      var $size = document.getElementById('dl-size');
+      var $other = document.getElementById('dl-other');
+      var $notAn = document.getElementById('not-android');
 
-  var ua=navigator.userAgent||'';
-  var isAndroid=/android/i.test(ua);
-  if(!isAndroid) $notAn.classList.add('show');
+      var ua = navigator.userAgent || '';
+      var isAndroid = /android/i.test(ua);
+      if (!isAndroid) $notAn.classList.add('show');
 
-  /* ---- Architecture detection ---- */
-  function detectArch(){
-    if(navigator.userAgentData&&navigator.userAgentData.getHighEntropyValues){
-      return navigator.userAgentData.getHighEntropyValues(['architecture','bitness'])
-        .then(function(h){
-          if(h.architecture==='arm'&&h.bitness==='64') return 'arm64-v8a';
-          if(h.architecture==='arm') return 'armeabi-v7a';
-          if(h.architecture==='x86'&&h.bitness==='64') return 'x86_64';
-          return isAndroid?'arm64-v8a':'universal';
-        }).catch(function(){return isAndroid?'arm64-v8a':'universal'});
-    }
-    return Promise.resolve(isAndroid?'arm64-v8a':'universal');
-  }
+      /* ---- Architecture detection ---- */
+      function detectArch() {
+        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+          return navigator.userAgentData.getHighEntropyValues(['architecture', 'bitness'])
+            .then(function (h) {
+              if (h.architecture === 'arm' && h.bitness === '64') return 'arm64-v8a';
+              if (h.architecture === 'arm') return 'armeabi-v7a';
+              if (h.architecture === 'x86' && h.bitness === '64') return 'x86_64';
+              return isAndroid ? 'arm64-v8a' : 'universal';
+            }).catch(function () { return isAndroid ? 'arm64-v8a' : 'universal' });
+        }
+        return Promise.resolve(isAndroid ? 'arm64-v8a' : 'universal');
+      }
 
-  function fmtSize(b){return b>1e9?(b/1e9).toFixed(1)+' ГБ':(b/1e6).toFixed(0)+' МБ'}
+      function fmtSize(b) { return b > 1e9 ? (b / 1e9).toFixed(1) + ' ГБ' : (b / 1e6).toFixed(0) + ' МБ' }
 
-  var ABI={'arm64-v8a':'arm64','armeabi-v7a':'arm32','x86_64':'x86_64','universal':'universal'};
+      var ABI = { 'arm64-v8a': 'arm64', 'armeabi-v7a': 'arm32', 'x86_64': 'x86_64', 'universal': 'universal' };
 
-  function init(){
-    detectArch().then(function(arch){
-      fetch(API,{headers:{Accept:'application/vnd.github+json'}})
-        .then(function(r){if(!r.ok)throw r.status;return r.json()})
-        .then(function(rel){
-          var tag=rel.tag_name||'';
-          var ver=tag.replace(/^v/,'');
-          var apks=(rel.assets||[]).filter(function(a){return a.name.endsWith('.apk')});
-          var best=apks.find(function(a){return a.name.includes(arch)})
-                 ||apks.find(function(a){return a.name.includes('universal')})
-                 ||apks[0];
+      function init() {
+        detectArch().then(function (arch) {
+          fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
+            .then(function (r) { if (!r.ok) throw r.status; return r.json() })
+            .then(function (rel) {
+              var tag = rel.tag_name || '';
+              var ver = tag.replace(/^v/, '');
+              var apks = (rel.assets || []).filter(function (a) { return a.name.endsWith('.apk') });
+              var best = apks.find(function (a) { return a.name.includes(arch) })
+                || apks.find(function (a) { return a.name.includes('universal') })
+                || apks[0];
 
-          if(best){
-            $btn.href=best.browser_download_url;
-            $label.textContent='Скачать '+ver;
-            $ver.textContent='Версия '+ver;
-            $size.textContent=' · '+fmtSize(best.size)+' ('+( ABI[arch]||arch)+')';
-          } else {
-            $label.textContent='Скачать '+ver;
-            $btn.href='https://github.com/'+REPO+'/releases/tag/'+tag;
-          }
+              if (best) {
+                $btn.href = best.browser_download_url;
+                $label.textContent = 'Скачать ' + ver;
+                $ver.textContent = 'Версия ' + ver;
+                $size.textContent = ' · ' + fmtSize(best.size) + ' (' + (ABI[arch] || arch) + ')';
+              } else {
+                $label.textContent = 'Скачать ' + ver;
+                $btn.href = 'https://github.com/' + REPO + '/releases/tag/' + tag;
+              }
 
-          var others=apks.filter(function(a){return a!==best&&!a.name.includes('universal')});
-          if(others.length){
-            var links=others.map(function(a){
-              var m=a.name.match(/v[\d.]+-(.+?)\.apk$/);
-              var lbl=m?ABI[m[1]]||m[1]:a.name;
-              return '<a href="'+a.browser_download_url+'">'+lbl+'</a>';
-            }).join(' · ');
-            $other.innerHTML='Другие архитектуры: '+links+' · <a href="https://github.com/'+REPO+'/releases/tag/'+tag+'">все файлы</a>';
-          }
-        })
-        .catch(function(){
-          $label.textContent='Скачать APK';
-          $btn.href='https://github.com/'+REPO+'/releases/latest';
+              var others = apks.filter(function (a) { return a !== best && !a.name.includes('universal') });
+              if (others.length) {
+                var links = others.map(function (a) {
+                  var m = a.name.match(/v[\d.]+-(.+?)\.apk$/);
+                  var lbl = m ? ABI[m[1]] || m[1] : a.name;
+                  return '<a href="' + a.browser_download_url + '">' + lbl + '</a>';
+                }).join(' · ');
+                $other.innerHTML = 'Другие архитектуры: ' + links + ' · <a href="https://github.com/' + REPO + '/releases/tag/' + tag + '">все файлы</a>';
+              }
+            })
+            .catch(function () {
+              $label.textContent = 'Скачать APK';
+              $btn.href = 'https://github.com/' + REPO + '/releases/latest';
+            });
         });
-    });
-  }
+      }
 
-  init();
+      init();
 
-  /* ---- Scroll dots for screenshots ---- */
-  var track=document.getElementById('screens-track');
-  var dotsWrap=document.getElementById('scroll-dots');
-  if(track&&dotsWrap){
-    var cards=track.querySelectorAll('.screen-card');
-    for(var i=0;i<cards.length;i++){
-      var dot=document.createElement('span');
-      if(i===0) dot.classList.add('active');
-      dotsWrap.appendChild(dot);
-    }
-    var dots=dotsWrap.querySelectorAll('span');
-    var timer;
-    track.addEventListener('scroll',function(){
-      clearTimeout(timer);
-      timer=setTimeout(function(){
-        var center=track.scrollLeft+track.offsetWidth/2;
-        var closest=0,minDist=Infinity;
-        for(var j=0;j<cards.length;j++){
-          var d=Math.abs(cards[j].offsetLeft+cards[j].offsetWidth/2-center);
-          if(d<minDist){minDist=d;closest=j}
+      /* ---- Scroll dots for screenshots ---- */
+      var track = document.getElementById('screens-track');
+      var dotsWrap = document.getElementById('scroll-dots');
+      if (track && dotsWrap) {
+        var cards = track.querySelectorAll('.screen-card');
+        for (var i = 0; i < cards.length; i++) {
+          var dot = document.createElement('span');
+          if (i === 0) dot.classList.add('active');
+          dotsWrap.appendChild(dot);
         }
-        for(var k=0;k<dots.length;k++){
-          dots[k].classList.toggle('active',k===closest);
-        }
-      },60);
-    },{passive:true});
-  }
-})();
-</script>
+        var dots = dotsWrap.querySelectorAll('span');
+        var timer;
+        track.addEventListener('scroll', function () {
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            var center = track.scrollLeft + track.offsetWidth / 2;
+            var closest = 0, minDist = Infinity;
+            for (var j = 0; j < cards.length; j++) {
+              var d = Math.abs(cards[j].offsetLeft + cards[j].offsetWidth / 2 - center);
+              if (d < minDist) { minDist = d; closest = j }
+            }
+            for (var k = 0; k < dots.length; k++) {
+              dots[k].classList.toggle('active', k === closest);
+            }
+          }, 60);
+        }, { passive: true });
+      }
+    })();
+  </script>
 </body>
+
 </html>
