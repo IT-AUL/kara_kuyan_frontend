@@ -59,7 +59,7 @@ Still open: repo has no licence (permission to reuse needed); accuracy claims co
 ## Live OpenAPI (fetched 2026-09-19, `openapi-live-2026-09-19.json`)
 
 - OpenAPI 3.1.0, FastAPI-generated, 27 paths / 29 operations, validates with `openapi-spec-validator`. **All 29 operations have `operationId`, 26 document a 4xx response (422 validation), and required fields are declared** — the draft's lint defects 2–4 are largely fixed. Still: **no security scheme** (`X-Teacher-UUID` is a plain header), pagination not checked, Redocly lint not run.
-- Only in live: `/api/v1/ocr/scan-blank`, `/ocr/scan-blank-upload`, `/ocr/predict-box`, legacy `/api/scan_blank`, `/api/predict_box` (server-side OCR of uploaded photos — **not to be used by the app**, ADR 0003), `/constructor/{task-types,generate,verify-answer,scan-task,scan-task-base64}`, `/health`.
+- Only in live: `/api/v1/ocr/scan-blank`, `/ocr/scan-blank-upload`, `/ocr/predict-box`, legacy `/api/scan_blank`, `/api/predict_box` (server-side OCR of uploaded photos — **not to be used by the app**, ADR 0003; **removed from the server 2026-11-03**, see `openapi-live-2026-11-03.json`), `/constructor/{task-types,generate,verify-answer,scan-task,scan-task-base64}`, `/health`.
 - Only in the draft: `/assignments/{id}/batch-blanks.pdf`, `/constructor/tests/{test_id}/fork` (absent from the live server).
 - Codegen is no longer blocked by lint, but the semantic gaps above remain; the live spec, not the draft, should become the reference once the offline-bundle 500 is resolved.
 
@@ -80,6 +80,16 @@ Still open: repo has no licence (permission to reuse needed); accuracy claims co
 - **31.** `assigned_classes` items and `GET /assignments` response shape are undocumented (untyped schema); the app parses them defensively. `questions_count` is absent from `/assignments` (only in `ready-tests`), so the app calls both.
 
 - **32. `POST /constructor/scan-task` (photo of a textbook exercise → tasks) is now used by the app** (ADR 0009, consented, teaching material only). Probed with a synthetic image (`save_to_bank=false`): 200, `is_supported`, three sub-tasks with answers, `raw_ocr_text`, `confidence` 0.95. **Answers can be wrong** (МӘКТӘП → «МӘКТӘПКА», should be «МӘКТӘПКӘ»), so the app makes the teacher review each one. Open for the backend owners: how long uploaded images are kept, whether they reach YandexGPT verbatim, and a per-item confidence.
+
+## Backend update 2026-11-03 (`tatar_ocr@cleanup/remove-unused-files` `1667356`, `openapi-live-2026-11-03.json`)
+
+- Server-side OCR routes removed (`/ocr/*`, `/api/scan_blank`, `/api/predict_box`); no operations added or changed. Part of request 18 done.
+- **Gap 11 (idempotency) confirmed live:** `batch-sync` resend → `inserted 0, updated 1`; single `POST /submissions` now also upserts by `client_submission_uuid` (source).
+- Custom task with a non-Tatar answer → 422 (was 500); digit-only answers accepted server-side (the model cannot read digits, the app keeps rejecting them).
+- **Gap 30 still open:** `GET /classes` is scoped, roster and `GET /submissions?class_id=` are not (stranger UUID → 200 + rows).
+- **Gap 27 still open:** the branch's `blank_pipeline.py` also uses trim 11 % / ink 35 px.
+- The database was reset on deploy (only the seed is left); ids cached on devices before 2026-10-31 now return 404.
+- Evidence: `harness/changes/active/backend-integration/evidence/backend-update-2026-11-03.md`.
 
 ## Consequence
 
