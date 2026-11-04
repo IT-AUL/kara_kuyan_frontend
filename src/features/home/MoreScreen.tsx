@@ -1,69 +1,166 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useActiveContext } from '@/data/context';
 import { retryFailedSheets, useSyncState } from '@/data/syncState';
-
 import {
-  Button,
+  AppIcon,
+  type AppIconName,
   Card,
-  ListRow,
+  colors,
+  fontFamilies,
+  hairline,
   Screen,
-  ScreenHeader,
-  SectionHeader,
+  spacing,
   StatusPill,
   textStyles,
+  touchTarget,
 } from '@/design-system';
-import { spacing } from '@/design-system/tokens';
+
+import { SyncSummary } from './components/SyncSummary';
+import { SyncWorkRow, type SyncWorkStatus } from './components/SyncWorkRow';
+
+type MenuItem = {
+  icon: AppIconName;
+  title: string;
+  route: '/classes' | '/assignments' | '/export-gradebook' | '/analytics';
+};
+
+const MENU_ITEMS: readonly MenuItem[] = [
+  { icon: 'classes', title: 'Классы и ученики', route: '/classes' },
+  { icon: 'library', title: 'Все тесты', route: '/assignments' },
+  { icon: 'export', title: 'Экспорт в журнал', route: '/export-gradebook' },
+  { icon: 'analytics', title: 'Аналитика', route: '/analytics' },
+];
 
 export function MoreScreen() {
   const router = useRouter();
   const ctx = useActiveContext();
-  const { counts } = useSyncState();
-  const waiting = counts.pending + counts.syncing;
+  const { rows, counts } = useSyncState();
+
+  const lastSentAt = useMemo<number | null>(() => {
+    let max: number | null = null;
+    for (const r of rows) {
+      if (r.entry.status === 'synced') {
+        if (max === null || r.submission.savedAt > max) {
+          max = r.submission.savedAt;
+        }
+      }
+    }
+    return max;
+  }, [rows]);
+
+  const recentWorks = useMemo(() => {
+    const groups = new Map<
+      string,
+      {
+        assignmentId: string;
+        total: number;
+        sent: number;
+        hasFailed: boolean;
+        hasWaiting: boolean;
+        maxSavedAt: number;
+      }
+    >();
+
+    for (const r of rows) {
+      const id = r.submission.assignmentId;
+      const existing = groups.get(id) ?? {
+        assignmentId: id,
+        total: 0,
+        sent: 0,
+        hasFailed: false,
+        hasWaiting: false,
+        maxSavedAt: r.submission.savedAt,
+      };
+      existing.total += 1;
+      if (r.entry.status === 'synced') {
+        existing.sent += 1;
+      } else if (r.entry.status === 'failed') {
+        existing.hasFailed = true;
+      } else {
+        existing.hasWaiting = true;
+      }
+      if (r.submission.savedAt > existing.maxSavedAt) {
+        existing.maxSavedAt = r.submission.savedAt;
+      }
+      groups.set(id, existing);
+    }
+
+    return [...groups.values()]
+      .sort((a, b) => b.maxSavedAt - a.maxSavedAt)
+      .slice(0, 3)
+      .map((g) => {
+        const status: SyncWorkStatus = g.hasFailed
+          ? 'failed'
+          : g.hasWaiting
+            ? 'waiting'
+            : 'sent';
+        const title =
+          ctx.tests.find((t) => t.testId === g.assignmentId)?.title ?? 'Работа';
+        return {
+          assignmentId: g.assignmentId,
+          title,
+          total: g.total,
+          sent: g.sent,
+          status,
+        };
+      });
+  }, [rows, ctx.tests]);
 
   return (
     <Screen edges={['top']}>
-      <ScreenHeader
-        eyebrow="Ещё"
-        subtitle="Класс, аналитика, экспорт и отправка результатов."
-        title="Инструменты"
+      <Text selectable style={textStyles.display}>
+        Ещё
+      </Text>
+
+      <SyncSummary
+        counts={counts}
+        lastSentAt={lastSentAt}
+        onRetry={() => void retryFailedSheets()}
       />
 
-      <View style={styles.section}>
-        <SectionHeader title="Класс" />
-        <Card style={styles.list}>
-          <ListRow
-            icon="classes"
-            onPress={() => router.push('/classes')}
-            subtitle={ctx.className ? `${ctx.className} · ${ctx.progress.studentCount} учеников` : 'Создайте класс'}
-            title="Классы"
-            variant="plain"
-          />
-          <ListRow
-            icon="analytics"
-            onPress={() => router.push('/analytics')}
-            subtitle="Темы для повторения и рекомендация"
-            title="Аналитика"
-            variant="plain"
-          />
-          <ListRow
-            icon="export"
-            onPress={() => router.push('/export-gradebook')}
-            subtitle="XLSX или CSV без фотографий"
-            title="Экспорт журнала"
-            variant="plain"
-          />
-          <ListRow
-            icon="library"
-            isLast
-            onPress={() => router.push('/assignments')}
-            subtitle="Конструктор, бланки для печати"
-            title="Тесты"
-            variant="plain"
-          />
-        </Card>
-      </View>
+      {recentWorks.length > 0 ? (
+        <View style={styles.section}>
+          <Text style={styles.eyebrow}>Последние работы</Text>
+          <Card style={styles.listCard}>
+            {recentWorks.map((work, index) => (
+              <SyncWorkRow
+                isLast={index === recentWorks.length - 1}
+                key={work.assignmentId}
+                sent={work.sent}
+                status={work.status}
+                title={work.title}
+                total={work.total}
+              />
+            ))}
+          </Card>
+        </View>
+      ) : null}
+
+      <Card style={styles.listCard}>
+        {MENU_ITEMS.map((item, index) => {
+          const isLast = index === MENU_ITEMS.length - 1;
+          return (
+            <Pressable
+              accessibilityLabel={item.title}
+              accessibilityRole="button"
+              key={item.route}
+              onPress={() => router.push(item.route)}
+              style={({ pressed }) => [
+                styles.menuRow,
+                !isLast && styles.divider,
+                pressed && styles.pressed,
+              ]}
+            >
+              <AppIcon color={colors.textMuted} name={item.icon} size={20} />
+              <Text style={styles.menuTitle}>{item.title}</Text>
+              <AppIcon color={colors.textFaint} name="chevronRight" size={18} />
+            </Pressable>
+          );
+        })}
+      </Card>
 
       <Card style={styles.privacy} tone="raised">
         <StatusPill label="Обработка на устройстве" tone="info" />
@@ -74,36 +171,44 @@ export function MoreScreen() {
           Листы учеников не сохраняются и не отправляются: разбор идёт на телефоне. Фото задания из учебника уходит на сервер только с вашего согласия.
         </Text>
       </Card>
-
-      <Card style={styles.sync}>
-        <Text selectable style={textStyles.titleSmall}>
-          Синхронизация
-        </Text>
-        <StatusPill
-          label={counts.failed > 0 ? `Не отправлено: ${counts.failed}` : waiting > 0 ? `Ожидают отправки: ${waiting}` : 'Всё отправлено'}
-          tone={counts.failed > 0 ? 'warning' : waiting > 0 ? 'neutral' : 'success'}
-        />
-        <Text style={textStyles.bodySmall}>
-          {waiting > 0 || counts.failed > 0 ? 'Проверенные работы отправятся, когда появится связь. Сканирование не блокируется.' : 'Проверенные работы сохранены на сервере.'}
-        </Text>
-        {counts.failed > 0 ? <Button onPress={() => void retryFailedSheets()} title="Повторить отправку" variant="secondary" /> : null}
-      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  list: {
-    paddingBottom: spacing.xs,
-    paddingTop: spacing.xs,
+  divider: {
+    borderBottomColor: colors.divider,
+    borderBottomWidth: hairline,
+  },
+  eyebrow: {
+    ...textStyles.caption,
+    letterSpacing: 1,
+    paddingHorizontal: spacing.xxs,
+    textTransform: 'uppercase',
+  },
+  listCard: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+  },
+  menuRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: Math.max(56, touchTarget),
+  },
+  menuTitle: {
+    ...textStyles.bodySmall,
+    color: colors.text,
+    flex: 1,
+    fontFamily: fontFamilies.medium,
+  },
+  pressed: {
+    opacity: 0.82,
   },
   privacy: {
     gap: spacing.sm,
   },
   section: {
-    gap: spacing.sm,
-  },
-  sync: {
     gap: spacing.xs,
   },
 });
