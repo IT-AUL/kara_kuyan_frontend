@@ -28,6 +28,7 @@ export type HeatmapGridProps = {
   columns: HeatmapColumn[];
   highlight: number | null;
   onColumnPress: (n: number) => void;
+  onStudentPress?: (id: string) => void;
 };
 
 export function formatShortName(fullName: string): string {
@@ -44,6 +45,7 @@ export function HeatmapGrid({
   columns,
   highlight,
   onColumnPress,
+  onStudentPress,
 }: HeatmapGridProps) {
   const highlightIndex =
     highlight !== null ? columns.findIndex((c) => c.number === highlight) : -1;
@@ -93,17 +95,28 @@ export function HeatmapGrid({
 
         return (
           <View key={student.id} style={styles.studentRow}>
-            <Text
-              numberOfLines={1}
-              style={[
-                textStyles.bodySmall,
+            <Pressable
+              accessibilityLabel={`Ученик ${student.name}`}
+              accessibilityRole="button"
+              disabled={!onStudentPress}
+              hitSlop={4}
+              onPress={() => onStudentPress?.(student.id)}
+              style={({ pressed }) => [
                 styles.nameColumn,
-                highlight !== null &&
-                  (erredInHighlight ? styles.nameHighlighted : styles.nameDimmed),
+                pressed && onStudentPress && styles.pressed,
               ]}
             >
-              {shortName}
-            </Text>
+              <Text
+                numberOfLines={1}
+                style={[
+                  textStyles.bodySmall,
+                  highlight !== null &&
+                    (erredInHighlight ? styles.nameHighlighted : styles.nameDimmed),
+                ]}
+              >
+                {shortName}
+              </Text>
+            </Pressable>
 
             <View style={styles.cellsRow}>
               {columns.map((col, colIndex) => {

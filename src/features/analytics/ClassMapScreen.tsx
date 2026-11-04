@@ -159,6 +159,9 @@ export function ClassMapScreen() {
               columns={columns}
               highlight={highlight}
               onColumnPress={handleColumnPress}
+              onStudentPress={(id) =>
+                router.push({ pathname: '/analytics-student', params: { id } })
+              }
               students={students}
             />
           </Card>

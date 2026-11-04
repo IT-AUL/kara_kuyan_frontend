@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useActiveContext } from '@/data/context';
 import {
@@ -61,12 +61,30 @@ export function TestResultsScreen() {
   return (
     <Screen
       footer={
-        <Button
-          icon="export"
-          onPress={() => router.push('/export-gradebook')}
-          title="Ведомость"
-          variant="secondary"
-        />
+        <View style={styles.footerRow}>
+          <View style={styles.footerBtn}>
+            <Button
+              icon="assignment"
+              onPress={() =>
+                router.push(
+                  assignmentId
+                    ? { pathname: '/analytics-report', params: { id: assignmentId } }
+                    : '/analytics-report',
+                )
+              }
+              title="Отчёт завучу"
+              variant="secondary"
+            />
+          </View>
+          <View style={styles.footerBtn}>
+            <Button
+              icon="export"
+              onPress={() => router.push('/export-gradebook')}
+              title="Ведомость"
+              variant="primary"
+            />
+          </View>
+        </View>
       }
     >
       <ScreenHeader
@@ -166,41 +184,72 @@ export function TestResultsScreen() {
                       : null;
 
                     return (
-                      <Card key={`class-${item.questionNumber}`} style={styles.planCard}>
-                        <View style={styles.planCardTop}>
-                          <Tag icon="classes" label="Всем классом" tone="bad" />
-                          <Text style={textStyles.caption}>
-                            задание {item.questionNumber}
+                      <Pressable
+                        accessibilityLabel={`Задание ${item.questionNumber}: верно только ${Math.round(item.accuracyPct)}%`}
+                        accessibilityRole="button"
+                        key={`class-${item.questionNumber}`}
+                        onPress={() => {
+                          if (assignmentId) {
+                            router.push({
+                              pathname: '/analytics-task',
+                              params: { id: assignmentId, q: String(item.questionNumber) },
+                            });
+                          }
+                        }}
+                        style={({ pressed }) => [pressed && styles.pressed]}
+                      >
+                        <Card style={styles.planCard}>
+                          <View style={styles.planCardTop}>
+                            <Tag icon="classes" label="Всем классом" tone="bad" />
+                            <Text style={textStyles.caption}>
+                              задание {item.questionNumber}
+                            </Text>
+                          </View>
+                          <Text style={styles.planCardTitle}>
+                            Верно только {Math.round(item.accuracyPct)}%
                           </Text>
-                        </View>
-                        <Text style={styles.planCardTitle}>
-                          Верно только {Math.round(item.accuracyPct)}%
-                        </Text>
-                        {item.topAnswer && topAnswerText !== null ? (
-                          <Text style={textStyles.bodySmall}>
-                            Чаще всего пишут «{topAnswerText}» ({item.topAnswer.count} из{' '}
-                            {totalWrong})
-                          </Text>
-                        ) : null}
-                      </Card>
+                          {item.topAnswer && topAnswerText !== null ? (
+                            <Text style={textStyles.bodySmall}>
+                              Чаще всего пишут «{topAnswerText}» ({item.topAnswer.count} из{' '}
+                              {totalWrong})
+                            </Text>
+                          ) : null}
+                        </Card>
+                      </Pressable>
                     );
                   }
 
+                  const firstStudentId = item.students[0]?.id;
                   return (
-                    <Card key="individual" style={styles.planCard}>
-                      <View style={styles.planCardTop}>
-                        <Tag
-                          icon="person"
-                          label={`Лично · ${item.students.length}`}
-                          tone="info"
+                    <Pressable
+                      accessibilityLabel={`Консультация после уроков: ${item.students.length} учеников`}
+                      accessibilityRole="button"
+                      key="individual"
+                      onPress={() => {
+                        if (firstStudentId) {
+                          router.push({
+                            pathname: '/analytics-student',
+                            params: { id: firstStudentId },
+                          });
+                        }
+                      }}
+                      style={({ pressed }) => [pressed && styles.pressed]}
+                    >
+                      <Card style={styles.planCard}>
+                        <View style={styles.planCardTop}>
+                          <Tag
+                            icon="person"
+                            label={`Лично · ${item.students.length}`}
+                            tone="info"
+                          />
+                        </View>
+                        <Text style={styles.planCardTitle}>Консультация после уроков</Text>
+                        <AvatarStack
+                          names={item.students.map((s) => s.name)}
+                          size={28}
                         />
-                      </View>
-                      <Text style={styles.planCardTitle}>Консультация после уроков</Text>
-                      <AvatarStack
-                        names={item.students.map((s) => s.name)}
-                        size={28}
-                      />
-                    </Card>
+                      </Card>
+                    </Pressable>
                   );
                 })}
               </View>
@@ -209,15 +258,48 @@ export function TestResultsScreen() {
 
           {questions.length > 0 ? (
             <View style={styles.section}>
-              <SectionHeader title="Задания" />
+              <SectionHeader
+                action={
+                  <Pressable
+                    accessibilityLabel="Карта класса"
+                    accessibilityRole="button"
+                    hitSlop={8}
+                    onPress={() =>
+                      router.push(
+                        assignmentId
+                          ? { pathname: '/analytics-map', params: { id: assignmentId } }
+                          : '/analytics-map',
+                      )
+                    }
+                    style={({ pressed }) => [pressed && styles.pressed]}
+                  >
+                    <Text style={styles.sectionLink}>Карта класса →</Text>
+                  </Pressable>
+                }
+                title="Задания"
+              />
               <Card style={styles.tasksCard}>
                 {questions.map((q) => (
-                  <AccuracyBar
-                    caption={q.prompt}
+                  <Pressable
+                    accessibilityLabel={`Задание ${q.number}: ${Math.round(q.accuracyPct)}%`}
+                    accessibilityRole="button"
                     key={q.number}
-                    label={`Задание ${q.number}`}
-                    value={q.accuracyPct}
-                  />
+                    onPress={() => {
+                      if (assignmentId) {
+                        router.push({
+                          pathname: '/analytics-task',
+                          params: { id: assignmentId, q: String(q.number) },
+                        });
+                      }
+                    }}
+                    style={({ pressed }) => [pressed && styles.pressed]}
+                  >
+                    <AccuracyBar
+                      caption={q.prompt}
+                      label={`Задание ${q.number}`}
+                      value={q.accuracyPct}
+                    />
+                  </Pressable>
                 ))}
               </Card>
               <Text style={textStyles.caption}>
@@ -234,6 +316,13 @@ export function TestResultsScreen() {
 const styles = StyleSheet.create({
   eyebrowFaint: {
     color: colors.textFaint,
+  },
+  footerBtn: {
+    flex: 1,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
   heroContent: {
     gap: spacing.md,
@@ -275,6 +364,10 @@ const styles = StyleSheet.create({
   planList: {
     gap: spacing.sm,
   },
+  pressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.98 }],
+  },
   qualityNumber: {
     color: colors.text,
     fontFamily: fontFamilies.bold,
@@ -296,6 +389,12 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: spacing.sm,
+  },
+  sectionLink: {
+    color: colors.primary,
+    fontFamily: fontFamilies.semibold,
+    fontSize: 13,
+    lineHeight: 18,
   },
   tasksCard: {
     gap: spacing.md,

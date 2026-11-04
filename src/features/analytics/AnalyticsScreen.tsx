@@ -68,6 +68,7 @@ export function AnalyticsScreen() {
 
   const strugglingStudents = (analytics?.students ?? []).filter((s) => s.averageScorePct < 50);
   if (strugglingStudents.length > 0) {
+    const firstStruggling = strugglingStudents[0];
     actionItems.push({
       key: 'students-below-50',
       title: `${strugglingStudents.length} учеников ниже 50%`,
@@ -76,6 +77,13 @@ export function AnalyticsScreen() {
         .map((s) => s.fullName)
         .join(', '),
       barColor: colors.zoneBad,
+      onPress: firstStruggling
+        ? () =>
+            router.push({
+              pathname: '/analytics-student',
+              params: { id: firstStruggling.studentId },
+            })
+        : undefined,
     });
   }
 
@@ -170,6 +178,57 @@ export function AnalyticsScreen() {
               )}
             </View>
           </HeroCard>
+
+          <View style={styles.quickGrid}>
+            <Pressable
+              accessibilityLabel="Татарские буквы: ә ө ү җ ң һ"
+              accessibilityRole="button"
+              onPress={() => router.push('/analytics-letters')}
+              style={({ pressed }) => [styles.quickTile, pressed && styles.pressed]}
+            >
+              <Card style={styles.quickCard}>
+                <Text style={styles.quickGlyph}>ә ө ү</Text>
+                <Text style={styles.quickLabel}>Буквы и почерк</Text>
+              </Card>
+            </Pressable>
+            <Pressable
+              accessibilityLabel="Карта класса: матрица ответов"
+              accessibilityRole="button"
+              onPress={() =>
+                router.push(
+                  latestAssignment
+                    ? { pathname: '/analytics-map', params: { id: latestAssignment.assignmentId } }
+                    : '/analytics-map',
+                )
+              }
+              style={({ pressed }) => [styles.quickTile, pressed && styles.pressed]}
+            >
+              <Card style={styles.quickCard}>
+                <AppIcon color={colors.primary} name="classes" size={22} />
+                <Text style={styles.quickLabel}>Карта класса</Text>
+              </Card>
+            </Pressable>
+            <Pressable
+              accessibilityLabel="Отчёт завучу"
+              accessibilityRole="button"
+              onPress={() =>
+                router.push(
+                  latestAssignment
+                    ? {
+                        pathname: '/analytics-report',
+                        params: { id: latestAssignment.assignmentId },
+                      }
+                    : '/analytics-report',
+                )
+              }
+              style={({ pressed }) => [styles.quickTile, pressed && styles.pressed]}
+            >
+              <Card style={styles.quickCard}>
+                <AppIcon color={colors.primary} name="assignment" size={22} />
+                <Text style={styles.quickLabel}>Отчёт завучу</Text>
+              </Card>
+            </Pressable>
+          </View>
 
           {assignments.length > 0 ? (
             <View style={styles.section}>
@@ -300,6 +359,30 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.92,
     transform: [{ scale: 0.98 }],
+  },
+  quickCard: {
+    gap: spacing.xs,
+    minHeight: 84,
+    padding: 14,
+  },
+  quickGlyph: {
+    color: colors.primary,
+    fontFamily: fontFamilies.bold,
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  quickGrid: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  quickLabel: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: 13,
+    lineHeight: 17,
+  },
+  quickTile: {
+    flex: 1,
   },
   section: {
     gap: spacing.sm,

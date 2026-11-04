@@ -64,7 +64,14 @@ export default function RootLayout() {
             <Stack.Screen name="student-identified" />
             <Stack.Screen name="assessment-result" />
             <Stack.Screen name="task-review" />
+            <Stack.Screen name="check-done" />
             <Stack.Screen name="analytics" />
+            <Stack.Screen name="analytics-test" />
+            <Stack.Screen name="analytics-task" />
+            <Stack.Screen name="analytics-map" />
+            <Stack.Screen name="analytics-letters" />
+            <Stack.Screen name="analytics-student" />
+            <Stack.Screen name="analytics-report" />
             <Stack.Screen name="export-gradebook" />
             <Stack.Screen name="class-form" />
             <Stack.Screen name="test-form" />
@@ -75,6 +82,7 @@ export default function RootLayout() {
             <Stack.Screen name="task-photo" />
           </Stack.Protected>
           <Stack.Screen name="ocr-lab" />
+          <Stack.Screen name="ds-gallery" />
         </Stack>
         <UpdatePrompt />
       </ThemeProvider>
