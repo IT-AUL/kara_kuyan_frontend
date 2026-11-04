@@ -1,9 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { studentsText } from '@/domain/format/plural';
-import { AppIcon, Button, GlowLayer, StatusPill, StudentDots, textStyles } from '@/design-system';
-import { withAlpha } from '@/design-system/color';
-import { colors, fontFamilies, fontSizes, hairline, radius, spacing } from '@/design-system/tokens';
+import { Button, HeroCard, ProgressStrip, Tag, textStyles } from '@/design-system';
+import { colors, fontFamilies, spacing } from '@/design-system/tokens';
 
 import { CountUp } from './CountUp';
 
@@ -20,54 +18,41 @@ type CheckHeroProps = {
 };
 
 /** The focal point of Home: what is being checked, how far along, and the one next action. */
-export function CheckHero({ className, assignmentTitle, gradeLevel, checkedCount, studentCount, onScan, onOpenTest }: CheckHeroProps) {
-  const done = studentCount > 0 && checkedCount >= studentCount;
-  const started = checkedCount > 0;
-  const status = done ? { label: 'Все работы проверены', tone: 'success' as const, icon: 'checkCircle' as const } : started ? { label: 'Идёт проверка', tone: 'info' as const, icon: 'scan' as const } : { label: 'Ещё не начинали', tone: 'neutral' as const, icon: 'time' as const };
-  const subtitle = [className, gradeLevel ? `${gradeLevel} класс` : null].filter(Boolean).join(' · ');
-
+export function CheckHero({ className, assignmentTitle, checkedCount, studentCount, onScan, onOpenTest }: CheckHeroProps) {
   return (
-    <View style={styles.card}>
-      <GlowLayer color={colors.primary} size={280} style={styles.glow} />
-      <View style={styles.topLine} />
+    <HeroCard>
+      <View style={styles.content}>
+        <Tag icon="time" label="Текущая работа" tone="ok" />
 
-      <StatusPill icon={status.icon} label={status.label} tone={status.tone} />
-
-      <Pressable accessibilityHint="Открывает страницу теста" accessibilityLabel={`${assignmentTitle}. ${subtitle}`} accessibilityRole="button" onPress={onOpenTest} style={styles.titleBlock}>
-        <View style={styles.titleRow}>
-          <Text numberOfLines={2} style={[textStyles.title, styles.grow]}>
-            {assignmentTitle}
-          </Text>
-          <AppIcon color={colors.textFaint} name="chevronRight" size={20} />
-        </View>
-        <Text style={textStyles.bodySmall}>{subtitle}</Text>
-      </Pressable>
-
-      {started ? (
-        <View accessible accessibilityLabel={`Проверено ${checkedCount} из ${studentCount}`} style={styles.numberRow}>
-          <CountUp style={styles.big} value={checkedCount} />
-          <View style={styles.of}>
-            <Text style={styles.ofText}>из {studentCount}</Text>
-            <Text style={textStyles.caption}>проверено</Text>
-          </View>
-        </View>
-      ) : (
-        <Text style={textStyles.body}>
-          {studentCount > 0 ? `Отсканируйте бланки: ${studentsText(studentCount)}. Результаты появятся здесь.` : 'В классе пока нет учеников. Добавьте их во вкладке «Ещё» → «Классы».'}
+        <Text numberOfLines={2} style={[textStyles.title, styles.title]}>
+          {assignmentTitle}
         </Text>
-      )}
 
-      {studentCount > 0 ? <StudentDots checked={checkedCount} total={studentCount} /> : null}
+        <View accessible accessibilityLabel={`Проверено ${checkedCount} из ${studentCount}. ${className}`} style={styles.numberRow}>
+          <View style={styles.countLine}>
+            <CountUp style={styles.big} value={checkedCount} />
+            <Text style={styles.ofText}> из {studentCount} проверено</Text>
+          </View>
+          <Text style={textStyles.bodySmall}>{className}</Text>
+        </View>
 
-      <View style={styles.cta}>
-        <View pointerEvents="none" style={styles.ctaGlow} />
-        {done ? (
-          <Button icon="analytics" onPress={onOpenTest} title="Открыть итоги" />
-        ) : (
-          <Button icon="scan" onPress={onScan} title={started ? 'Сканировать следующий лист' : 'Сканировать первый лист'} />
-        )}
+        <ProgressStrip done={checkedCount} review={0} total={studentCount} />
+
+        <View style={styles.cta}>
+          <Button
+            icon="scan"
+            onPress={onScan}
+            title={checkedCount > 0 ? 'Продолжить проверку' : 'Проверить стопку'}
+            variant="primary"
+          />
+          <Button
+            onPress={onOpenTest}
+            title="Открыть работу"
+            variant="ghost"
+          />
+        </View>
       </View>
-    </View>
+    </HeroCard>
   );
 }
 
@@ -75,36 +60,33 @@ const styles = StyleSheet.create({
   big: {
     color: colors.text,
     fontFamily: fontFamilies.bold,
-    fontSize: 48,
+    fontSize: 34,
     fontVariant: ['tabular-nums'],
-    lineHeight: 54,
-    minWidth: 44,
+    lineHeight: 40,
   },
-  card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.divider,
-    borderRadius: radius.xl,
-    borderWidth: hairline,
-    gap: spacing.md,
-    overflow: 'hidden',
-    padding: spacing.lg,
+  content: {
+    gap: spacing.sm,
   },
-  cta: { marginTop: spacing.xs },
-  ctaGlow: {
-    backgroundColor: withAlpha(colors.primary, 0.16),
-    borderRadius: radius.lg + 4,
-    bottom: -4,
-    left: -4,
-    position: 'absolute',
-    right: -4,
-    top: -4,
+  countLine: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    flexShrink: 1,
   },
-  glow: { right: -90, top: -110 },
-  numberRow: { alignItems: 'flex-end', flexDirection: 'row', gap: spacing.sm },
-  of: { gap: 2, paddingBottom: 10 },
-  ofText: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: fontSizes.titleSmall },
-  grow: { flex: 1 },
-  titleBlock: { gap: 2 },
-  titleRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.xs },
-  topLine: { backgroundColor: withAlpha(colors.primary, 0.28), height: 1, left: spacing.xl, position: 'absolute', right: spacing.xl, top: 0 },
+  cta: {
+    gap: spacing.xxs,
+    marginTop: spacing.xs,
+  },
+  numberRow: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.xxs,
+  },
+  ofText: {
+    ...textStyles.body,
+    color: colors.textMuted,
+  },
+  title: {
+    marginTop: spacing.xxs,
+  },
 });
