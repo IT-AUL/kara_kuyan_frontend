@@ -6,6 +6,7 @@ import type {
   ClassRoster,
   ClassSummary,
   ModelManifest,
+  StudentAnalytics,
   SubmissionRow,
   TaskBankEntry,
   TaskType,
@@ -53,6 +54,9 @@ export const classAnalyticsResource = memo<string, ClassAnalytics>(
 );
 export const assignmentAnalyticsResource = memo<string, AssignmentAnalytics>(
   (id) => new Resource(`analytics-assignment:${id}`, () => backendApi?.assignmentAnalytics(id) ?? offline(), kvStore),
+);
+export const studentAnalyticsResource = memo<string, StudentAnalytics>(
+  (id) => new Resource(`analytics-student:${id}`, () => backendApi?.studentAnalytics(id) ?? offline(), kvStore),
 );
 /** Key is `classId|assignmentId` (either may be empty). */
 export const submissionsResource = memo<string, SubmissionRow[]>((key) => {

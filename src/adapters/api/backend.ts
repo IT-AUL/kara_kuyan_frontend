@@ -32,6 +32,7 @@ export type ClassAssignment = {
   averageScorePct: number;
 };
 export type TopicStat = { topicCode: string; topicName: string; failureRatePct: number; affectedStudents: number };
+export type StudentPerformance = { studentId: string; fullName: string; averageScorePct: number; averageGrade: number; testsCompleted: number; handwritingQualityPct: number | null };
 export type ClassAnalytics = {
   classId: string;
   className: string;
@@ -40,8 +41,27 @@ export type ClassAnalytics = {
   gradeDistribution: Record<string, number>;
   topMistakes: TopicStat[];
   difficultLetters: { letter: string; errorRatePct: number }[];
+  /** `students_performance_table`; empty when the server omits it. */
+  students: StudentPerformance[];
+  /** `students_needing_handwriting_attention` (student ids). */
+  handwritingAttention: string[];
 };
-export type QuestionStat = { number: number; prompt: string; expectedAnswer: string; accuracyPct: number; wrongCount: number };
+export type WrongAnswer = { studentId: string; studentName: string; writtenAnswer: string };
+export type QuestionStat = { number: number; prompt: string; expectedAnswer: string; accuracyPct: number; wrongCount: number; wrongAnswers: WrongAnswer[] };
+export type StudentHistoryItem = { assignmentId: string; title: string; date: string | null; score: number; maxScore: number; grade: number };
+export type StudentAnalytics = {
+  studentId: string;
+  fullName: string;
+  className: string;
+  testsCompleted: number;
+  averageScorePct: number;
+  averageGrade: number;
+  gradeDistribution: Record<string, number>;
+  weakTopics: { topicCode: string; topicName: string; totalQuestions: number; wrongCount: number; accuracyPct: number }[];
+  problemLetters: { letter: string; total: number; wrong: number; accuracyPct: number; confusions: string[] }[];
+  history: StudentHistoryItem[];
+  handwritingQualityPct: number | null;
+};
 export type AssignmentAnalytics = { assignmentId: string; title: string; totalSubmissions: number; averageScorePct: number; questions: QuestionStat[] };
 export type SubmissionRow = {
   uuid: string;
@@ -219,7 +239,7 @@ function parseTests(json: unknown): TestSummary[] {
   });
 }
 
-function parseClassAnalytics(json: unknown): ClassAnalytics {
+export function parseClassAnalytics(json: unknown): ClassAnalytics {
   const r = obj(json, 'class analytics');
   const dist = r.grade_distribution === undefined ? {} : obj(r.grade_distribution, 'grade_distribution');
   return {
@@ -236,10 +256,55 @@ function parseClassAnalytics(json: unknown): ClassAnalytics {
       const c = obj(raw, 'char');
       return { letter: str(c.letter, 'letter'), errorRatePct: num(c.error_rate_pct, 'error_rate_pct') };
     }),
+    students: arr(r.students_performance_table ?? [], 'students_performance_table').map((raw) => {
+      const p = obj(raw, 'student row');
+      return {
+        studentId: str(p.student_id, 'student_id'),
+        fullName: str(p.full_name, 'full_name'),
+        averageScorePct: num(p.average_score_pct, 'average_score_pct'),
+        averageGrade: num(p.average_grade, 'average_grade'),
+        testsCompleted: num(p.tests_completed, 'tests_completed'),
+        handwritingQualityPct: typeof p.handwriting_quality_pct === 'number' ? p.handwriting_quality_pct : null,
+      };
+    }),
+    handwritingAttention: arr(r.students_needing_handwriting_attention ?? [], 'students_needing_handwriting_attention').filter((x): x is string => typeof x === 'string'),
   };
 }
 
-function parseAssignmentAnalytics(json: unknown): AssignmentAnalytics {
+export function parseStudentAnalytics(json: unknown): StudentAnalytics {
+  const r = obj(json, 'student analytics');
+  const dist = r.grade_distribution === undefined ? {} : obj(r.grade_distribution, 'grade_distribution');
+  return {
+    studentId: str(r.student_id, 'student_id'),
+    fullName: str(r.full_name, 'full_name'),
+    className: str(r.class_name, 'class_name'),
+    testsCompleted: num(r.total_tests_completed, 'total_tests_completed'),
+    averageScorePct: num(r.average_score_pct, 'average_score_pct'),
+    averageGrade: num(r.average_grade, 'average_grade'),
+    gradeDistribution: Object.fromEntries(Object.entries(dist).map(([k, v]) => [k, num(v, 'grade count')])),
+    weakTopics: arr(r.frequent_weak_topics ?? [], 'frequent_weak_topics').map((raw) => {
+      const t = obj(raw, 'topic');
+      return { topicCode: str(t.topic_code, 'topic_code'), topicName: str(t.topic_name_tt, 'topic_name_tt'), totalQuestions: num(t.total_questions, 'total_questions'), wrongCount: num(t.wrong_count, 'wrong_count'), accuracyPct: num(t.accuracy_pct, 'accuracy_pct') };
+    }),
+    problemLetters: arr(r.problematic_letters ?? [], 'problematic_letters').map((raw) => {
+      const l = obj(raw, 'letter');
+      return {
+        letter: str(l.letter, 'letter'),
+        total: num(l.total_occurrences, 'total_occurrences'),
+        wrong: num(l.misrecognized_or_wrong, 'misrecognized_or_wrong'),
+        accuracyPct: num(l.accuracy_pct, 'accuracy_pct'),
+        confusions: Array.isArray(l.common_confusions) ? l.common_confusions.filter((c): c is string => typeof c === 'string') : [],
+      };
+    }),
+    history: arr(r.history ?? [], 'history').map((raw) => {
+      const h = obj(raw, 'history item');
+      return { assignmentId: str(h.assignment_id, 'assignment_id'), title: str(h.assignment_title, 'assignment_title'), date: typeof h.date === 'string' ? h.date : null, score: num(h.score, 'score'), maxScore: num(h.max_score, 'max_score'), grade: num(h.grade, 'grade') };
+    }),
+    handwritingQualityPct: typeof r.handwriting_quality_pct === 'number' ? r.handwriting_quality_pct : null,
+  };
+}
+
+export function parseAssignmentAnalytics(json: unknown): AssignmentAnalytics {
   const r = obj(json, 'assignment analytics');
   return {
     assignmentId: str(r.assignment_id, 'assignment_id'),
@@ -248,7 +313,11 @@ function parseAssignmentAnalytics(json: unknown): AssignmentAnalytics {
     averageScorePct: num(r.average_score_pct, 'average_score_pct'),
     questions: arr(r.questions_analytics ?? [], 'questions_analytics').map((raw) => {
       const q = obj(raw, 'question');
-      return { number: num(q.question_number, 'question_number'), prompt: str(q.prompt, 'prompt'), expectedAnswer: str(q.expected_answer, 'expected_answer'), accuracyPct: num(q.accuracy_pct, 'accuracy_pct'), wrongCount: arr(q.wrong_submissions ?? [], 'wrong_submissions').length };
+      const wrong = arr(q.wrong_submissions ?? [], 'wrong_submissions').map((w) => {
+        const x = obj(w, 'wrong submission');
+        return { studentId: str(x.student_id, 'student_id'), studentName: str(x.student_name, 'student_name'), writtenAnswer: typeof x.written_answer === 'string' ? x.written_answer : '' };
+      });
+      return { number: num(q.question_number, 'question_number'), prompt: str(q.prompt, 'prompt'), expectedAnswer: str(q.expected_answer, 'expected_answer'), accuracyPct: num(q.accuracy_pct, 'accuracy_pct'), wrongCount: wrong.length, wrongAnswers: wrong };
     }),
   };
 }
@@ -367,6 +436,10 @@ export class BackendApi {
 
   classAnalytics(classId: string): Promise<ApiResult<ClassAnalytics>> {
     return this.client.request(`/api/v1/analytics/classes/${encodeURIComponent(classId)}`, parseClassAnalytics);
+  }
+
+  studentAnalytics(studentId: string): Promise<ApiResult<StudentAnalytics>> {
+    return this.client.request(`/api/v1/analytics/students/${encodeURIComponent(studentId)}`, parseStudentAnalytics);
   }
 
   assignmentAnalytics(assignmentId: string): Promise<ApiResult<AssignmentAnalytics>> {
