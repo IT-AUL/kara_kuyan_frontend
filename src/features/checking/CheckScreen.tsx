@@ -6,11 +6,34 @@ import { useActiveContext } from '@/data/context';
 import { retryFailedSheets, useSyncState } from '@/data/syncState';
 import { useTestOverview } from '@/data/testOverview';
 import type { OutboxStatus } from '@/domain/sync/outbox';
-import { AppIcon, Button, Chips, EmptyState, Notice, ProgressBar, Screen, ScreenHeader, StatusPill, textStyles } from '@/design-system';
-import { colors, fontFamilies, hairline, radius, spacing } from '@/design-system/tokens';
+import {
+  Avatar,
+  Button,
+  Card,
+  EmptyState,
+  GradePill,
+  Notice,
+  ProgressStrip,
+  Screen,
+  ScreenHeader,
+  SegmentedTabs,
+  Tag,
+  textStyles,
+} from '@/design-system';
+import { colors, fontFamilies, fontSizes, hairline, spacing } from '@/design-system/tokens';
 
-const syncLabel: Record<Exclude<OutboxStatus, 'synced'>, string> = { pending: 'Ждёт отправки', syncing: 'Отправляется', failed: 'Ошибка отправки' };
-const syncTone = { pending: 'neutral', syncing: 'info', failed: 'error' } as const;
+const syncLabel: Record<Exclude<OutboxStatus, 'synced'>, string> = {
+  pending: 'Ждёт отправки',
+  syncing: 'Отправляется',
+  failed: 'Ошибка отправки',
+};
+const syncTone: Record<Exclude<OutboxStatus, 'synced'>, 'neutral' | 'info' | 'bad'> = {
+  pending: 'neutral',
+  syncing: 'info',
+  failed: 'bad',
+};
+
+const clampGrade = (g: number): 2 | 3 | 4 | 5 => Math.min(5, Math.max(2, Math.round(g))) as 2 | 3 | 4 | 5;
 
 /**
  * The checking queue of the current test: every student of the class with their state. The overall test
@@ -28,31 +51,48 @@ export function CheckScreen() {
   const checkedRows = o.rows.filter((r) => r.work !== null);
   const openRows = o.rows.filter((r) => r.work === null);
   const shown = filter === 'done' ? checkedRows : filter === 'open' ? openRows : o.rows;
+  const activeTabIndex = filter === 'open' ? 1 : filter === 'done' ? 2 : 0;
+  const headerTitle = ready ? `${ctx.assignmentTitle} · ${ctx.className}` : 'Проверка';
+  const allChecked = ready && o.progress.total > 0 && o.progress.remaining === 0;
 
   return (
     <Screen
       edges={['top']}
-      footer={<Button disabled={!ready} icon="scan" onPress={() => router.push('/scan')} title="Сканировать лист" />}
+      footer={
+        <>
+          {allChecked ? (
+            <Button
+              onPress={() => router.push('/check-done')}
+              title="Класс проверен — итоги"
+              variant="secondary"
+            />
+          ) : null}
+          <Button disabled={!ready} icon="scan" onPress={() => router.push('/scan')} title="Сканировать лист" />
+        </>
+      }
       onRefresh={() => void ctx.refreshAll()}
       refreshing={ctx.submissionsState.status === 'loading'}
     >
-      <ScreenHeader title="Проверка" />
+      <ScreenHeader title={headerTitle} />
 
       {ready ? (
         <Pressable
           accessibilityHint="Открывает страницу теста: итоги, задания, ученики, бланк"
           accessibilityLabel={`${ctx.assignmentTitle}, ${ctx.className}. Проверено ${o.progress.checked} из ${o.progress.total}`}
           accessibilityRole="button"
-          android_ripple={{ color: 'rgba(244, 248, 245, 0.08)' }}
           onPress={() => router.push({ pathname: '/test-detail', params: { id: ctx.assignmentId ?? '' } })}
-          style={styles.test}
+          style={styles.progressBlock}
         >
-          <View style={styles.grow}>
-            <Text numberOfLines={2} style={styles.testTitle}>{ctx.assignmentTitle}</Text>
-            <Text style={textStyles.caption}>{ctx.className} · проверено {o.progress.checked} из {o.progress.total}</Text>
-            <ProgressBar percent={o.progress.percent} />
+          <View style={styles.progressRow}>
+            <Text style={styles.progressLeft}>
+              <Text style={styles.checkedCount}>{o.progress.checked}</Text>
+              <Text style={styles.checkedLabel}>{` из ${o.progress.total} проверено`}</Text>
+            </Text>
+            <Text style={textStyles.caption}>
+              {o.progress.remaining > 0 ? `осталось ${o.progress.remaining}` : 'все сдали'}
+            </Text>
           </View>
-          <AppIcon color={colors.textFaint} name="chevronRight" size={20} />
+          <ProgressStrip done={o.progress.checked} total={o.progress.total} />
         </Pressable>
       ) : null}
 
@@ -73,43 +113,54 @@ export function CheckScreen() {
         />
       ) : (
         <>
-          <Chips
-            allLabel={`Все · ${o.rows.length}`}
-            items={[{ key: 'done', label: `Проверено · ${checkedRows.length}` }, { key: 'open', label: `Осталось · ${openRows.length}` }]}
-            onSelect={setFilter}
-            selected={filter}
+          <SegmentedTabs
+            activeIndex={activeTabIndex}
+            onTabChange={(index) => setFilter(index === 1 ? 'open' : index === 2 ? 'done' : null)}
+            tabs={[
+              `Все ${o.progress.total}`,
+              `Осталось ${o.progress.remaining}`,
+              `Проверено ${o.progress.checked}`,
+            ]}
           />
           {shown.length === 0 ? (
             <Text style={textStyles.bodySmall}>{o.rows.length === 0 ? 'В классе пока нет учеников.' : 'В этом списке никого нет.'}</Text>
           ) : (
-            <View style={styles.list}>
+            <Card style={styles.listCard}>
               {shown.map((r, i) => {
                 const sync = localByStudent.get(r.studentId);
-                const pendingSync = r.work && sync && sync.status !== 'synced' ? sync : null;
+                const pendingSync =
+                  r.work && sync && sync.status !== 'synced'
+                    ? (sync.status as Exclude<OutboxStatus, 'synced'>)
+                    : null;
                 return (
                   <View
                     accessible
-                    accessibilityLabel={r.work ? `${r.name}. Оценка ${r.work.grade}, ${r.work.score} из ${r.work.maxScore}` : `${r.name}. Не проверен`}
+                    accessibilityLabel={r.work ? `${r.name}. Оценка ${r.work.grade}, ${r.work.score} из ${r.work.maxScore}` : `${r.name}. Не сдал`}
                     key={r.studentId}
                     style={[styles.row, i < shown.length - 1 && styles.divider]}
                   >
-                    <View style={[styles.avatar, !r.work && styles.avatarOpen]}>
-                      <Text style={[styles.avatarText, !r.work && { color: colors.textMuted }]}>{r.name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('')}</Text>
+                    <Avatar name={r.name} ring={r.work ? 'done' : 'none'} size={36} />
+                    <View style={styles.rowCopy}>
+                      <Text numberOfLines={2} style={[styles.studentName, !r.work && styles.studentNameOpen]}>
+                        {r.name}
+                      </Text>
+                      {pendingSync ? (
+                        <Tag label={syncLabel[pendingSync]} tone={syncTone[pendingSync]} />
+                      ) : (
+                        <Text style={textStyles.caption}>
+                          {r.work ? `${r.work.score} из ${r.work.maxScore}` : 'не сдал'}
+                        </Text>
+                      )}
                     </View>
-                    <Text numberOfLines={2} style={[textStyles.body, styles.grow, !r.work && { color: colors.textMuted }]}>{r.name}</Text>
                     {r.work ? (
-                      <>
-                        {pendingSync ? <View style={styles.center}><StatusPill label={syncLabel[pendingSync.status as Exclude<OutboxStatus, 'synced'>]} tone={syncTone[pendingSync.status as Exclude<OutboxStatus, 'synced'>]} /></View> : null}
-                        <Text style={styles.score}>{r.work.score}/{r.work.maxScore}</Text>
-                        <View style={styles.grade}><Text style={styles.gradeText}>{r.work.grade}</Text></View>
-                      </>
+                      <GradePill grade={clampGrade(r.work.grade)} />
                     ) : (
-                      <View style={styles.center}><StatusPill label="Не проверен" tone="neutral" /></View>
+                      <Text style={styles.dash}>—</Text>
                     )}
                   </View>
                 );
               })}
-            </View>
+            </Card>
           )}
         </>
       )}
@@ -118,17 +169,59 @@ export function CheckScreen() {
 }
 
 const styles = StyleSheet.create({
-  avatar: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: 20, height: 40, justifyContent: 'center', width: 40 },
-  center: { alignSelf: 'center' },
-  avatarOpen: { backgroundColor: colors.surfaceRaised },
-  avatarText: { color: colors.successSoft, fontFamily: fontFamilies.semibold, fontSize: 14 },
-  divider: { borderBottomColor: colors.divider, borderBottomWidth: hairline },
-  grade: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill, height: 32, justifyContent: 'center', width: 32 },
-  gradeText: { color: colors.successSoft, fontFamily: fontFamilies.bold, fontSize: 16 },
-  grow: { flex: 1 },
-  list: { borderColor: colors.divider, borderTopWidth: hairline },
-  row: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, minHeight: 64 },
-  score: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: 14, fontVariant: ['tabular-nums'] },
-  test: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.divider, borderRadius: radius.lg, borderWidth: hairline, flexDirection: 'row', gap: spacing.sm, padding: spacing.md },
-  testTitle: { color: colors.text, fontFamily: fontFamilies.semibold, fontSize: 17 },
+  checkedCount: {
+    color: colors.text,
+    fontFamily: fontFamilies.bold,
+    fontSize: fontSizes.display,
+    fontVariant: ['tabular-nums'],
+    lineHeight: 36,
+  },
+  checkedLabel: {
+    ...textStyles.body,
+    color: colors.textMuted,
+  },
+  dash: {
+    ...textStyles.bodySmall,
+    color: colors.textFaint,
+  },
+  divider: {
+    borderBottomColor: colors.divider,
+    borderBottomWidth: hairline,
+  },
+  listCard: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+  },
+  progressBlock: {
+    gap: spacing.sm,
+  },
+  progressLeft: {
+    flexShrink: 1,
+  },
+  progressRow: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xxs,
+  },
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: 60,
+    paddingVertical: spacing.sm,
+  },
+  rowCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  studentName: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.bodySmall,
+    lineHeight: 20,
+  },
+  studentNameOpen: {
+    color: colors.textMuted,
+  },
 });

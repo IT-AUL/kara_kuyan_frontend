@@ -1,24 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { AssessmentTask, ReviewStatus } from '@/domain/assessment/model';
-import { AppIcon, StatusPill, textStyles } from '@/design-system';
-import { colors, radius, spacing } from '@/design-system/tokens';
-
-const statusLabel: Record<ReviewStatus, string> = {
-  correct: 'Верно',
-  error: 'Ошибка',
-  missing: 'Не выполнено',
-  pending: 'Ожидает',
-  review: 'На проверку',
-};
-
-const statusTone = {
-  correct: 'success',
-  error: 'error',
-  missing: 'neutral',
-  pending: 'neutral',
-  review: 'warning',
-} as const;
+import type { AssessmentTask } from '@/domain/assessment/model';
+import { Tag, textStyles } from '@/design-system';
+import { colors, hairline, spacing } from '@/design-system/tokens';
 
 type TaskResultRowProps = {
   task: AssessmentTask;
@@ -27,36 +11,41 @@ type TaskResultRowProps = {
   isLast?: boolean;
 };
 
+function resolveTag(
+  task: AssessmentTask,
+  reviewed: boolean,
+  overridden?: 'accept' | 'reject',
+): { label: string; tone: 'ok' | 'mid' | 'bad' } {
+  if (overridden === 'accept' || (reviewed && task.status === 'review') || task.status === 'correct') {
+    return { label: 'верно', tone: 'ok' };
+  }
+  if (overridden === 'reject') {
+    return { label: 'ошибка', tone: 'bad' };
+  }
+  if (task.status === 'review') {
+    return { label: 'проверить', tone: 'mid' };
+  }
+  return { label: 'ошибка', tone: 'bad' };
+}
+
 export function TaskResultRow({ task, reviewed = false, overridden, isLast = false }: TaskResultRowProps) {
   const resolvedReview = reviewed && task.status === 'review';
+  const tag = resolveTag(task, reviewed, overridden);
+  const answerText =
+    task.status === 'review' && !resolvedReview && !overridden
+      ? `${task.expected} → ${task.recognized}`
+      : task.recognized;
+
   return (
     <View style={[styles.row, !isLast && styles.divider]}>
-      <View style={styles.numberWrap}>
-        <Text style={[textStyles.caption, styles.number]}>{task.number}</Text>
-      </View>
+      <Text style={styles.number}>{task.number}</Text>
       <View style={styles.copy}>
         <Text style={textStyles.body}>{task.prompt}</Text>
-        <View style={styles.evidence}>
-          {task.status === 'review' && !resolvedReview ? (
-            <AppIcon color={colors.warning} name="warning" size={15} />
-          ) : null}
-          <Text selectable style={textStyles.bodySmall}>
-            {task.status === 'review'
-              ? `${task.expected} → ${task.recognized}`
-              : task.recognized}
-          </Text>
-        </View>
+        <Text selectable style={textStyles.bodySmall}>
+          {answerText}
+        </Text>
       </View>
-      {overridden ? (
-        <StatusPill
-          label={overridden === 'accept' ? 'Засчитано' : 'Не засчитано'}
-          tone={overridden === 'accept' ? 'success' : 'error'}
-        />
-      ) : resolvedReview ? (
-        <StatusPill label="Проверено" tone="success" />
-      ) : (
-        <StatusPill label={statusLabel[task.status]} tone={statusTone[task.status]} />
-      )}
+      <Tag label={tag.label} tone={tag.tone} />
     </View>
   );
 }
@@ -66,25 +55,15 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  evidence: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.xxs,
-  },
-  number: {
-    color: colors.primary,
-  },
-  numberWrap: {
-    alignItems: 'center',
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.sm,
-    height: 32,
-    justifyContent: 'center',
-    width: 32,
-  },
   divider: {
     borderBottomColor: colors.divider,
-    borderBottomWidth: 1,
+    borderBottomWidth: hairline,
+  },
+  number: {
+    ...textStyles.caption,
+    color: colors.textFaint,
+    fontVariant: ['tabular-nums'],
+    minWidth: 20,
   },
   row: {
     alignItems: 'center',

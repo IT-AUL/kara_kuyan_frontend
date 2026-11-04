@@ -5,7 +5,7 @@ import { session } from '@/data/session';
 import { defaultGradeScale, gradeForPercent, scorePercent } from '@/domain/assessment/grading';
 import type { AssessmentTask } from '@/domain/assessment/model';
 import { effectiveStatus, scoreOutcome } from '@/domain/scan/evaluate';
-import { Button, Card, Screen, ScreenHeader, SectionHeader, StatusPill } from '@/design-system';
+import { Button, Card, Screen, ScreenHeader, SectionHeader, StatusPill, Tag } from '@/design-system';
 import { spacing } from '@/design-system/tokens';
 import { ResultSummaryCard } from './components/ResultSummaryCard';
 import { TaskResultRow } from './components/TaskResultRow';
@@ -18,7 +18,16 @@ export function AssessmentResultScreen() {
 
   if (!outcome) {
     return (
-      <Screen footer={<Button icon="scan" onPress={() => router.replace('/checking')} title="К проверке" />}>
+      <Screen
+        footer={
+          <Button
+            icon="scan"
+            onPress={() => router.replace('/checking')}
+            title="К проверке"
+            variant="secondary"
+          />
+        }
+      >
         <ScreenHeader eyebrow="Результат" title="Нет результата" subtitle="Сначала отсканируйте лист." />
       </Screen>
     );
@@ -27,6 +36,7 @@ export function AssessmentResultScreen() {
   const { score, maxScore, reviewLeft } = scoreOutcome(outcome, overrides);
   const percent = scorePercent(score, maxScore);
   const hasReview = reviewLeft > 0;
+  const studentName = student?.name ?? 'Ученик не выбран';
 
   return (
     <Screen
@@ -34,7 +44,12 @@ export function AssessmentResultScreen() {
         <View style={styles.actions}>
           <StatusPill icon="time" label="Не сохранено" tone="neutral" />
           {hasReview ? (
-            <Button icon="review" onPress={() => router.push('/task-review')} title="Проверить отмеченный ответ" />
+            <Button
+              icon="review"
+              onPress={() => router.push('/task-review')}
+              title="Проверить отмеченный ответ"
+              variant="primary"
+            />
           ) : (
             <Button
               icon="check"
@@ -43,8 +58,14 @@ export function AssessmentResultScreen() {
                 router.replace('/checking');
               }}
               title="Сохранить и сканировать дальше"
+              variant="primary"
             />
           )}
+          <Button
+            onPress={() => router.replace('/checking')}
+            title="К проверке"
+            variant="secondary"
+          />
         </View>
       }
     >
@@ -63,12 +84,13 @@ export function AssessmentResultScreen() {
         percent={percent}
         reviewLeft={reviewLeft}
         score={score}
+        studentName={studentName}
         variant={outcome.variant}
       />
 
       <View style={styles.section}>
         <SectionHeader
-          action={hasReview ? <StatusPill label={`${reviewLeft} на проверку`} tone="warning" /> : undefined}
+          action={hasReview ? <Tag label={`${reviewLeft} на проверку`} tone="mid" /> : undefined}
           subtitle={
             hasReview ? 'Проверьте отмеченный ответ перед сохранением.' : 'Все ответы проверены — работу можно сохранить.'
           }
