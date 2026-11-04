@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AppIcon, StatusPill, StudentDots, textStyles } from '@/design-system';
-import { colors, hairline, radius, spacing, touchTarget } from '@/design-system/tokens';
-
+import { AppIcon, Card, textStyles } from '@/design-system';
+import { withAlpha } from '@/design-system/color';
+import { colors, fontFamilies, radius, spacing, touchTarget } from '@/design-system/tokens';
 
 type InsightCardProps = {
   topicName: string;
@@ -14,61 +14,82 @@ type InsightCardProps = {
   onDismiss: () => void;
 };
 
-export function InsightCard({ topicName, affected, total, basedOn, onOpen, onDismiss }: InsightCardProps) {
+export function InsightCard({ topicName, affected, total, onOpen, onDismiss }: InsightCardProps) {
   return (
-    <View style={styles.card}>
-      <View style={styles.accent} />
+    <Card style={styles.card}>
       <Pressable
         accessibilityHint="Открывает аналитику класса"
-        accessibilityLabel={`Рекомендуем повторить: ${topicName}. Затронуто учеников: ${affected} из ${total}.`}
+        accessibilityLabel={`Важно сегодня. ${topicName}: ошибка у ${affected} из ${total}`}
         accessibilityRole="button"
-        android_ripple={{ color: 'rgba(244, 248, 245, 0.08)' }}
+        android_ripple={{ color: withAlpha(colors.text, 0.08) }}
         onPress={onOpen}
         style={styles.body}
       >
-        <View style={styles.head}>
-          <StatusPill icon="insight" label={basedOn < 5 ? `Предварительно · по ${basedOn} раб.` : `По ${basedOn} работам`} tone="info" />
+        <View style={styles.iconBox}>
+          <AppIcon color={colors.zoneBad} name="insight" size={20} />
         </View>
-        <Text style={textStyles.caption}>Рекомендуем повторить</Text>
-        <Text numberOfLines={2} selectable style={textStyles.titleSmall}>
-          {topicName}
-        </Text>
-        <View style={styles.stat}>
-          <StudentDots checked={affected} size="sm" total={total} />
-          <Text style={textStyles.bodySmall}>Затронуто учеников: {affected} из {total}</Text>
+        <View style={styles.center}>
+          <Text style={textStyles.caption}>Важно сегодня</Text>
+          <Text numberOfLines={2} style={styles.message}>
+            {topicName}: ошибка у {affected} из {total}
+          </Text>
         </View>
-        <View style={styles.more}>
-          <Text style={styles.moreText}>Открыть аналитику</Text>
-          <AppIcon color={colors.primary} name="chevronRight" size={18} />
-        </View>
+        <AppIcon color={colors.textFaint} name="chevronRight" size={18} />
       </Pressable>
       <Pressable
         accessibilityLabel="Скрыть рекомендацию"
         accessibilityRole="button"
-        android_ripple={{ borderless: true, color: 'rgba(244, 248, 245, 0.12)' }}
+        android_ripple={{ borderless: true, color: withAlpha(colors.text, 0.12) }}
         hitSlop={4}
         onPress={onDismiss}
         style={styles.dismiss}
       >
-        <AppIcon color={colors.textMuted} name="close" size={18} />
+        <AppIcon color={colors.textFaint} name="close" size={18} />
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  accent: { backgroundColor: colors.warning, bottom: 0, left: 0, position: 'absolute', top: 0, width: 3 },
-  body: { gap: spacing.xs, padding: spacing.lg, paddingLeft: spacing.lg + 3, paddingRight: touchTarget },
-  card: {
-    backgroundColor: colors.surfaceSoft,
-    borderColor: colors.divider,
-    borderRadius: radius.lg,
-    borderWidth: hairline,
-    overflow: 'hidden',
+  body: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: touchTarget,
+    paddingVertical: spacing.md,
+    paddingLeft: spacing.md,
+    paddingRight: spacing.xs,
   },
-  dismiss: { alignItems: 'center', height: touchTarget, justifyContent: 'center', position: 'absolute', right: 0, top: 0, width: touchTarget },
-  head: { alignItems: 'flex-start', flexDirection: 'row' },
-  more: { alignItems: 'center', flexDirection: 'row', gap: 2, minHeight: 32 },
-  moreText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
-  stat: { gap: spacing.xs },
+  card: {
+    alignItems: 'center',
+    borderRadius: radius.xxl,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    padding: 0,
+    paddingRight: spacing.xxs,
+  },
+  center: {
+    flex: 1,
+    gap: 2,
+  },
+  dismiss: {
+    alignItems: 'center',
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  iconBox: {
+    alignItems: 'center',
+    backgroundColor: withAlpha(colors.zoneBad, 0.12),
+    borderRadius: radius.lg,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  message: {
+    ...textStyles.bodySmall,
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+  },
 });

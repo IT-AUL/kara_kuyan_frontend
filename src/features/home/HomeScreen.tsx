@@ -8,12 +8,13 @@ import { useActiveContext } from '@/data/context';
 import { classAnalyticsResource } from '@/data/hub';
 import { useResource } from '@/data/resource';
 import { retryFailedSheets, useSyncState } from '@/data/syncState';
-import { EmptyState, Notice, Screen, textStyles } from '@/design-system';
+import { EmptyState, Notice, Screen, Tag, textStyles } from '@/design-system';
 import { useMotion } from '@/design-system/motion';
 import { colors, hairline, radius, spacing } from '@/design-system/tokens';
 
 import { CheckHero } from './components/CheckHero';
 import { InsightCard } from './components/InsightCard';
+import { OtherWorks } from './components/OtherWorks';
 import { Shortcuts } from './components/Shortcuts';
 
 function greeting(date = new Date()): string {
@@ -58,8 +59,8 @@ export function HomeScreen() {
   const loading = ctx.classes.length === 0 && (ctx.classesState.status === 'idle' || ctx.classesState.status === 'loading');
   const test = ctx.tests.find((t) => t.testId === ctx.assignmentId);
   const name = ctx.profile?.teacherName ?? '';
-  const rawSchool = ctx.profile?.school?.trim();
-  const school = rawSchool && rawSchool !== name.trim() ? rawSchool : undefined;
+  const dateLabel = new Date().toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
+  const hasOtherWorks = ctx.tests.some((t) => t.testId !== ctx.assignmentId);
 
   const dismissInsight = () => {
     if (!top || !ctx.classId) return;
@@ -91,11 +92,16 @@ export function HomeScreen() {
   return (
     <Screen edges={['top']} onRefresh={() => void refresh()} refreshing={refreshing}>
       <Reveal index={0}>
-        <View style={styles.header}>
-          <Text style={textStyles.bodySmall}>{greeting()}{school ? ` · ${school}` : ''}</Text>
-          <Text accessibilityRole="header" numberOfLines={1} selectable style={textStyles.display}>
-            {name}
-          </Text>
+        <View style={styles.headerRow}>
+          <View style={styles.header}>
+            <Text style={textStyles.bodySmall}>
+              {greeting()} · {dateLabel}
+            </Text>
+            <Text accessibilityRole="header" numberOfLines={1} selectable style={textStyles.display}>
+              {name}
+            </Text>
+          </View>
+          {offline ? <Tag icon="sync" label="офлайн" tone="mid" /> : null}
         </View>
       </Reveal>
 
@@ -131,8 +137,20 @@ export function HomeScreen() {
         </Reveal>
       ) : null}
 
-      {ctx.classId ? (
+      {hasOtherWorks ? (
         <Reveal index={3}>
+          <OtherWorks
+            className={ctx.className}
+            currentId={ctx.assignmentId}
+            onNew={() => router.push('/test-form')}
+            onOpen={(id) => router.push({ pathname: '/test-detail', params: { id } })}
+            tests={ctx.tests}
+          />
+        </Reveal>
+      ) : null}
+
+      {ctx.classId ? (
+        <Reveal index={4}>
           <Shortcuts studentCount={ctx.progress.studentCount} />
         </Reveal>
       ) : null}
@@ -141,8 +159,12 @@ export function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { gap: 2 },
-  list: { borderColor: colors.divider, borderRadius: radius.lg, borderTopWidth: hairline, paddingTop: spacing.xxs },
-  section: { gap: spacing.sm },
+  header: { flex: 1, gap: 2 },
+  headerRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+  },
   skeleton: { backgroundColor: colors.surface, borderColor: colors.divider, borderRadius: radius.xl, borderWidth: hairline },
 });

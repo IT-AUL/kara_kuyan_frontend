@@ -2,8 +2,9 @@ import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { studentsText } from '@/domain/format/plural';
-import { AppIcon, type AppIconName } from '@/design-system';
-import { colors, fontFamilies, hairline, radius, spacing } from '@/design-system/tokens';
+import { AppIcon, type AppIconName, Card } from '@/design-system';
+import { withAlpha } from '@/design-system/color';
+import { colors, fontFamilies, radius, spacing } from '@/design-system/tokens';
 
 type ShortcutsProps = { studentCount: number };
 
@@ -18,26 +19,42 @@ export function Shortcuts({ studentCount }: ShortcutsProps) {
   return (
     <View style={styles.row}>
       {items.map((it) => (
-        <Pressable
-          accessibilityLabel={`${it.title}. ${it.hint}`}
-          accessibilityRole="button"
-          android_ripple={{ color: 'rgba(244, 248, 245, 0.1)' }}
-          key={it.route}
-          onPress={() => router.push(it.route)}
-          style={styles.tile}
-        >
-          <AppIcon color={colors.primary} name={it.icon} size={26} />
-          <Text numberOfLines={1} style={styles.title}>{it.title}</Text>
-          <Text numberOfLines={1} style={styles.hint}>{it.hint}</Text>
-        </Pressable>
+        <Card key={it.route} style={styles.card}>
+          <Pressable
+            accessibilityLabel={`${it.title}. ${it.hint}`}
+            accessibilityRole="button"
+            android_ripple={{ color: withAlpha(colors.text, 0.1) }}
+            onPress={() => router.push(it.route)}
+            style={styles.tile}
+          >
+            <AppIcon color={colors.primary} name={it.icon} size={22} />
+            <Text numberOfLines={1} style={styles.title}>{it.title}</Text>
+            <Text numberOfLines={1} style={styles.hint}>{it.hint}</Text>
+          </Pressable>
+        </Card>
       ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    borderRadius: radius.lg,
+    flex: 1,
+    height: 88,
+    overflow: 'hidden',
+    padding: 0,
+  },
   hint: { color: colors.textFaint, fontFamily: fontFamilies.regular, fontSize: 11 },
   row: { flexDirection: 'row', gap: spacing.xs },
-  tile: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.divider, borderRadius: radius.lg, borderWidth: hairline, flex: 1, gap: 4, justifyContent: 'center', minHeight: 96, paddingHorizontal: 4, paddingVertical: spacing.sm },
+  tile: {
+    alignItems: 'center',
+    flex: 1,
+    gap: 2,
+    height: 88,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xxs,
+    paddingVertical: spacing.xs,
+  },
   title: { color: colors.text, fontFamily: fontFamilies.semibold, fontSize: 14 },
 });
