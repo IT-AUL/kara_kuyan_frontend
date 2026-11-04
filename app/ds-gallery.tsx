@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   AccuracyBar,
@@ -59,7 +60,7 @@ export default function DesignSystemGalleryScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} style={styles.scroll}>
         <Text style={styles.sectionTitle}>Кнопки</Text>
         <View style={styles.columnGap}>
@@ -169,7 +170,7 @@ export default function DesignSystemGalleryScreen() {
         onAction={() => setToastVisible(false)}
         visible={toastVisible}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
