@@ -1,173 +1,195 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
-  Card,
+  colors,
   Screen,
   ScreenHeader,
-  StatusPill,
+  spacing,
+  Tag,
   textStyles,
+  Toast,
 } from '@/design-system';
-import { colors, fontFamilies, radius, spacing } from '@/design-system/tokens';
+import { ReviewCard } from './components/ReviewCard';
 import { scanSession, useScanSession } from './scanSession';
-
-function CharacterCells({ expected, recognized }: { expected: string; recognized: string }) {
-  const expectedChars = Array.from(expected);
-  const recognizedChars = Array.from(recognized);
-
-  return (
-    <View accessibilityLabel={`Ожидалось: ${expected}. Написано: ${recognized}`} style={styles.comparison}>
-      <View style={styles.wordRow}>
-        <Text style={styles.wordLabel}>Ожидалось</Text>
-        <View accessibilityLabel={`Ожидалось: ${expected}`} style={styles.cells}>
-          {expectedChars.map((char, index) => (
-            <View key={`${char}-${index}`} style={styles.cell}>
-              <Text style={styles.char}>{char}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      <View style={styles.wordRow}>
-        <Text style={styles.wordLabel}>Написано</Text>
-        <View accessibilityLabel={`Написано: ${recognized}`} style={styles.cells}>
-          {recognizedChars.map((char, index) => (
-            <View
-              accessibilityLabel={char !== expectedChars[index] ? `${char}, отличается от ${expectedChars[index]}` : char}
-              key={`${char}-${index}`}
-              style={[styles.cell, char !== expectedChars[index] && styles.cellMismatch]}
-            >
-              <Text style={styles.char}>{char}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-    </View>
-  );
-}
 
 export function TaskReviewScreen() {
   const router = useRouter();
   const { outcome, overrides } = useScanSession();
+  const [revisit, setRevisit] = useState<number | null>(null);
+  const [last, setLast] = useState<{ number: number; verdict: 'accept' | 'reject' } | null>(null);
+
+  useEffect(() => {
+    if (!last) return;
+    const timer = setTimeout(() => {
+      setLast(null);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [last]);
 
   const flagged = outcome?.tasks.filter((t) => t.status === 'review') ?? [];
-  const current = flagged.find((t) => !overrides[t.number]);
-  const position = flagged.filter((t) => overrides[t.number]).length + 1;
+  const current =
+    revisit !== null
+      ? flagged.find((t) => t.number === revisit)
+      : flagged.find((t) => !overrides[t.number]);
+
+  const currentIndex = current ? flagged.findIndex((t) => t.number === current.number) : -1;
+  const position =
+    currentIndex >= 0 ? currentIndex + 1 : flagged.filter((t) => overrides[t.number]).length + 1;
+
+  const flaggedNumbers = new Set(flagged.map((t) => t.number));
+  const flaggedOverrides = Object.fromEntries(
+    Object.entries(overrides).filter(([num]) => flaggedNumbers.has(Number(num))),
+  );
+  const verdicts = Object.values(flaggedOverrides);
+  const rejectCount = verdicts.filter((v) => v === 'reject').length;
+  const acceptCount = verdicts.filter((v) => v === 'accept').length;
 
   const decide = (verdict: 'accept' | 'reject') => {
     if (!current) return;
+    const isLast = flagged.every((t) => t.number === current.number || Boolean(overrides[t.number]));
     scanSession.override(current.number, verdict);
-    if (flagged.filter((t) => !overrides[t.number]).length <= 1) router.replace('/assessment-result');
+    if (isLast) {
+      router.replace('/assessment-result');
+      return;
+    }
+    setLast({ number: current.number, verdict });
+    setRevisit(null);
+  };
+
+  const handleUndo = () => {
+    if (!last) return;
+    setRevisit(last.number);
+    setLast(null);
   };
 
   if (!current) {
     return (
-      <Screen footer={<Button icon="check" onPress={() => router.replace('/assessment-result')} title="К результату" />}>
-        <ScreenHeader eyebrow="Проверка ответа" title="Всё проверено" subtitle="Отмеченных ответов больше нет." />
+      <Screen
+        footer={
+          <Button
+            icon="check"
+            onPress={() => router.replace('/assessment-result')}
+            title="К результату"
+          />
+        }
+      >
+        <ScreenHeader
+          eyebrow="Проверка ответа"
+          subtitle="Отмеченных ответов больше нет."
+          title="Всё проверено"
+        />
       </Screen>
     );
   }
 
-  const expectedChars = Array.from(current.expected);
-  const recognizedChars = Array.from(current.recognized);
-  const differing = expectedChars.filter((ch, i) => ch !== recognizedChars[i]).length;
-
   return (
-    <Screen
-      footer={
-        <View style={styles.actions}>
-          <Button icon="check" onPress={() => decide('accept')} title="Засчитать ответ" />
-          <Button icon="close" onPress={() => decide('reject')} title="Не засчитывать" variant="secondary" />
+    <View style={styles.root}>
+      <Screen
+        footer={
+          <View style={styles.actions}>
+            <View style={styles.actionSlot}>
+              <Button
+                icon="close"
+                onPress={() => decide('reject')}
+                title="Ошибка"
+                variant="danger"
+              />
+            </View>
+            <View style={styles.actionSlot}>
+              <Button icon="check" onPress={() => decide('accept')} title="Верно" />
+            </View>
+          </View>
+        }
+      >
+        <ScreenHeader showBack title={`Разбор · ${position} из ${flagged.length}`} />
+
+        <View style={styles.progressRow}>
+          <Tag icon="close" label={String(rejectCount)} tone="bad" />
+          <View
+            accessibilityLabel={`Задание ${position} из ${flagged.length}`}
+            style={styles.dots}
+          >
+            {flagged.map((t) => {
+              const isCurrent = t.number === current.number;
+              const isDecided = Boolean(overrides[t.number]);
+              return (
+                <View
+                  key={t.number}
+                  style={[
+                    styles.dot,
+                    isDecided && styles.dotDecided,
+                    isCurrent && styles.dotCurrent,
+                  ]}
+                />
+              );
+            })}
+          </View>
+          <Tag icon="check" label={String(acceptCount)} tone="ok" />
         </View>
-      }
-    >
-      <ScreenHeader
-        eyebrow="Проверка ответа"
-        showBack
-        subtitle={`${position} из ${flagged.length} отмеченных ответов`}
-        title={`Задание ${current.number}`}
+
+        <View style={styles.taskHeader}>
+          <Text style={textStyles.caption}>{`Задание ${current.number}`}</Text>
+          <Text selectable style={textStyles.title}>
+            {current.prompt}
+          </Text>
+        </View>
+
+        <ReviewCard
+          expected={current.expected}
+          key={current.number}
+          onDecide={decide}
+          recognized={current.recognized}
+        />
+      </Screen>
+
+      <Toast
+        actionLabel="Отменить"
+        message={last?.verdict === 'accept' ? 'Засчитано' : 'Отмечено как ошибка'}
+        onAction={handleUndo}
+        visible={last !== null}
       />
-
-      <Card style={styles.reviewCard}>
-        <View style={styles.header}>
-          <StatusPill label="Нужно решение" tone="warning" />
-          <Text style={textStyles.caption}>Решение принимает учитель</Text>
-        </View>
-        <Text selectable style={textStyles.title}>
-          {current.prompt}
-        </Text>
-        <CharacterCells expected={current.expected} recognized={current.recognized} />
-      </Card>
-
-      <Card tone="soft">
-        <Text style={textStyles.bodySmall}>
-          {differing > 0
-            ? `Отличается букв: ${differing}. Сравните написанное с правильным ответом.`
-            : recognizedChars.length > expectedChars.length
-              ? 'После ответа есть лишний знак — возможно, помарка. Подтвердите или не засчитывайте.'
-              : 'Буквы совпадают, но распознавание неуверенное — подтвердите ответ.'}
-        </Text>
-      </Card>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  actions: {
-    gap: spacing.xs,
-  },
-  cell: {
-    alignItems: 'center',
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.divider,
-    borderRadius: radius.sm,
-    borderWidth: 1,
+  actionSlot: {
     flex: 1,
-    height: 38,
-    justifyContent: 'center',
-    minWidth: 0,
   },
-  cellMismatch: {
-    backgroundColor: colors.warningSoft,
-    borderColor: colors.warning,
-  },
-  cells: {
+  actions: {
     flexDirection: 'row',
-    gap: spacing.xxs,
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  char: {
-    color: colors.text,
-    fontFamily: fontFamilies.bold,
-    fontSize: 18,
-  },
-  comparison: {
     gap: spacing.sm,
   },
-  expected: {
-    color: colors.successSoft,
-    fontFamily: fontFamilies.bold,
+  dot: {
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: 3,
+    height: 6,
+    width: 8,
   },
-  header: {
+  dotCurrent: {
+    backgroundColor: colors.text,
+    width: 22,
+  },
+  dotDecided: {
+    backgroundColor: colors.primary,
+  },
+  dots: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xxs,
+  },
+  progressRow: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  recognized: {
-    color: colors.warning,
-    fontFamily: fontFamilies.bold,
+  root: {
+    flex: 1,
   },
-  reviewCard: {
-    gap: spacing.md,
-  },
-  wordLabel: {
-    color: colors.textMuted,
-    fontFamily: fontFamilies.medium,
-    fontSize: 12,
-  },
-  wordRow: {
-    alignItems: 'stretch',
-    gap: spacing.xs,
+  taskHeader: {
+    gap: spacing.xxs,
   },
 });
