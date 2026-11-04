@@ -2,10 +2,10 @@ import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useActiveContext } from '@/data/context';
-import { AppIcon, Button, Card, Screen, ScreenHeader, SectionHeader, textStyles } from '@/design-system';
-import { colors, radius, spacing, touchTarget } from '@/design-system/tokens';
-import { StudentIdentityCard } from './components/StudentIdentityCard';
+import { AppIcon, Avatar, Button, Card, Screen, ScreenHeader, SectionHeader, Tag, textStyles } from '@/design-system';
+import { colors, hairline, radius, spacing, touchTarget } from '@/design-system/tokens';
 import { SheetWarnings } from './components/SheetWarnings';
+import { StudentIdentityCard } from './components/StudentIdentityCard';
 import { scanSession, useScanSession } from './scanSession';
 
 export function StudentIdentifiedScreen() {
@@ -13,61 +13,73 @@ export function StudentIdentifiedScreen() {
   const { outcome, student, studentMatched } = useScanSession();
   const { students, tests } = useActiveContext();
   const title = tests.find((t) => t.testId === outcome?.assignmentId)?.title ?? outcome?.assignmentId ?? '';
+  const headerTitle = studentMatched && student ? `Это работа: ${student.name}?` : 'Чей это лист?';
+  const subtitleParts = [
+    title || null,
+    outcome ? `Вариант ${outcome.variant}` : null,
+    outcome ? (outcome.qrRecognised ? 'QR распознан' : 'QR не прочитан') : null,
+  ].filter(Boolean);
 
   return (
     <Screen
       footer={
         <Button
           disabled={!student || !outcome}
-          icon="arrowRight"
+          icon="check"
           onPress={() => router.push('/assessment-result')}
-          title="Показать результат"
+          title="Да, продолжить"
         />
       }
     >
+      {!studentMatched ? <Tag icon="qr" label="Имя не распознано" tone="mid" /> : null}
+
       <ScreenHeader
-        eyebrow="Идентификация"
         showBack
-        subtitle="Проверьте ученика до открытия результата."
-        title="Лист распознан"
+        subtitle={subtitleParts.length > 0 ? subtitleParts.join(' · ') : undefined}
+        title={headerTitle}
       />
 
       <SheetWarnings outcome={outcome} />
 
-      <StudentIdentityCard
-        matched={studentMatched}
-        nameText={outcome?.studentNameText ?? ''}
-        student={student}
-        variant={outcome?.variant ?? 1}
-      />
-
-      <Card style={styles.meta}>
-        <View style={styles.row}>
-          <Text style={[textStyles.bodySmall, styles.label]}>Работа</Text>
-          <Text numberOfLines={3} style={[textStyles.body, styles.value]}>
-            {title}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={[textStyles.bodySmall, styles.label]}>Шаблон</Text>
-          <Text style={[textStyles.body, styles.value]}>{outcome?.qrRecognised ? 'QR распознан' : 'QR не прочитан'}</Text>
-        </View>
-      </Card>
+      {student || studentMatched ? (
+        <StudentIdentityCard
+          matched={studentMatched}
+          nameText={outcome?.studentNameText ?? ''}
+          student={student}
+          variant={outcome?.variant ?? 1}
+        />
+      ) : null}
 
       <View style={styles.section}>
-        <SectionHeader title="Изменить ученика" />
+        <SectionHeader title={studentMatched ? 'Или выберите другого ученика' : 'Выберите ученика'} />
         <Card style={styles.roster}>
-          {students.map((s) => (
-            <Pressable
-              accessibilityRole="button"
-              key={s.studentId}
-              onPress={() => scanSession.selectStudent(s.studentId)}
-              style={styles.rosterRow}
-            >
-              <Text style={textStyles.body}>{s.fullName}</Text>
-              {student?.id === s.studentId ? <AppIcon color={colors.primary} name="check" size={20} /> : null}
-            </Pressable>
-          ))}
+          {students.length === 0 ? (
+            <Text style={[textStyles.bodySmall, styles.emptyText]}>В этом классе пока нет учеников.</Text>
+          ) : (
+            students.map((s, index) => {
+              const selected = student?.id === s.studentId;
+              return (
+                <Pressable
+                  accessibilityLabel={s.fullName}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  key={s.studentId}
+                  onPress={() => scanSession.selectStudent(s.studentId)}
+                  style={({ pressed }) => [
+                    styles.rosterRow,
+                    index < students.length - 1 && styles.rosterRowDivider,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <View style={styles.rosterIdentity}>
+                    <Avatar name={s.fullName} ring={selected ? 'done' : 'none'} size={36} />
+                    <Text style={[textStyles.body, styles.rosterName]}>{s.fullName}</Text>
+                  </View>
+                  {selected ? <AppIcon color={colors.primary} name="check" size={20} /> : null}
+                </Pressable>
+              );
+            })
+          )}
         </Card>
       </View>
     </Screen>
@@ -75,18 +87,41 @@ export function StudentIdentifiedScreen() {
 }
 
 const styles = StyleSheet.create({
-  meta: { gap: spacing.sm },
-  roster: { gap: 0, paddingVertical: spacing.xxs },
-  label: { flexShrink: 0 },
-  row: { alignItems: 'flex-start', alignSelf: 'stretch', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
-  value: { flex: 1, flexShrink: 1, textAlign: 'right' },
+  emptyText: {
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.sm,
+  },
+  pressed: {
+    opacity: 0.9,
+  },
+  roster: {
+    gap: 0,
+    paddingVertical: spacing.xxs,
+  },
+  rosterIdentity: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  rosterName: {
+    flex: 1,
+  },
   rosterRow: {
     alignItems: 'center',
     borderRadius: radius.sm,
     flexDirection: 'row',
+    gap: spacing.sm,
     justifyContent: 'space-between',
     minHeight: touchTarget,
     paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
   },
-  section: { gap: spacing.sm },
+  rosterRowDivider: {
+    borderBottomColor: colors.divider,
+    borderBottomWidth: hairline,
+  },
+  section: {
+    gap: spacing.sm,
+  },
 });

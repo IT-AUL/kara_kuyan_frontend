@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Student } from '@/domain/assessment/model';
-import { AppIcon, Card, StatusPill, textStyles } from '@/design-system';
-import { colors, radius, spacing } from '@/design-system/tokens';
+import { Avatar, Card, Tag, textStyles } from '@/design-system';
+import { spacing } from '@/design-system/tokens';
 
 type StudentIdentityCardProps = {
   student: Student | null;
@@ -12,41 +12,55 @@ type StudentIdentityCardProps = {
 };
 
 export function StudentIdentityCard({ student, matched, nameText, variant }: StudentIdentityCardProps) {
+  if (!student) {
+    return (
+      <Card style={styles.card} tone="raised">
+        <View style={styles.identity}>
+          <Avatar name="?" ring="none" size={40} />
+          <View style={styles.copy}>
+            <Text style={textStyles.titleSmall}>Ученик не определён</Text>
+            <Text style={textStyles.caption}>
+              {`Вариант ${variant}${nameText ? ` · на листе: ${nameText}` : ''}`}
+            </Text>
+          </View>
+        </View>
+      </Card>
+    );
+  }
+
   return (
-    <Card style={styles.card}>
+    <Card style={styles.card} tone="raised">
       <View style={styles.identity}>
-        <View style={styles.avatar}>
-          <AppIcon color={colors.primary} name="person" size={28} />
-        </View>
+        <Avatar name={student.name} ring="done" size={40} />
         <View style={styles.copy}>
-          <Text selectable style={textStyles.title}>
-            {student ? student.name : 'Ученик не определён'}
+          <Text selectable style={textStyles.titleSmall}>
+            {student.name}
           </Text>
-          <Text style={textStyles.bodySmall}>
-            {student ? `${student.code} · ` : ''}Вариант {variant}
+          <Text style={textStyles.caption}>
+            {`Вариант ${variant}${nameText ? ` · на листе: ${nameText}` : ''}`}
           </Text>
         </View>
+        <Tag
+          icon="check"
+          label={matched ? 'Распознан' : 'Выбран'}
+          tone={matched ? 'ok' : 'neutral'}
+        />
       </View>
-      {student ? (
-        <StatusPill label={matched ? 'Определён по имени на листе' : 'Выбран вручную'} tone={matched ? 'success' : 'neutral'} />
-      ) : (
-        <StatusPill label="Выберите ученика ниже" tone="warning" />
-      )}
-      {nameText ? <Text style={textStyles.caption}>На листе прочитано: {nameText}</Text> : null}
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  avatar: {
-    alignItems: 'center',
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.lg,
-    height: 64,
-    justifyContent: 'center',
-    width: 64,
+  card: {
+    gap: spacing.sm,
   },
-  card: { gap: spacing.lg },
-  copy: { flex: 1, gap: spacing.xxs },
-  identity: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
+  copy: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  identity: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
 });

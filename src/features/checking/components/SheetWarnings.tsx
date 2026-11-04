@@ -1,8 +1,8 @@
-import { View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { useActiveContext } from '@/data/context';
 import type { RejectionReason, SheetOutcome } from '@/domain/scan/evaluate';
-import { Notice } from '@/design-system';
+import { Card, Tag, textStyles } from '@/design-system';
 import { spacing } from '@/design-system/tokens';
 
 const becauseText: Record<RejectionReason, string> = {
@@ -19,20 +19,33 @@ export function SheetWarnings({ outcome }: { outcome: SheetOutcome | null }) {
   const warnings = outcome?.warnings ?? [];
   if (warnings.length === 0) return null;
   return (
-    <View style={{ gap: spacing.xs }}>
+    <View style={styles.list}>
       {warnings.map((w) =>
         w.kind === 'forced' ? (
-          <Notice
-            key="forced"
-            message={`Лист проверен принудительно (${becauseText[w.because]}): по тесту «${title(w.assignmentId)}», вариант ${w.variantId}. Результат может быть неверным.`}
-          />
+          <Card key="forced" style={styles.card} tone="soft">
+            <Tag icon="warning" label={becauseText[w.because]} tone="mid" />
+            <Text style={textStyles.bodySmall}>
+              {`Лист проверен принудительно (${becauseText[w.because]}): по тесту «${title(w.assignmentId)}», вариант ${w.variantId}. Результат может быть неверным.`}
+            </Text>
+          </Card>
         ) : (
-          <Notice
-            key="differs"
-            message={`Лист от другого теста: «${title(w.sheetAssignmentId)}». Сейчас выбран «${title(w.currentAssignmentId)}». Результат сохранится в тесте листа.`}
-          />
+          <Card key="differs" style={styles.card} tone="soft">
+            <Tag icon="warning" label="Другой тест" tone="mid" />
+            <Text style={textStyles.bodySmall}>
+              {`Лист от другого теста: «${title(w.sheetAssignmentId)}». Сейчас выбран «${title(w.currentAssignmentId)}». Результат сохранится в тесте листа.`}
+            </Text>
+          </Card>
         ),
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    gap: spacing.xs,
+  },
+  list: {
+    gap: spacing.xs,
+  },
+});
