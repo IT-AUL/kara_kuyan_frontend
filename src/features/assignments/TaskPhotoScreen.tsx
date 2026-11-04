@@ -138,7 +138,7 @@ export function TaskPhotoScreen() {
         </>
       ) : (
         <>
-          <Notice message="Ответы подобрал ИИ и в них бывают ошибки. Проверьте каждый, при необходимости поправьте." />
+          <Notice message="Ответы подобраны автоматически — проверьте каждый и при необходимости поправьте." />
           <View style={styles.list}>
             {items.map((i, idx) => {
               const issues = problems(i);

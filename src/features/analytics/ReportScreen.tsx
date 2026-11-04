@@ -37,12 +37,12 @@ import {
 function paperZoneColor(pct: number): string {
   const zone = zoneOf(pct);
   if (zone === 'bad') {
-    return '#D23B3B';
+    return colors.paperBad;
   }
   if (zone === 'mid') {
-    return '#B7801A';
+    return colors.paperMid;
   }
-  return '#14995B';
+  return colors.paperOk;
 }
 
 export function ReportScreen() {
