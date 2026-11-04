@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, fontFamilies, radius, spacing } from '../tokens';
+import { colors, fontFamilies, radius } from '../tokens';
 
 type SegmentedTabsProps = {
   tabs: readonly string[];
