@@ -63,7 +63,7 @@ export function OnboardingScreen() {
                 accessibilityLabel="Как к вам обращаться"
                 autoCapitalize="words"
                 onChangeText={setName}
-                placeholder="Каримова Гөлнара Илдар кызы"
+                placeholder="Гөлнара Ильдаровна"
                 placeholderTextColor={colors.textFaint}
                 style={styles.input}
                 value={name}
@@ -141,10 +141,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.lg,
-    height: 56,
+    height: 52,
     justifyContent: 'center',
-    marginTop: spacing.xxl,
-    width: 56,
+    marginTop: spacing.xs,
+    width: 52,
   },
   nameField: {
     alignItems: 'center',
