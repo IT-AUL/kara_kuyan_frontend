@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, fontFamilies, fontSizes, radius, spacing, touchTarget } from '../tokens';
+import { colors, fontFamilies, radius, spacing } from '../tokens';
 
 type SegmentedTabsProps = {
   tabs: readonly string[];
@@ -24,11 +24,17 @@ export function SegmentedTabs({ tabs, activeIndex: controlledIndex, onTabChange 
         const isActive = index === activeIndex;
         return (
           <Pressable
+            accessibilityLabel={tab}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
+            hitSlop={8}
             key={tab}
             onPress={() => handlePress(index)}
-            style={[styles.tab, isActive && styles.tabActive]}
+            style={({ pressed }) => [
+              styles.tab,
+              isActive && styles.tabActive,
+              pressed && styles.pressed,
+            ]}
           >
             <Text style={[styles.label, isActive && styles.labelActive]}>{tab}</Text>
           </Pressable>
@@ -43,28 +49,31 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.md,
     flexDirection: 'row',
-    padding: spacing.xxs,
+    gap: 2,
+    padding: 3,
   },
   label: {
     color: colors.textMuted,
     fontFamily: fontFamilies.medium,
-    fontSize: fontSizes.bodySmall,
+    fontSize: 13,
     textAlign: 'center',
   },
   labelActive: {
-    color: colors.primary,
-    fontFamily: fontFamilies.semibold,
+    color: colors.text,
+  },
+  pressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.97 }],
   },
   tab: {
     alignItems: 'center',
-    borderRadius: radius.sm,
+    borderRadius: 9,
     flex: 1,
+    height: 32,
     justifyContent: 'center',
-    minHeight: touchTarget - spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.xs,
   },
   tabActive: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.surfaceHigh,
   },
 });

@@ -19,6 +19,20 @@ export const colors = {
   paper: '#DCE5DF',
   paperMuted: '#4B5B52',
   scanBackdrop: '#030604',
+  surfaceHigh: '#212B26',
+  grade5: '#25E38A',
+  grade4: '#5CC8F0',
+  grade3: '#F5B942',
+  grade2: '#FF6B6B',
+  zoneOk: '#25E38A',
+  zoneMid: '#F5B942',
+  zoneBad: '#FF6B6B',
+  ruleSin: '#B69CFF',
+  ruleLetter: '#5CC8F0',
+  ruleAllo: '#F5B942',
+  ruleMiss: '#FF8FB1',
+  toast: '#F2F6F3',
+  toastText: '#0B0F0D',
   transparent: 'transparent',
 } as const;
 
@@ -38,6 +52,8 @@ export const radius = {
   md: 12,
   lg: 16,
   xl: 22,
+  xxl: 24,
+  sheet: 28,
   pill: 999,
 } as const;
 

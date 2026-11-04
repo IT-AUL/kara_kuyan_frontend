@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, fontFamilies, fontSizes, radius, spacing, touchTarget } from '../tokens';
+import { colors, fontFamilies, radius, spacing } from '../tokens';
 import { AppIcon, type AppIconName } from './AppIcon';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -24,13 +24,15 @@ export function Button({
   compact = false,
   accessibilityLabel,
 }: ButtonProps) {
+  const fgColor = textColor[variant];
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel ?? title}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      android_ripple={{ color: 'rgba(244, 248, 245, 0.12)' }}
       disabled={disabled}
+      hitSlop={compact ? 2 : 0}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
@@ -41,37 +43,32 @@ export function Button({
       ]}
     >
       <View style={styles.content}>
-        {icon ? (
-          <AppIcon
-            name={icon}
-            color={variant === 'primary' ? colors.background : textColor[variant]}
-            size={18}
-          />
-        ) : null}
-        <Text style={[styles.label, { color: textColor[variant] }]}>{title}</Text>
+        {icon ? <AppIcon color={fgColor} name={icon} size={22} /> : null}
+        <Text style={[styles.label, compact && styles.labelCompact, { color: fgColor }]}>
+          {title}
+        </Text>
       </View>
     </Pressable>
   );
 }
 
 const textColor: Record<ButtonVariant, string> = {
-  primary: colors.background,
+  primary: '#03140B',
   secondary: colors.text,
-  ghost: colors.primary,
+  ghost: colors.textMuted,
   danger: colors.error,
 };
 
 const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
+    height: 56,
     justifyContent: 'center',
-    minHeight: 54,
-    overflow: 'hidden',
     paddingHorizontal: spacing.lg,
   },
   compact: {
-    minHeight: touchTarget,
+    height: 44,
     paddingHorizontal: spacing.md,
   },
   content: {
@@ -81,9 +78,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   danger: {
-    backgroundColor: colors.errorSoft,
-    borderColor: colors.error,
-    borderWidth: 1,
+    backgroundColor: colors.surfaceRaised,
   },
   disabled: {
     opacity: 0.45,
@@ -93,17 +88,24 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fontFamilies.semibold,
-    fontSize: fontSizes.body,
+    fontSize: 17,
+  },
+  labelCompact: {
+    fontSize: 15,
   },
   pressed: {
-    opacity: 0.86,
+    opacity: 0.92,
+    transform: [{ scale: 0.97 }],
   },
   primary: {
     backgroundColor: colors.primary,
+    elevation: 6,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
   },
   secondary: {
     backgroundColor: colors.surfaceRaised,
-    borderColor: colors.divider,
-    borderWidth: 1,
   },
 });
