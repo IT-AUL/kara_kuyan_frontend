@@ -142,7 +142,12 @@ export function ClassMapScreen() {
       ) : (
         <>
           <View style={styles.toolbarRow}>
-            <Text style={textStyles.caption}>
+            <Text
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              numberOfLines={1}
+              style={[textStyles.caption, styles.toolbarCaption]}
+            >
               {students.length} учеников × {columns.length} заданий
             </Text>
             <View style={styles.tabsWrap}>
@@ -276,12 +281,16 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   tabsWrap: {
-    width: 180,
+    flexShrink: 0,
+    width: 176,
+  },
+  toolbarCaption: {
+    flex: 1,
   },
   toolbarRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.xs,
     justifyContent: 'space-between',
   },
 });

@@ -97,7 +97,13 @@ export function HomeScreen() {
             <Text style={textStyles.bodySmall}>
               {greeting()} · {dateLabel}
             </Text>
-            <Text accessibilityRole="header" numberOfLines={1} selectable style={textStyles.display}>
+            <Text
+              accessibilityRole="header"
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+              numberOfLines={1}
+              style={textStyles.display}
+            >
               {name}
             </Text>
           </View>
