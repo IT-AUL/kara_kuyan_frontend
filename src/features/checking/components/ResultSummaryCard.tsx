@@ -1,44 +1,59 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Card, MetricTile, StatusPill, textStyles } from '@/design-system';
-import { spacing } from '@/design-system/tokens';
+import { GradePill, HeroCard, ProgressStrip, textStyles } from '@/design-system';
+import { colors, spacing } from '@/design-system/tokens';
 
 type ResultSummaryCardProps = {
+  studentName?: string;
   score: number;
   maxScore: number;
-  percent: number;
+  percent?: number;
   grade: number;
-  reviewLeft: number;
-  variant: number;
+  reviewLeft?: number;
+  variant?: number;
 };
 
-export function ResultSummaryCard({ score, maxScore, percent, grade, reviewLeft, variant }: ResultSummaryCardProps) {
+const clampGrade = (g: number): 2 | 3 | 4 | 5 => Math.min(5, Math.max(2, Math.round(g))) as 2 | 3 | 4 | 5;
+
+export function ResultSummaryCard({
+  studentName = 'Ученик не выбран',
+  score,
+  maxScore,
+  grade,
+}: ResultSummaryCardProps) {
   return (
-    <Card style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.copy}>
-          <Text style={textStyles.caption}>Результат листа</Text>
-          <Text selectable style={textStyles.display}>
-            {score} из {maxScore}
-          </Text>
+    <HeroCard>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.copy}>
+            <Text style={textStyles.title}>{studentName}</Text>
+            <Text selectable style={[textStyles.body, styles.score]}>
+              {score} из {maxScore}
+            </Text>
+          </View>
+          <GradePill grade={clampGrade(grade)} size={48} />
         </View>
-        <StatusPill
-          label={reviewLeft > 0 ? 'Оценка после проверки' : `Оценка ${grade}`}
-          tone={reviewLeft > 0 ? 'warning' : 'success'}
-        />
+        <ProgressStrip done={score} total={maxScore} />
       </View>
-      <View style={styles.metrics}>
-        <MetricTile label="Верно" value={`${percent}%`} tone="success" />
-        <MetricTile label="На проверку" value={String(reviewLeft)} tone={reviewLeft > 0 ? 'warning' : undefined} />
-        <MetricTile label="Вариант" value={String(variant)} />
-      </View>
-    </Card>
+    </HeroCard>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { gap: spacing.lg },
-  copy: { gap: spacing.xxs },
-  header: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
-  metrics: { flexDirection: 'row', gap: spacing.sm },
+  container: {
+    gap: spacing.md,
+  },
+  copy: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
+  },
+  score: {
+    color: colors.textMuted,
+  },
 });
