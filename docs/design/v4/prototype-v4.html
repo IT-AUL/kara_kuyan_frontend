@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кара Куян — прототип v4</title>
+<script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+<style>
+  body{margin:0}
+  .kk{--bg:#0B0F0D;--s1:#131916;--s2:#1A221E;--s3:#212B26;--pr:#25E38A;--prd:#0D8F54;--prs:#14301F;--tx:#F2F6F3;--mu:#93A39A;--fa:#6F8077;--dv:#222C27;--wa:#F5B942;--was:#2E2512;--er:#FF6B6B;--paper:#EEF2EE;
+      --g5:#25E38A;--g4:#5CC8F0;--g3:#F5B942;--g2:#FF6B6B;--ok:#25E38A;--mid:#F5B942;--bad:#FF6B6B;
+      --r-sin:#B69CFF;--r-let:#5CC8F0;--r-allo:#F5B942;--r-miss:#FF8FB1;
+      font-family:"Onest",-apple-system,"SF Pro Text",Inter,Roboto,"Segoe UI",system-ui,sans-serif;color:var(--tx);-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
+  .phone{width:384px;height:832px;border-radius:48px;background:#050605;padding:9px;box-shadow:0 50px 100px -30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.07) inset;flex:none}
+  .screen{width:100%;height:100%;border-radius:40px;background:var(--bg);overflow:hidden;position:relative}
+  .sbar{height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 28px;font-size:13px;font-weight:600;position:absolute;top:0;left:0;right:0;z-index:30}
+  .cam-dot{width:11px;height:11px;border-radius:50%;background:#000;position:absolute;left:50%;top:12px;transform:translateX(-50%)}
+  .gbar{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:112px;height:4px;border-radius:4px;background:rgba(242,246,243,.5);z-index:70}
+  .view{position:absolute;inset:0;padding-top:36px;display:flex;flex-direction:column}
+  .view.fwd{animation:push .38s cubic-bezier(.22,1,.36,1)} .view.bwd{animation:pop .38s cubic-bezier(.22,1,.36,1)}
+  @keyframes push{from{opacity:.4;transform:translateX(28%)}to{opacity:1;transform:none}}
+  @keyframes pop{from{opacity:.4;transform:translateX(-22%)}to{opacity:1;transform:none}}
+  .scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 20px 24px}.scroll::-webkit-scrollbar{display:none}
+  .foot{padding:12px 20px 34px}
+  .btn{height:56px;border-radius:16px;background:var(--pr);color:#03140B;font-weight:650;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 12px 28px -12px rgba(37,227,138,.7)}
+  .btn2{height:56px;border-radius:16px;background:var(--s2);color:var(--tx);font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+  .btn-s{height:40px;padding:0 14px;border-radius:12px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+  .muted{color:var(--mu)} .faint{color:var(--fa)}
+  .h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em}
+  .h2{font-size:20px;line-height:1.25;font-weight:650;letter-spacing:-.01em}
+  .h3{font-size:17px;line-height:1.3;font-weight:650}
+  .body{font-size:16px;line-height:1.45} .small{font-size:14px;line-height:1.4} .cap{font-size:12.5px;line-height:1.35}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--fa)}
+  .card{background:var(--s1);border-radius:24px;position:relative;overflow:hidden}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+  .iconbtn{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center}
+  .nav{height:76px;display:flex;background:var(--bg);padding-bottom:14px;border-top:1px solid var(--dv)}
+  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;color:var(--fa);font-weight:500}
+  .nav button.on{color:var(--tx)} .nav .pill-ic{width:64px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;transition:background .25s}
+  .nav button.on .pill-ic{background:var(--prs);color:var(--pr)}
+  .seg{display:flex;background:var(--s1);border-radius:12px;padding:3px;gap:2px}
+  .seg button{flex:1;height:32px;border-radius:9px;font-size:13px;color:var(--mu);font-weight:550}
+  .seg button.on{background:var(--s3);color:var(--tx)}
+  .tag{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600}
+  .chip{height:38px;padding:0 15px;border-radius:999px;background:var(--s1);font-size:14px;color:var(--mu);display:inline-flex;align-items:center;white-space:nowrap}
+  .chip.on{background:var(--tx);color:#0B0F0D;font-weight:600}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--dv)} .row:last-child{border-bottom:0}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--s1);border-radius:28px 28px 0 0;padding:12px 20px 34px;z-index:50;animation:spring .5s cubic-bezier(.34,1.4,.64,1)}
+  @keyframes spring{from{transform:translateY(100%)}to{transform:none}}
+  .scrim{position:absolute;inset:0;background:rgba(3,6,4,.66);z-index:45;animation:fade .2s}@keyframes fade{from{opacity:0}}
+  .grab{width:36px;height:4px;border-radius:4px;background:#2E3A33;margin:0 auto 18px}
+  .toast{position:absolute;left:16px;right:16px;bottom:110px;z-index:60;background:#F2F6F3;color:#0B0F0D;border-radius:18px;padding:12px 14px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:12px;animation:spring .45s cubic-bezier(.34,1.4,.64,1);box-shadow:0 20px 40px -12px rgba(0,0,0,.5)}
+  button,[data-go]{-webkit-tap-highlight-color:transparent;transition:transform .14s cubic-bezier(.3,.7,.4,1),filter .14s,background .2s}
+  button:active,[data-go]:active{transform:scale(.97);filter:brightness(1.12)}
+  .glow{position:absolute;border-radius:50%;filter:blur(46px);pointer-events:none;animation:breathe 5s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.85;transform:scale(1.08)}}
+  .stagger>*{opacity:0;animation:rise .5s cubic-bezier(.22,1,.36,1) forwards}
+  .stagger>*:nth-child(1){animation-delay:.02s}.stagger>*:nth-child(2){animation-delay:.07s}.stagger>*:nth-child(3){animation-delay:.12s}.stagger>*:nth-child(4){animation-delay:.17s}.stagger>*:nth-child(5){animation-delay:.22s}.stagger>*:nth-child(6){animation-delay:.27s}.stagger>*:nth-child(n+7){animation-delay:.32s}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .grow{transform-origin:left;animation:grow .9s cubic-bezier(.22,1,.36,1) both}@keyframes grow{from{transform:scaleX(0)}}
+  .growy{transform-origin:bottom;animation:growy .9s cubic-bezier(.22,1,.36,1) both}@keyframes growy{from{transform:scaleY(0)}}
+  .draw{stroke-dasharray:900;stroke-dashoffset:900;animation:drawl 1.4s .15s cubic-bezier(.65,0,.35,1) forwards}@keyframes drawl{to{stroke-dashoffset:0}}
+  .cell{border-radius:6px;transition:transform .2s,opacity .2s}
+  .hm.dim .cell{opacity:.22} .hm.dim .cell.hl{opacity:1}
+  .key{border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:650;cursor:pointer;position:relative}
+  .pulse{animation:pulse 2.2s ease-in-out infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,.5)}50%{box-shadow:0 0 0 6px rgba(255,107,107,0)}}
+  .paperdoc{background:#F4F6F3;color:#141A16;border-radius:14px}
+  .paperdoc td,.paperdoc th{padding:5px 6px;border-bottom:1px solid #DCE2DD;text-align:left;font-variant-numeric:tabular-nums}
+  .hand{font-family:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive;color:#22307A;font-weight:700}
+  .marker{width:20px;height:20px;background:#111;position:relative}.marker:after{content:"";position:absolute;inset:5px;background:#fff}.marker i{position:absolute;inset:8px;background:#111}
+  /* camera */
+  .cam{position:absolute;inset:0;background:radial-gradient(110% 70% at 50% 42%,#2a322e 0%,#0c110f 62%,#020403 100%)}
+  .paper{position:absolute;left:62px;top:150px;width:260px;height:356px;background:var(--paper);border-radius:3px;transform:perspective(900px) rotateX(12deg) rotateZ(-2.5deg);box-shadow:0 30px 60px -10px rgba(0,0,0,.6);transition:transform .5s,opacity .35s}
+  .paper.out{transform:perspective(900px) rotateX(12deg) translateX(-140%) rotateZ(-14deg);opacity:0}
+  .paper.inn{animation:paperIn .45s cubic-bezier(.2,.8,.2,1)}
+  @keyframes paperIn{from{transform:perspective(900px) rotateX(12deg) translateX(120%) rotateZ(8deg);opacity:0}}
+  .br{position:absolute;width:40px;height:40px;border-color:rgba(255,255,255,.85);border-style:solid;border-width:0;transition:all .35s}
+  .br.a{left:46px;top:132px;border-top-width:3px;border-left-width:3px;border-radius:12px 0 0 0}
+  .br.b{right:46px;top:132px;border-top-width:3px;border-right-width:3px;border-radius:0 12px 0 0}
+  .br.c{left:46px;top:484px;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 12px}
+  .br.d{right:46px;top:484px;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 12px 0}
+  .lock .br{border-color:var(--pr)} .lock .br.a{left:56px;top:144px}.lock .br.b{right:56px;top:144px}.lock .br.c{left:56px;top:472px}.lock .br.d{right:56px;top:472px}
+  .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20}.flash.go{animation:fl .35s}@keyframes fl{0%{opacity:.8}100%{opacity:0}}
+  .shutter{width:76px;height:76px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center}.shutter i{width:60px;height:60px;border-radius:50%;background:#fff;display:block;transition:transform .15s}
+  .shutter.auto i{background:var(--pr)}
+  .glass{background:rgba(20,26,23,.55);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+  .haptic{position:absolute;left:50%;top:330px;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:2px solid var(--pr);opacity:0;pointer-events:none;z-index:22}
+  .haptic.go{animation:hp .7s cubic-bezier(.22,1,.36,1)}@keyframes hp{0%{transform:scale(.4);opacity:.9}100%{transform:scale(3.4);opacity:0}}
+  .bump{animation:bump .45s cubic-bezier(.34,1.6,.64,1)}@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}
+  /* review */
+  .card-stack{position:relative;height:300px}
+  .rcard{position:absolute;inset:0;border-radius:28px;background:var(--s1);display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;cursor:grab;will-change:transform;box-shadow:0 20px 40px -20px rgba(0,0,0,.6)}
+  .rcard.back{transform:scale(.92) translateY(18px);opacity:.5}
+  .rcard .stamp{position:absolute;top:22px;padding:6px 12px;border-radius:10px;font-weight:700;font-size:15px;opacity:0;border:2px solid}
+  .rcard .stamp.ok{right:22px;color:var(--pr);border-color:var(--pr);transform:rotate(8deg)}
+  .rcard .stamp.no{left:22px;color:var(--er);border-color:var(--er);transform:rotate(-8deg)}
+  .check-draw path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .6s .25s cubic-bezier(.65,0,.35,1) forwards}@keyframes draw{to{stroke-dashoffset:0}}
+  .pop-in{animation:popin .6s cubic-bezier(.34,1.56,.64,1)}@keyframes popin{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+  .confetti{position:absolute;width:8px;height:12px;border-radius:2px;top:-20px;animation:fall linear forwards;z-index:5}
+  @keyframes fall{to{transform:translateY(860px) rotate(720deg);opacity:.9}}
+  body.still *{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}
+  body.still .confetti,body.still .flash,body.still .haptic{display:none}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased">
+<div class="p-4 lg:p-8">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div>
+      <div class="font-semibold text-lg">Кара Куян · полный концепт <span class="text-[var(--muted-foreground)] font-normal">v4</span></div>
+      <div class="text-sm text-[var(--muted-foreground)]">Гөлнара Ильдаровна, 7-А · ресерч + Mobbin + новая аналитика · кликайте по экрану или ← →</div>
+    </div>
+    <div class="flex items-center gap-2 text-sm">
+      <button id="prev" class="w-9 h-9 rounded-lg border border-[var(--border)] hover:bg-[var(--card)]">←</button>
+      <span id="counter" class="tabular-nums text-[var(--muted-foreground)] w-14 text-center"></span>
+      <button id="next" class="w-9 h-9 rounded-lg border border-[var(--border)] hover:bg-[var(--card)]">→</button>
+    </div>
+  </div>
+  <div class="grid gap-8 lg:grid-cols-[230px_auto_minmax(0,400px)] items-start justify-center">
+    <aside><div class="text-xs uppercase tracking-wider text-[var(--muted-foreground)] mb-3">Путь учителя</div><div id="rail" class="flex flex-col"></div></aside>
+    <div class="flex justify-center kk"><div class="phone"><div class="screen" id="screen"></div></div></div>
+    <section id="notes" class="text-[15px] leading-relaxed"></section>
+  </div>
+</div>
+<script>
+const I={pen:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>',tests:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-7"/>',more:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',back:'<path d="M15 5l-7 7 7 7"/>',chev:'<path d="m9 5 7 7-7 7"/>',print:'<path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/>',shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',cloud:'<path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/>',bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',dl:'<path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/>',share:'<path d="M12 15V3m0 0L8 7m4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',swap:'<path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>',plus:'<path d="M12 5v14M5 12h14"/>',people:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c3 .3 5 2.6 5 5.8"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',board:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',up:'<path d="M7 14l5-5 5 5"/>',down:'<path d="M7 10l5 5 5-5"/>',spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',grid:'<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/>',eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',qr:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM18 14h2M14 18v2"/>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/>',cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>'};
+const ic=(n,s=22,c='currentColor',w=2)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
+const LOGO=`<svg width="56" height="56" viewBox="0 0 270 270"><rect width="270" height="270" rx="61" fill="#25E38A"/><path fill="#0b3a22" d="M135.247 72.897C62.8541 72.897 44.4472 136.987 33.75 236.496V172.8C33.8231 34.0845 33.8232 34 135.245 34C188.002 34 213.317 34.0229 225.475 53.5266C232.813 65.2995 236.25 72.7778 236.25 114.418C225.475 121.359 211.471 125.509 198.398 100.86C195.19 102.792 197.028 107.886 199.786 115.529C202.738 123.709 206.744 134.808 206.744 148.075C206.744 158.746 203.018 167.132 199.515 175.017C195.359 184.37 191.517 193.017 194.58 203.936C201.367 228.127 225.475 236.496 225.475 236.496H191.393C183.217 236.496 181.432 230.488 180.061 225.427C178.69 220.366 176.762 213.349 174.121 203.936C167.306 178.472 160.86 154.292 137.754 154.292C158.013 172.507 154.636 203.936 135.247 217.418C159.643 217.944 166.599 218.823 171.723 236.496H82.3062C74.4607 236.531 53.1685 236.63 57.9528 197.98C62.8701 158.256 72.1901 117.01 109.199 106.139C145.645 93.3897 162.394 72.897 135.247 72.897Z"/></svg>`;
+
+
+const STUDENTS=['Абдуллина Алия','Валиев Тимур','Габдуллин Азат','Гарипов Айдар','Закирова Дина','Зарипов Ильнур','Исмагилова Лейсан','Каримов Булат','Миннуллина Камила','Нуриев Эмиль','Сафина Амина','Сабиров Ринат','Тагирова Алсу','Файзуллин Марат','Хакимова Диляра','Шарипов Карим'];
+const M=['111111','111011','111011','110010','111001','111111','111001','100001','111111','111111','010001','101011','111111','110001','111111','111001'].map(r=>r.split('').map(Number));
+const TASKS=[
+ {n:1,p:'Перевод: «книга»',exp:'китап',skill:'Лексика'},
+ {n:2,p:'Күплек сан: бала',exp:'балалар',skill:'Күплек сан'},
+ {n:3,p:'Күплек сан: көн',exp:'көннәр',skill:'Күплек сан'},
+ {n:4,p:'Юнәлеш килеше: мәктәп',exp:'мәктәпкә',skill:'Юнәлеш килеше'},
+ {n:5,p:'Урын-вакыт килеше: өстәл',exp:'өстәлдә',skill:'Урын-вакыт килеше'},
+ {n:6,p:'Перевод: «солнце»',exp:'кояш',skill:'Лексика'}];
+const RULES={sin:{name:'Сингармонизм',hint:'твёрдый аффикс после мягкой основы',c:'var(--r-sin)'},let:{name:'Татарская буква',hint:'ә ө ү ң заменены русскими',c:'var(--r-let)'},allo:{name:'Начальный звук аффикса',hint:'к/г, д/т после основы',c:'var(--r-allo)'},miss:{name:'Пропуск',hint:'потерян звук на стыке',c:'var(--r-miss)'}};
+const WRONG_POOL={3:[['көнлар','sin'],['көнлар','sin'],['конннәр','let'],['көнлар','sin']],
+ 4:[['мәктәпка','sin'],['мәктәпка','sin'],['мәктәпгә','allo'],['мәктәпка','sin'],['мектәпкә','let'],['мәктәпка','sin'],['мәктәпә','miss'],['мәктәпгә','allo'],['мәктәпка','sin'],['мектәпкә','let']],
+ 5:[['өстәлда','sin'],['остәлдә','let'],['өстәлда','sin'],['өстәлтә','allo'],['остәлдә','let'],['өстәлда','sin']],
+ 2:[['балалер','sin']],1:[['кетап','let']],6:[['кояш','let']]};
+const N=STUDENTS.length;
+const score=i=>M[i].reduce((a,b)=>a+b,0);
+const grade=i=>{const p=score(i)/6;return p>=.85?5:p>=.7?4:p>=.5?3:2};
+const acc=j=>Math.round(M.reduce((a,r)=>a+r[j],0)/N*100);
+const wrongs=j=>{const pool=WRONG_POOL[j+1]||[];let k=0;return M.map((r,i)=>r[j]?null:{i,ans:(pool[k]||pool[0]||['—','let'])[0],rule:(pool[k++]||pool[0]||['','let'])[1]}).filter(Boolean)};
+const dist={5:0,4:0,3:0,2:0};STUDENTS.forEach((_,i)=>dist[grade(i)]++);
+const QUAL=Math.round((dist[5]+dist[4])/N*100), USP=Math.round((dist[5]+dist[4]+dist[3])/N*100);
+const AVG=((5*dist[5]+4*dist[4]+3*dist[3]+2*dist[2])/N);
+const SOU=Math.round((dist[5]+dist[4]*.64+dist[3]*.36+dist[2]*.16)/N*100);
+const zone=a=>a<50?'bad':a<80?'mid':'ok';
+const ZC={bad:'var(--bad)',mid:'var(--mid)',ok:'var(--ok)'};
+const ZL={bad:'Повторить всем классом',mid:'Работа в группах',ok:'Усвоено'};
+const GC={5:'var(--g5)',4:'var(--g4)',3:'var(--g3)',2:'var(--g2)'};
+const ruleAgg=()=>{const a={};TASKS.forEach((t,j)=>wrongs(j).forEach(w=>{a[w.rule]=a[w.rule]||{n:0,st:new Set()};a[w.rule].n++;a[w.rule].st.add(w.i)}));return Object.entries(a).sort((x,y)=>y[1].n-x[1].n)};
+const initials=n=>n.split(' ').map(x=>x[0]).join('').slice(0,2);
+const short=n=>{const [f,i]=n.split(' ');return `${i} ${f[0]}.`};
+const LETTERS=[['ә',41,'а',62],['ң',33,'н',80],['ө',28,'о',71],['ү',22,'у',75],['җ',15,'ж',90],['һ',9,'х',100],['к',4],['г',6],['л',2],['д',5],['т',3],['а',3],['е',7],['ы',8],['п',2],['м',1],['н',3],['р',2],['с',2],['я',5],['ч',4]];
+const HIST=[['Сүз төзелеше','16.09',48,2],['Исем','30.09',55,3],['Күплек сан','14.10',63,3],['Тартым','24.10',72,4],['Килешләр','03.11',50,3]];
+const CLASS_TREND=[{t:'Сүз төзелеше',q:34},{t:'Исем',q:38},{t:'Күплек сан',q:44},{t:'Тартым',q:47},{t:'Килешләр',q:QUAL}];
+const CLASS_AVG=[62,60,66,70,71];
+
+const st={sort:'score',col:null,letter:null,toast:'',student:3,task:3,period:'q',scanned:10,review:3,decided:0,auto:true,twoUp:true,topic:'Килешләр',offline:false,seg:0,yes:0,no:0,copied:false};
+
+
+
+/* ---------- shared UI helpers ---------- */
+const sbar=(light)=>`<div class="sbar" style="color:${light?'#fff':'var(--tx)'}"><span>9:41</span><div class="cam-dot"></div><span class="flex items-center gap-1.5"><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.3" y="5.5" width="3" height="6.5" rx="1"/><rect x="8.6" y="3" width="3" height="9" rx="1" opacity="${st.offline?.3:1}"/><rect x="12.9" y="0" width="3" height="12" rx="1" opacity="${st.offline?.3:1}"/></svg><svg width="24" height="12" viewBox="0 0 24 12"><rect x=".5" y=".5" width="20" height="11" rx="3" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="14" height="8" rx="2" fill="currentColor"/></svg></span></div>`;
+const hdr=(title,back='home',right='')=>`<div class="flex items-center gap-1 px-2 pt-2 pb-1"><button data-go="${back}" class="iconbtn">${ic('back',24)}</button><div class="flex-1 text-[17px] font-semibold truncate">${title}</div>${right}</div>`;
+const nav=(on='hub')=>`<div class="nav">${[['home','Главная','home'],['scan','Проверка','queue'],['chart','Аналитика','hub'],['more','Ещё','more']].map(([i,l,g])=>`<button class="${on===g?'on':''}" data-go="${g}"><span class="pill-ic">${ic(i,24)}</span>${l}</button>`).join('')}</div>`;
+const av=(i,s=28,ring)=>`<span data-stu="${i}" class="inline-flex items-center justify-center rounded-full font-semibold flex-none" style="width:${s}px;height:${s}px;font-size:${s*.38}px;background:var(--s3);color:var(--tx);box-shadow:0 0 0 2px ${ring||'var(--s1)'};cursor:pointer">${initials(STUDENTS[i])}</span>`;
+const avs=(list,max=6,s=28)=>`<div class="flex items-center">${list.slice(0,max).map((i,k)=>`<span style="margin-left:${k?-5:0}px">${av(i,s)}</span>`).join('')}${list.length>max?`<span class="cap muted ml-2">+${list.length-max}</span>`:''}</div>`;
+const spark=(vals,w=88,h=30,c='var(--pr)')=>{const mx=Math.max(...vals),mn=Math.min(...vals);const pts=vals.map((v,i)=>[i/(vals.length-1)*w,h-4-((v-mn)/(mx-mn||1))*(h-8)]);return `<svg width="${w}" height="${h}"><path d="M${pts.map(p=>p.join(',')).join(' L')}" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="draw"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="3.5" fill="${c}"/></svg>`};
+const delta=(d)=>`<span class="tag" style="background:${d>=0?'rgba(37,227,138,.12)':'rgba(255,107,107,.12)'};color:${d>=0?'var(--ok)':'var(--bad)'}">${ic(d>=0?'up':'down',14,'currentColor',2.6)}${d>0?'+':''}${d}%</span>`;
+const sheetMini=(name)=>`<div class="absolute inset-0 p-3"><div class="flex items-start justify-between"><div class="marker"><i></i></div><div class="flex-1 px-2 pt-0.5" style="font-size:7px;color:#444">ФИО: <b>${name}</b></div><div class="marker"><i></i></div></div>${['МӘКТӘПКӘ','КӨННӘР','ӨСТӘЛДӘ','БАЛАЛАР'].map((w,qi)=>`<div class="mt-4 pl-1"><div style="font-size:7px;color:#555">${qi+1}) Куегыз сүзне тиешле формага</div><div class="flex mt-1">${w.split('').map(ch=>`<div class="hand" style="width:18px;height:20px;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:13px;background:#fff">${ch}</div>`).join('')}</div></div>`).join('')}<div class="absolute bottom-3 left-3 marker"><i></i></div><div class="absolute bottom-3 right-3 marker"><i></i></div></div>`;
+const gpill=(g,s=34)=>`<span class="inline-flex items-center justify-center rounded-xl num font-bold flex-none" style="width:${s}px;height:${s}px;font-size:${s*.48}px;background:color-mix(in srgb,${GC[g]} 16%,transparent);color:${GC[g]}">${g}</span>`;
+
+
+function topAnswers(j){const m={};wrongs(j).forEach(w=>{m[w.ans]=m[w.ans]||{ans:w.ans,rule:w.rule,n:0,who:[]};m[w.ans].n++;m[w.ans].who.push(w.i)});return Object.values(m).sort((a,b)=>b.n-a.n)}
+function diffWord(a,e){let out='';for(let k=0;k<Math.max(a.length,e.length);k++){const ch=a[k]||'';out+=ch!==e[k]?`<span style="color:var(--bad);text-decoration:underline;text-underline-offset:4px">${ch||'_'}</span>`:ch}return out}
+function donut(v,s,w,c){const r=(s-w)/2,C=2*Math.PI*r;return `<svg width="${s}" height="${s}" style="transform:rotate(-90deg)"><circle cx="${s/2}" cy="${s/2}" r="${r}" stroke="var(--s3)" stroke-width="${w}" fill="none"/><circle cx="${s/2}" cy="${s/2}" r="${r}" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-v/100)}" style="transition:stroke-dashoffset 1s"/></svg>`}
+
+
+
+const AR={
+/* ---------- 1. HUB ---------- */
+hub:()=>`${sbar()}<div class="view"><div class="px-5 pt-3 pb-1 flex items-end justify-between"><div class="h1">Аналитика</div><div class="seg w-[150px]">${[['w','Неделя'],['q','Четверть']].map(([k,l])=>`<button class="${st.period===k?'on':''}" data-period="${k}">${l}</button>`).join('')}</div></div>
+<div class="scroll stagger">
+ <div class="card mt-4 p-5" style="background:linear-gradient(160deg,#17241D 0%,#111714 70%)"><div class="glow" style="width:180px;height:180px;right:-50px;top:-60px;background:rgba(37,227,138,.35)"></div>
+  <div class="flex items-center gap-2 relative"><span style="color:var(--pr)">${ic('spark',18)}</span><span class="eyebrow" style="color:var(--pr)">3 дела на эту неделю</span></div>
+  <div class="mt-4 flex flex-col gap-3 relative">
+   ${[['bad','8-Б · юнәлеш килеше','Ошибка у 6 из 14: «-ка» вместо «-кә»','Тренировка ×6','task'],['mid','7-А · 2 ученика на «2»','Булат К. и Амина С. — третья работа подряд','Профили','student'],['ok','Анализ «Килешләр» готов','Качество '+QUAL+'% · можно отправить завучу','Открыть','report']].map(([z,t,s,b,g])=>`<div data-go="${g}" class="flex items-center gap-3 rounded-2xl p-3.5" style="background:rgba(255,255,255,.035);cursor:pointer"><span class="w-2 self-stretch rounded-full" style="background:${ZC[z]}"></span><div class="flex-1 min-w-0"><div class="small font-semibold">${t}</div><div class="cap muted mt-0.5">${s}</div></div><span class="w-9 h-9 rounded-full flex items-center justify-center flex-none" style="background:var(--s3)">${ic('chev',18)}</span></div>`).join('')}
+  </div></div>
+ <div class="flex items-center justify-between mt-8"><div class="h3">Мои классы</div><span class="cap faint">качество знаний</span></div>
+ ${[['7-А',QUAL,[34,38,44,47,QUAL],'Килешләр · 03.11','test'],['8-Б',41,[55,52,49,46,41],'Юнәлеш · 01.11','test'],['7-Б',70,[61,64,63,68,70],'Күплек сан · 30.10','test']].map(([c,q,tr,last,g])=>{const d=q-tr.at(-2);return `<button data-go="${g}" class="card w-full text-left mt-3 p-4 flex items-center gap-4"><div class="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-[16px]" style="background:var(--s3)">${c}</div><div class="flex-1 min-w-0"><div class="flex items-baseline gap-2"><span class="num text-[24px] font-bold" style="color:${q<50?'var(--bad)':q<65?'var(--mid)':'var(--tx)'}">${q}%</span>${delta(d)}</div><div class="cap muted mt-0.5 truncate">${last}</div></div>${spark(tr,72,32,d>=0?'var(--pr)':'var(--bad)')}</button>`}).join('')}
+ <div class="flex items-center justify-between mt-8"><div class="h3">Темы четверти · 7-А</div><span class="cap faint">% верных</span></div>
+ <div class="card p-4 mt-3">${[['Лексика',91],['Күплек сан',81],['Тартым',72],['Урын-вакыт килеше',63],['Юнәлеш килеше',38]].map(([t,a])=>`<div class="flex items-center gap-3 py-2"><span class="small flex-1">${t}</span><div class="w-[120px] h-2 rounded-full" style="background:var(--s3)"><div class="h-full rounded-full grow" style="width:${a}%;background:${ZC[zone(a)]}"></div></div><span class="num small w-10 text-right" style="color:${ZC[zone(a)]}">${a}%</span></div>`).join('')}</div>
+</div>${nav()}</div>`,
+
+/* ---------- 2. TEST RESULTS ---------- */
+test:()=>{const order=TASKS.map((t,j)=>({t,j,a:acc(j)}));const worst=order.slice().sort((a,b)=>a.a-b.a)[0];const ww=wrongs(worst.j);const top=topAnswers(worst.j)[0];
+ const letterGroup=[1,4,6,13];const twos=STUDENTS.map((_,i)=>i).filter(i=>grade(i)===2);
+ return `${sbar()}<div class="view">${hdr('Килешләр · 7-А','hub',`<button class="iconbtn" data-go="report">${ic('doc',22)}</button>`)}<div class="scroll stagger">
+ <div class="cap muted px-1">Контрольная · 3 ноября · сдали ${N} из ${N}</div>
+ <div class="card mt-3 p-5" style="background:radial-gradient(120% 90% at 100% 0%,#183126 0%,#131916 60%)">
+  <div class="flex items-end justify-between"><div><div class="eyebrow">Качество знаний</div><div class="num font-bold mt-1" style="font-size:56px;line-height:1"><span data-count="${QUAL}">${QUAL}</span><span class="text-[28px] muted">%</span></div></div><div class="text-right">${delta(QUAL-47)}<div class="cap faint mt-1">к «Тартым»</div></div></div>
+  <div class="flex h-9 rounded-xl overflow-hidden mt-5 gap-[3px]">${[5,4,3,2].map(g=>dist[g]?`<div class="grow flex items-center justify-center font-bold text-[14px]" style="flex:${dist[g]};background:${GC[g]};color:#08100C">${dist[g]}</div>`:'').join('')}</div>
+  <div class="flex mt-2 gap-[3px]">${[5,4,3,2].map(g=>dist[g]?`<div class="cap text-center" style="flex:${dist[g]};color:${GC[g]}">«${g}»</div>`:'').join('')}</div>
+  <div class="grid grid-cols-3 mt-5 pt-4" style="border-top:1px solid rgba(255,255,255,.06)">${[[USP+'%','успеваемость'],[AVG.toFixed(1).replace('.',','),'средний балл'],[SOU+'%','СОУ']].map(([v,l])=>`<div><div class="num text-[22px] font-bold">${v}</div><div class="cap muted">${l}</div></div>`).join('')}</div>
+ </div>
+
+ <div class="flex items-center gap-2 mt-8"><span style="color:var(--pr)">${ic('spark',18)}</span><div class="h3">План на следующий урок</div></div>
+ <div class="mt-3 flex flex-col gap-3">
+  <div class="card p-4" data-go="task" style="cursor:pointer"><div class="flex items-center gap-2"><span class="tag" style="background:rgba(255,107,107,.14);color:var(--bad)">${ic('board',14)} Всем классом</span><span class="cap faint ml-auto">задание ${worst.t.n}</span></div>
+   <div class="body font-semibold mt-3">${worst.t.skill}: верно только ${worst.a}%</div>
+   <div class="small muted mt-1">Чаще всего пишут <b style="color:var(--tx)">«${top.ans}»</b> (${top.n} из ${ww.length}) — ${RULES[top.rule].hint}.</div>
+   <div class="flex items-center justify-between mt-4"><span class="tag" style="background:rgba(182,156,255,.14);color:var(--r-sin)">${RULES[top.rule].name}</span><span class="small font-semibold flex items-center gap-1" style="color:var(--pr)">Разобрать ${ic('chev',16)}</span></div></div>
+  <div class="card p-4"><div class="flex items-center gap-2"><span class="tag" style="background:rgba(245,185,66,.14);color:var(--mid)">${ic('people',14)} Группа · ${letterGroup.length}</span><span class="cap faint ml-auto">буквы</span></div>
+   <div class="body font-semibold mt-3">Пишут «а» вместо «ә»</div><div class="small muted mt-1">В 3 и более словах работы.</div>
+   <div class="flex items-center justify-between mt-4">${avs(letterGroup)}<button class="btn-s" style="background:var(--prs);color:var(--pr)" data-act="cards">${ic('print',16)} Карточки ×${letterGroup.length}</button></div></div>
+  <div class="card p-4"><div class="flex items-center gap-2"><span class="tag" style="background:rgba(92,200,240,.14);color:var(--g4)">${ic('user',14)} Лично · ${twos.length}</span><span class="cap faint ml-auto">оценка «2»</span></div>
+   <div class="body font-semibold mt-3">Консультация после уроков</div><div class="small muted mt-1">Оба ошиблись в заданиях 3, 4 и 5.</div>
+   <div class="flex items-center gap-2 mt-4">${twos.map(i=>`<button data-stu="${i}" class="btn-s" style="background:var(--s3)">${av(i,22)} ${short(STUDENTS[i])}</button>`).join('')}</div></div>
+ </div>
+
+ <div class="flex items-center justify-between mt-8"><div class="h3">Задания</div><button class="small font-semibold" style="color:var(--pr)" data-go="map">Карта класса →</button></div>
+ <div class="card p-4 mt-3"><div class="relative">
+  ${order.map(({t,j,a})=>`<button data-task="${j}" class="w-full flex items-center gap-3 py-2.5 text-left"><span class="num small faint w-4">${t.n}</span><div class="flex-1 min-w-0"><div class="small truncate">${t.skill}</div><div class="h-2.5 rounded-full mt-1.5 relative" style="background:var(--s3)"><div class="h-full rounded-full grow" style="width:${a}%;background:${ZC[zone(a)]}"></div></div></div><span class="num small font-semibold w-10 text-right" style="color:${ZC[zone(a)]}">${a}%</span></button>`).join('')}
+  <div class="absolute top-0 bottom-0 pointer-events-none" style="left:calc(28px + (100% - 80px)*.5);border-left:1px dashed rgba(255,107,107,.45)"></div>
+  <div class="absolute top-0 bottom-0 pointer-events-none" style="left:calc(28px + (100% - 80px)*.8);border-left:1px dashed rgba(37,227,138,.45)"></div>
+ </div><div class="flex gap-4 mt-3 cap faint"><span><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:var(--bad)"></span>&lt;50% — всем классом</span><span><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:var(--ok)"></span>≥80% — усвоено</span></div></div>
+ </div><div class="foot grid grid-cols-[auto_1fr] gap-3"><button class="btn2 w-14" data-go="report">${ic('doc',22)}</button><button class="btn" data-go="journal">${ic('copy',22,'#03140B')} Оценки в журнал</button></div></div>`},
+
+/* ---------- 3. TASK ---------- */
+task:()=>{const j=st.task,t=TASKS[j],a=acc(j),ww=wrongs(j),tops=topAnswers(j);const right=STUDENTS.map((_,i)=>i).filter(i=>M[i][j]);const z=zone(a);
+ return `${sbar()}<div class="view">${hdr('Задание '+t.n,'test')}<div class="scroll stagger">
+ <div class="px-1"><span class="tag" style="background:${z==='bad'?'rgba(255,107,107,.14)':z==='mid'?'rgba(245,185,66,.14)':'rgba(37,227,138,.14)'};color:${ZC[z]}">${ZL[z]}</span><div class="h2 mt-3">${t.p}</div><div class="small muted mt-1">Правильно: <b style="color:var(--pr)">${t.exp}</b></div></div>
+ <div class="card mt-5 p-5 flex items-center gap-5"><div class="relative w-[96px] h-[96px] flex-none">${donut(a,96,10,ZC[z])}<div class="absolute inset-0 flex flex-col items-center justify-center"><div class="num text-[26px] font-bold"><span data-count="${a}">${a}</span>%</div><div class="cap faint">верно</div></div></div>
+  <div class="flex-1"><div class="flex items-center justify-between"><span class="small muted">Справились</span><b class="num">${right.length}</b></div><div class="flex items-center justify-between mt-2"><span class="small muted">Ошиблись</span><b class="num" style="color:var(--bad)">${ww.length}</b></div><div class="flex items-center justify-between mt-2"><span class="small muted">Класс в среднем</span><b class="num">${Math.round(TASKS.reduce((s,_,k)=>s+acc(k),0)/6)}%</b></div></div></div>
+ <div class="flex items-center justify-between mt-8"><div class="h3">Как ошибались</div><span class="cap faint">${ww.length} ошибок</span></div>
+ <div class="mt-3 flex flex-col gap-3">${tops.map((o,k)=>`<div class="card p-4"><div class="flex items-center gap-3"><div class="flex-1"><div class="text-[22px] font-semibold tracking-wide">${diffWord(o.ans,t.exp)}</div><span class="tag mt-2" style="background:color-mix(in srgb,${RULES[o.rule].c} 16%,transparent);color:${RULES[o.rule].c}">${RULES[o.rule].name}</span></div><div class="text-right"><div class="num text-[26px] font-bold">${o.n}</div><div class="cap faint">учен.</div></div></div>
+  <div class="h-1.5 rounded-full mt-4" style="background:var(--s3)"><div class="h-full rounded-full grow" style="width:${o.n/ww.length*100}%;background:${RULES[o.rule].c}"></div></div>
+  <div class="mt-3">${avs(o.who,6,28)}</div>${k===0?`<div class="cap muted mt-2">${RULES[o.rule].hint}</div>`:''}</div>`).join('')}</div>
+ <div class="card mt-3 p-4 flex gap-3" style="background:rgba(182,156,255,.08)"><span style="color:var(--r-sin)">${ic('spark',20)}</span><div class="small"><b>Правило для доски.</b> <span class="muted">После мягкой основы (ә, е, и, ө, ү) — <b style="color:var(--tx)">-гә / -кә</b>, после твёрдой — <b style="color:var(--tx)">-га / -ка</b>.</span></div></div>
+ </div><div class="foot grid grid-cols-[auto_1fr] gap-3"><button class="btn2 w-14" data-go="map">${ic('grid',20)}</button><button class="btn" data-act="cards">${ic('print',22,'#03140B')} Тренировка для ${ww.length}</button></div></div>`},
+
+/* ---------- 4. HEATMAP ---------- */
+map:()=>{let rows=STUDENTS.map((_,i)=>i);if(st.sort==='score')rows.sort((a,b)=>score(b)-score(a)||a-b);const cols=[0,1,2,3,4,5];const c=st.col;
+ return `${sbar()}<div class="view">${hdr('Карта класса','test')}<div class="scroll">
+ <div class="flex items-center justify-between px-1"><div class="small muted">${N} учеников × 6 заданий</div><div class="seg w-[170px]">${[['score','По баллу'],['abc','По журналу']].map(([k,l])=>`<button class="${st.sort===k?'on':''}" data-sort="${k}">${l}</button>`).join('')}</div></div>
+ <div class="card mt-4 p-3 hm ${c!==null?'dim':''}">
+  <div class="flex items-end gap-[4px] pb-2 pl-[118px] pr-[30px]">${cols.map(j=>{const a=acc(j);return `<button data-col="${j}" class="flex-1 flex flex-col items-center gap-1 rounded-lg py-1 ${c===j?'':''}" style="${c===j?'background:var(--s3)':''}"><span class="cap faint">${j+1}</span><span class="num text-[11px] font-bold" style="color:${ZC[zone(a)]}">${a}</span></button>`}).join('')}</div>
+  ${rows.map((i,r)=>`<div class="flex items-center gap-[4px] py-[2px]"><button data-stu="${i}" class="w-[114px] text-left small truncate pr-1 ${c!==null&&!M[i][c]?'':''}" style="${c!==null&&!M[i][c]?'color:var(--tx);font-weight:600':c!==null?'color:var(--fa)':''}">${short(STUDENTS[i])}</button>${cols.map(j=>`<div class="cell flex-1 h-[22px] ${c===j?'hl':''}" style="background:${M[i][j]?'rgba(37,227,138,.78)':'rgba(255,107,107,.85)'};animation:rise .4s ${(r*6+j)*8}ms both"></div>`).join('')}<span class="w-[26px] text-center num text-[13px] font-bold rounded-md ml-1" style="color:${GC[grade(i)]}">${grade(i)}</span></div>`).join('')}
+ </div>
+ ${c!==null?`<div class="card mt-3 p-4 flex items-center gap-3"><div class="flex-1"><div class="small font-semibold">Задание ${c+1} · ${TASKS[c].skill}</div><div class="cap muted mt-0.5">Ошиблись ${wrongs(c).length}: ${wrongs(c).slice(0,3).map(w=>short(STUDENTS[w.i])).join(', ')}${wrongs(c).length>3?'…':''}</div></div><button class="btn-s" style="background:var(--prs);color:var(--pr)" data-task="${c}">Разбор</button></div>`
+  :`<div class="cap faint mt-3 px-1 flex items-center gap-4"><span><span class="inline-block w-3 h-3 rounded mr-1.5 align-[-2px]" style="background:rgba(37,227,138,.78)"></span>верно</span><span><span class="inline-block w-3 h-3 rounded mr-1.5 align-[-2px]" style="background:rgba(255,107,107,.85)"></span>ошибка</span><span>тап по № задания</span></div>`}
+ <div class="card mt-4 p-4 flex gap-3"><span style="color:var(--mid)">${ic('eye',20)}</span><div class="small muted">Красный столбец — проблема всего класса. Красная строка — ученику нужна личная помощь.</div></div>
+ </div></div>`},
+
+/* ---------- 5. LETTERS ---------- */
+letters:()=>{const L=st.letter;const tat=LETTERS.filter(x=>x[2]);const rest=LETTERS.filter(x=>!x[2]);const col=e=>e>=30?'var(--bad)':e>=15?'var(--mid)':e>=8?'#C9D86A':'var(--s3)';
+ const key=(x,big)=>`<div data-letter="${x[0]}" class="key ${x[1]>=30?'pulse':''}" style="height:${big?78:44}px;background:${x[1]>=8?`color-mix(in srgb,${col(x[1])} ${big?24:20}%,var(--s1))`:'var(--s2)'};box-shadow:${L===x[0]?'0 0 0 2px var(--tx)':`0 0 0 1px color-mix(in srgb,${col(x[1])} 40%,transparent)`}"><span style="font-size:${big?30:17}px;color:${x[1]>=8?col(x[1]):'var(--mu)'}">${x[0]}</span>${big?`<span class="num cap font-semibold mt-0.5" style="color:${col(x[1])}">${x[1]}%</span>`:''}</div>`;
+ const sel=LETTERS.find(x=>x[0]===L);
+ return `${sbar()}<div class="view">${hdr('Буквы класса','test')}<div class="scroll stagger">
+ <div class="px-1"><div class="h2">Татарские буквы — главный источник ошибок</div><div class="small muted mt-1">% неверно написанных из всех встреч буквы · 7-А, 5 работ</div></div>
+ <div class="card mt-5 p-4"><div class="eyebrow mb-3">Татарские</div><div class="grid grid-cols-3 gap-2">${tat.map(x=>key(x,true)).join('')}</div>
+  <div class="eyebrow mt-5 mb-3">Остальные</div><div class="grid grid-cols-8 gap-1.5">${rest.map(x=>key(x,false)).join('')}</div></div>
+ <div class="flex items-center gap-4 mt-3 px-1 cap faint"><span style="color:var(--bad)">● ≥30%</span><span style="color:var(--mid)">● 15–30%</span><span style="color:#C9D86A">● 8–15%</span><span>тап по букве</span></div>
+ <div class="card mt-5 p-4 flex gap-3"><span style="color:var(--pr)">${ic('spark',20)}</span><div class="small"><b>ә и ң</b> <span class="muted">дают больше половины всех буквенных ошибок. 10 минут на диктант с этими буквами закроют большую часть проблемы.</span></div></div>
+ </div></div>
+ ${sel?`<div class="scrim" data-letter=""></div><div class="sheet"><div class="grab"></div>
+  <div class="flex items-center gap-4"><div class="w-16 h-16 rounded-2xl flex items-center justify-center text-[34px] font-bold" style="background:color-mix(in srgb,${col(sel[1])} 22%,var(--s2));color:${col(sel[1])}">${sel[0]}</div><div><div class="h2">Ошибка в ${sel[1]}%</div><div class="small muted">${sel[2]?'Чаще всего путают с одной буквой':'Редкие ошибки, без системы'}</div></div></div>
+  ${sel[2]?`<div class="flex items-center justify-center gap-5 mt-6"><span class="text-[40px] font-bold">${sel[0]}</span><span class="faint">${ic('chev',24)}</span><span class="text-[40px] font-bold" style="color:var(--bad)">${sel[2]}</span><span class="num h2 muted ml-2">${sel[3]}%</span></div>
+  <div class="small muted text-center mt-1">из всех ошибок в букве «${sel[0]}»</div>
+  <div class="flex items-center justify-between mt-6"><span class="small muted">Чаще ошибаются</span>${avs([3,7,10,13,6],5,28)}</div>
+  <div class="rounded-xl p-3 mt-4 flex gap-2 cap" style="background:var(--s2)"><span style="color:var(--mid)">${ic('alert',16)}</span><span class="muted">Если ученик пишет букву верно, а приложение видит «${sel[2]}» — проверьте распознавание в разборе.</span></div>
+  <button class="btn mt-5" data-act="cards">${ic('print',22,'#03140B')} Диктант на «${sel[0]}» ×5</button>`:`<button class="btn2 mt-6" data-letter="">Закрыть</button>`}</div>`:''}`},
+
+/* ---------- 6. STUDENT ---------- */
+student:()=>{const i=st.student;const W=318,H=150;const pts=HIST.map((h,k)=>[16+k*(W-32)/(HIST.length-1),H-14-(h[2]-30)/(100-30)*(H-34)]);const cls=CLASS_AVG.map((v,k)=>[16+k*(W-32)/(HIST.length-1),H-14-(v-30)/(100-30)*(H-34)]);
+ const path=p=>'M'+p.map(x=>x.join(',')).join(' L');const area=path(pts)+` L${pts.at(-1)[0]},${H} L${pts[0][0]},${H} Z`;
+ const last=HIST.at(-1)[2], d=last-HIST.at(-2)[2];
+ return `${sbar()}<div class="view">${hdr('','test')}<div class="scroll stagger">
+ <div class="flex items-center gap-4 px-1">${av(i,60,'var(--prs)')}<div><div class="h2">${STUDENTS[i]}</div><div class="small muted">7-А · 5 работ · средняя «3,0»</div></div></div>
+ <div class="card mt-5 p-4" style="background:linear-gradient(180deg,#141D18 0%,#121815 100%)"><div class="flex items-end justify-between px-1"><div><div class="eyebrow">Последняя работа</div><div class="num font-bold mt-1" style="font-size:40px;line-height:1">${last}<span class="text-[20px] muted">%</span></div></div><div class="text-right">${delta(d)}<div class="cap faint mt-1">к прошлой</div></div></div>
+  <svg width="${W}" height="${H}" class="mt-3 block"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#25E38A" stop-opacity=".35"/><stop offset="1" stop-color="#25E38A" stop-opacity="0"/></linearGradient></defs>
+   ${[50,70,85].map(v=>{const y=H-14-(v-30)/(70)*(H-34);return `<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.05)"/><text x="${W-2}" y="${y-3}" text-anchor="end" font-size="10" fill="#4F5E56">${v===50?'«3»':v===70?'«4»':'«5»'}</text>`}).join('')}
+   <path d="${area}" fill="url(#ga)" class="growy"/><path d="${path(cls)}" fill="none" stroke="#6F8077" stroke-width="1.5" stroke-dasharray="4 4"/><path d="${path(pts)}" fill="none" stroke="#25E38A" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" class="draw"/>
+   ${pts.map((p,k)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${k===pts.length-1?6:4}" fill="${k===pts.length-1?'#25E38A':'#131916'}" stroke="#25E38A" stroke-width="2"/>`).join('')}
+  </svg>
+  <div class="flex justify-between px-1 mt-1">${HIST.map(h=>`<span class="cap faint text-center" style="width:56px">${h[1]}</span>`).join('')}</div>
+  <div class="flex items-center gap-4 mt-3 px-1 cap faint"><span><span class="inline-block w-3 h-[3px] rounded mr-1.5 align-middle" style="background:var(--pr)"></span>${short(STUDENTS[i])}</span><span><span class="inline-block w-3 border-t border-dashed mr-1.5 align-middle" style="border-color:#6F8077"></span>средний по классу</span></div>
+  <div class="rounded-2xl p-3 mt-4 flex gap-2.5" style="background:rgba(245,185,66,.08)"><span style="color:var(--mid)">${ic('spark',18)}</span><div class="small"><b>Просел на новой теме.</b> <span class="muted">До «Килешләр» рос три работы подряд. Ошибки в заданиях 3 и 4 — оба про сингармонизм.</span></div></div></div>
+ <div class="h3 mt-8 px-1">Над чем работать</div>
+ <div class="card mt-3 p-4">${[['Юнәлеш килеше',40,'4 из 10 верно'],['Урын-вакыт килеше',55,'6 из 11'],['Күплек сан',78,'7 из 9']].map(([t,a,s])=>`<div class="flex items-center gap-3 py-2.5"><div class="flex-1"><div class="small font-semibold">${t}</div><div class="cap faint">${s}</div></div><div class="w-[90px] h-2 rounded-full" style="background:var(--s3)"><div class="h-full rounded-full grow" style="width:${a}%;background:${ZC[zone(a)]}"></div></div><span class="num small w-9 text-right" style="color:${ZC[zone(a)]}">${a}%</span></div>`).join('')}</div>
+ <div class="h3 mt-8 px-1">Путает буквы</div>
+ <div class="grid grid-cols-3 gap-3 mt-3">${[['ә','а',5],['ң','н',3],['ү','у',2]].map(([a,b,n])=>`<div class="card p-3 text-center"><div class="text-[22px] font-bold">${a} <span class="faint text-[16px]">→</span> <span style="color:var(--bad)">${b}</span></div><div class="cap muted mt-1">${n} раза</div></div>`).join('')}</div>
+ <div class="card mt-3 p-4 flex items-center gap-3"><span class="faint">${ic('eye',20)}</span><div class="flex-1 small muted">Почерк читается хорошо — ошибки не из-за распознавания.</div></div>
+ </div><div class="foot"><button class="btn" data-act="cards">${ic('print',22,'#03140B')} Карточка для ${STUDENTS[i].split(' ')[1]}а</button></div></div>`},
+
+/* ---------- 7. REPORT ---------- */
+report:()=>{const ra=ruleAgg();return `${sbar()}<div class="view">${hdr('Анализ для завуча','test')}<div class="scroll">
+ <div class="paperdoc mt-2 p-5 text-[12px] leading-snug" style="box-shadow:0 30px 60px -30px rgba(0,0,0,.8)">
+  <div class="flex items-center justify-between"><span class="font-bold text-[11px]" style="color:#0D8F54">КАРА КУЯН</span><span style="color:#6B776F">03.11.2026</span></div>
+  <div class="text-[16px] font-bold mt-2 leading-tight">Анализ контрольной работы «Килешләр»</div>
+  <div class="mt-1" style="color:#56655C">7-А · татарский язык · Гөлнара Ильдаровна · по списку ${N}, писали ${N}</div>
+  <div class="grid grid-cols-4 gap-2 mt-4">${[[QUAL+'%','качество'],[USP+'%','успеваем.'],[AVG.toFixed(1).replace('.',','),'ср. балл'],[SOU+'%','СОУ']].map(([v,l])=>`<div class="rounded-lg p-2" style="background:#E7ECE8"><div class="text-[16px] font-bold">${v}</div><div class="text-[10px]" style="color:#56655C">${l}</div></div>`).join('')}</div>
+  <div class="flex h-3 rounded overflow-hidden mt-3 gap-[2px]">${[5,4,3,2].map(g=>`<div style="flex:${dist[g]};background:${{5:'#1FBF73',4:'#3AA7D6',3:'#E0A52E',2:'#E25555'}[g]}"></div>`).join('')}</div>
+  <div class="flex justify-between mt-1 text-[10px]" style="color:#56655C">${[5,4,3,2].map(g=>`<span>«${g}» — ${dist[g]} (${Math.round(dist[g]/N*100)}%)</span>`).join('')}</div>
+  <div class="font-bold mt-4 mb-1">Поэлементный анализ</div>
+  <table class="w-full text-[11px]"><tr style="color:#56655C"><th>№</th><th>Проверяемый элемент</th><th>Справились</th><th>%</th></tr>${TASKS.map((t,j)=>`<tr><td>${t.n}</td><td>${t.skill}</td><td>${N-wrongs(j).length}</td><td style="font-weight:700;color:${acc(j)<50?'#D23B3B':acc(j)<80?'#B7801A':'#14995B'}">${acc(j)}</td></tr>`).join('')}</table>
+  <div class="font-bold mt-4 mb-1">Типичные ошибки</div>
+  ${ra.map(([k,v])=>`<div class="flex justify-between py-0.5"><span>${RULES[k].name} — ${RULES[k].hint}</span><b class="whitespace-nowrap pl-3">${v.st.size} уч.</b></div>`).join('')}
+  <div class="font-bold mt-4 mb-1">План коррекции</div>
+  <div>1. Повторить правило сингармонизма в падежных аффиксах (задание 4) со всем классом.</div><div>2. Карточки на букву «ә» — 4 ученика.</div><div>3. Консультация: ${STUDENTS.filter((_,i)=>grade(i)===2).map(short).join(', ')}.</div>
+ </div>
+ <div class="cap faint text-center mt-3">Собрано автоматически · можно править перед отправкой</div>
+ </div><div class="foot grid grid-cols-2 gap-3"><button class="btn2" data-act="copy">Копировать в Word</button><button class="btn" style="height:48px;font-size:15px" data-act="pdf">${ic('share',18,'#03140B')} PDF завучу</button></div></div>`}
+};
+/* ================= FLOW (v4) ================= */
+const REV=[3,4,7];
+const STAGES=['Знакомство','Подготовка','Проверка стопки','Спорные места','Итоги и журнал','Аналитика','Отправка'];
+const SCREENS=[
+ {id:'welcome',stage:0,title:'Первый запуск',pain:'«Сложно начать», ещё один логин',sol:['Только имя — без пароля и Госуслуг','Ценность в цифрах: «стопка за 10 минут»','Три обещания вместо онбординга на 5 экранов'],ref:[['Duolingo · одна мысль на экран','https://mobbin.com/screens/31fdc425-1a41-4b78-b4e6-762bff0b9306']],meta:'H8 · до первого результата ≤ 3 мин'},
+ {id:'privacy',stage:0,title:'Камера и приватность',pain:'Тревога за фото детей, 152-ФЗ',sol:['Объясняем до системного запроса','Поверх размытой камеры — видно, о чём речь','Ссылка на одностраничник для завуча'],ref:[['Cal AI · Your Photos, Your Privacy','https://mobbin.com/screens/dcf735f6-52fd-4181-bf5e-442065642bb4'],['Quizlet · Scan worksheets','https://mobbin.com/screens/072e15bd-5d4c-482b-a8f3-6396080fc6cc']],meta:'H10 · разрешение камеры ≥ 90%'},
+ {id:'trust',stage:0,title:'Для завуча и директора',pain:'Согласование ПО в школе',sol:['Четыре факта на одной странице','PDF для администрации'],ref:[],meta:'H10 · согласование за 1 встречу'},
+ {id:'testnew',stage:1,title:'Тест по теме',pain:'Поиск заданий — 30–60 минут',sol:['Тема → готовый тест из банка','Замена задания одним тапом','Превью клеток бланка прямо в списке'],ref:[],meta:'H5 · готовый тест ≤ 5 мин'},
+ {id:'print',stage:1,title:'Бланки на класс',pain:'Печать по одному, мало бумаги',sol:['Один PDF, имя и QR на каждом','2 бланка на лист A4'],ref:[],meta:'H12 · печать одним PDF'},
+ {id:'home',stage:2,title:'Главная',pain:'Со стопкой в руках нужна одна кнопка',sol:['Прогресс словами «10 из 16» + полоса вместо кольца и 16 точек','Одна главная кнопка','Одна подсказка из аналитики — «что важно сегодня»'],ref:[['pliability · Up next / Progress','https://mobbin.com/screens/14f9ff2c-ac1a-47c4-a64f-67b6174c06bf'],['Posh · 0/1 scanned','https://mobbin.com/screens/4b6607c6-ad12-496c-840d-54b9c798a46f']],meta:'H1 · 1 тап до скана'},
+ {id:'scan',stage:2,title:'Камера · поток',pain:'Тени, фокус, время на каждый лист',sol:['Сверху «10 из 16» и тонкая полоса','Слева — стопка с бейджем, справа — фонарик','АВТО / РУЧНОЙ под затвором','Тост с именем и оценкой после каждого листа'],ref:[['Freeform · Auto shutter + стопка','https://mobbin.com/screens/122d05e6-3820-443f-a043-8c455a24dafb'],['Mesh · AUTO / MANUAL','https://mobbin.com/screens/ce93dfd5-f1c8-4505-aee4-3768a6096059'],['Evernote · одна строка подсказки','https://mobbin.com/screens/4f52c1f4-b905-4ce5-9648-35da46cebe48']],meta:'H1, H3 · скан с 1-й попытки ≥ 90%'},
+ {id:'who',stage:2,title:'Чей это лист?',pain:'QR смазан — непонятно, чья работа',sol:['Шторка поверх камеры — без смены экрана','Вопрос + два больших ответа','Варианты — только те, кто ещё не сдал'],ref:[['Lloyds · Have we read your ID correctly?','https://mobbin.com/screens/f7a27995-e8c7-4923-b1e6-9d53cd1e3559'],['Quizlet · Here’s what we scanned','https://mobbin.com/screens/2c66cb2e-4d24-4048-a31f-e096aebc990a']],meta:'0 перепутанных работ'},
+ {id:'scandark',stage:2,title:'Плохой свет',pain:'«Не справляется с тенями»',sol:['Причина простыми словами','Фонарик одной кнопкой и ручной спуск'],ref:[],meta:'H3 · повторов ≤ 10%'},
+ {id:'queue',stage:2,title:'Очередь класса',pain:'Кого нет и что ждёт разбора',sol:['Аватар с кольцом статуса вместо точек','Весь класс — в одной карточке','Фильтры вместо прокрутки'],ref:[['WHOOP · Team list','https://mobbin.com/screens/ae62ddea-7e67-4201-9d13-aa0fc67af1aa'],['Blank Street · Table in card','https://mobbin.com/screens/b9d7bd8a-e70e-4fb4-896c-da1c9f454bc5']],meta:'H1 · класс ≤ 10 мин'},
+ {id:'done',stage:2,title:'Класс проверен',pain:'Пик пути: усталость → облегчение',sol:['Явное завершение вместо пустой камеры','Три плитки: время, качество, спорные','Одна главная кнопка'],ref:[['Duolingo · Lesson complete','https://mobbin.com/screens/31fdc425-1a41-4b78-b4e6-762bff0b9306'],['Uxcel · Continue + Share','https://mobbin.com/screens/b133afa4-f09c-4997-8dee-4cb2114f9b58']],meta:'North Star в переводе на минуты'},
+ {id:'review',stage:3,title:'Разбор спорных',pain:'Недоверие к авто-оценке',sol:['Свайп — ускоритель, кнопки ✕/✓ — основной путь','Счётчики «ошибка / верно» по краям','«Отменить» в тосте после каждого решения'],ref:[['Quizlet · Swipe + counters','https://mobbin.com/screens/5dacac8f-b958-417c-bae8-e70c4ac3273f'],['Vocabulary · ✕ / ✓ buttons','https://mobbin.com/screens/311c468b-568a-4f31-bec8-0f1d664176e5'],['Preply · Undo toast','https://mobbin.com/screens/fa013bb4-d953-42e0-8191-15d0c973ecdc']],meta:'H2 · разбор ≤ 2 мин на класс'},
+ {id:'group',stage:3,title:'Решить разом',pain:'Одна и та же буква у многих',sol:['Одно решение вместо шести'],ref:[['Alta · Add All','https://mobbin.com/screens/de433cf4-0b86-4e9f-986b-5d243f1bf498']],meta:'H2 · решений −40%'},
+ {id:'test',stage:4,title:'Итоги контрольной',pain:'Что не усвоили, что делать завтра',sol:['Полоса 5/4/3/2 и формулы завуча','«План на урок»: всем / группе / лично','Задания с порогами 50% и 80%'],ref:[['SchoolAI · Class mastery','https://mobbin.com/screens/00828d09-252c-4d02-92a1-58966ebbe19d']],meta:'H6, H7'},
+ {id:'journal',stage:4,title:'Оценки в журнал',pain:'Ручной перенос в электронный журнал',sol:['Колонка в порядке журнала','Копируется одним тапом'],ref:[],meta:'H6 · перенос ≤ 1 мин'},
+ {id:'task',stage:4,title:'Разбор задания',pain:'«38%» ничего не говорит',sol:['Топ неверных записей с подсветкой буквы','Тег правила: сингармонизм, буква…','Тренировка только этой группе'],ref:[['ZipGrade · Item analysis','https://www.zipgrade.com']],meta:'H7 · действие ≥ 30%'},
+ {id:'map',stage:4,title:'Карта класса',pain:'Общая проблема или частная?',sol:['Тепловая карта ученик × задание','Тап по заданию — кто ошибся'],ref:[['Quizizz · Heatmap','https://support.wayground.com']],meta:''},
+ {id:'hub',stage:5,title:'Аналитика · неделя',pain:'Нет времени копаться в данных',sol:['«3 дела на неделю»: факт + причина + кнопка','Классы с трендом качества'],ref:[['Oura · Trends','https://mobbin.com/screens/3d206be7-b48f-4e5d-8168-3848a611e105']],meta:'H7'},
+ {id:'letters',stage:5,title:'Буквы класса',pain:'Какие татарские буквы путают',sol:['Карта алфавита по % ошибок','Тап → с чем путают и кто'],ref:[['pliability · Body map','https://mobbin.com/screens/7fcf70e5-690c-4979-8c97-d0e69aa569d8']],meta:''},
+ {id:'student',stage:5,title:'Профиль ученика',pain:'Растёт ли ученик?',sol:['Линия против среднего по классу','Вывод словами + буквы, которые путает'],ref:[['Bevel · Trend','https://mobbin.com/screens/953c3a4c-960d-4fdd-98cc-3a0a7bac470b']],meta:''},
+ {id:'report',stage:5,title:'Анализ для завуча',pain:'Анализ контрольной вручную — вечер',sol:['Документ по шаблону завуча','Качество, успеваемость, СОУ, поэлементный анализ'],ref:[],meta:'P7 · отчёт за 1 минуту'},
+ {id:'more',stage:6,title:'Отправка работ',pain:'Страх потерять работу без сети',sol:['Статус словами в каждой строке — без легенды из точек','Сводка одной строкой','Офлайн — нормальный режим'],ref:[['GoPro Quik · Saving 2/4','https://mobbin.com/screens/d9d1710a-5585-42da-ae77-c4811a8ed7b0'],['Dropbox · Uploading…','https://mobbin.com/screens/0344b16a-a8e5-442b-a8f9-efddae1ab159']],meta:'H9 · 0 потерь',demo:'offline'}
+];
+let cur=0,prevId=null,timers=[],STILL=false;
+const idx=id=>SCREENS.findIndex(s=>s.id===id);
+const OVER={print:'testnew',who:'scan',group:'review',journal:'test'};
+
+const R={
+welcome:()=>`${sbar()}<div class="view"><div class="scroll flex flex-col">
+  <div class="mt-8 pop-in">${LOGO}</div>
+  <div class="h1 mt-8" style="font-size:36px">Стопка работ<br>за <span style="color:var(--pr)">10 минут</span></div>
+  <div class="body muted mt-4">Проверяйте рукописные работы по татарскому языку камерой телефона.</div>
+  <div class="mt-8 flex flex-col gap-2.5 stagger">${[['scan','Балл появляется сам','Наведите камеру — оценка через секунду'],['check','Спорное решаете вы','Только сомнительные буквы'],['chart','Видно, что повторить','И кому именно']].map(([i,t,s])=>`<div class="card p-4 flex items-center gap-4"><span class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background:var(--prs);color:var(--pr)">${ic(i,22)}</span><div><div class="body font-semibold">${t}</div><div class="cap muted">${s}</div></div></div>`).join('')}</div>
+  </div><div class="foot" style="padding-top:8px">
+  <label class="flex-none flex items-center gap-3 rounded-2xl px-4 py-3 mb-3" style="background:var(--s2);box-shadow:0 0 0 1.5px var(--pr) inset,0 10px 30px -14px rgba(37,227,138,.45)">
+   <span class="w-10 h-10 rounded-xl flex items-center justify-center flex-none" style="background:var(--prs);color:var(--pr)">${ic('user',20)}</span>
+   <span class="flex-1 min-w-0"><span class="block cap" style="color:var(--pr)">Как к вам обращаться</span><input value="Гөлнара Ильдаровна" class="w-full bg-transparent outline-none text-[17px] font-semibold mt-0.5" style="color:var(--tx)"></span>
+   <span class="faint flex-none">${ic('pen',18)}</span></label>
+  <button class="btn" data-go="privacy">Начать</button></div></div>`,
+
+privacy:()=>`<div class="view" style="padding-top:0">${sbar(true)}<div class="cam" style="filter:blur(6px) brightness(.55)"></div><div class="paper" style="filter:blur(8px) brightness(.5)">${sheetMini('Пример')}</div>
+  <div class="absolute inset-0 flex flex-col items-center justify-center px-10 text-center z-10">
+   <div class="w-16 h-16 rounded-2xl flex items-center justify-center pop-in" style="background:rgba(255,255,255,.12)">${ic('lock',30,'#fff')}</div>
+   <div class="text-white text-[26px] font-bold mt-6 leading-tight">Фото работ<br>не сохраняются</div>
+   <div class="text-white/70 body mt-3">Кадр распознаётся в памяти телефона и сразу стирается. На сервер уходят только оценки.</div>
+   <button class="btn mt-8" style="width:auto;padding:0 28px;background:#fff;box-shadow:none" data-go="testnew">Разрешить камеру</button>
+   <button class="small text-white/60 mt-5" data-go="trust">Для завуча и директора →</button></div></div>`,
+
+trust:()=>`${sbar()}<div class="view">${hdr('','privacy')}<div class="scroll">
+  <div class="h1">Как мы обращаемся с данными учеников</div>
+  <div class="card mt-6 px-4">${[['shield','Фото работ не хранятся','Кадр обрабатывается в памяти и сразу стирается.'],['phone','Распознавание — на телефоне','Работает без интернета.'],['cloud','Данные в России','Школа — оператор ПДн, мы — по поручению.'],['tests','Не замена журнала','Учитель сам переносит оценки.']].map(([i,t,s])=>`<div class="row" style="padding:16px 0;align-items:flex-start"><span class="mt-0.5" style="color:var(--pr)">${ic(i,22)}</span><div><div class="body font-semibold">${t}</div><div class="small muted mt-0.5">${s}</div></div></div>`).join('')}</div>
+  </div><div class="foot"><button class="btn2">${ic('dl',20)} PDF для администрации</button></div></div>`,
+
+testnew:()=>{const topics=['Килешләр','Күплек сан','Тартым','Фигыль'];
+ return `${sbar()}<div class="view">${hdr('Новый тест','home')}<div class="scroll">
+  <div class="flex gap-2 overflow-x-auto -mx-5 px-5 pb-1" style="scrollbar-width:none">${topics.map(t=>`<button class="chip ${st.topic===t?'on':''}" data-topic="${t}">${t}</button>`).join('')}</div>
+  <div class="mt-6 h2">Исем килешләре</div><div class="small muted mt-1">6 заданий · 7 класс · ≈ 15 минут</div>
+  <div class="card mt-4 px-4 stagger">${TASKS.map((t,i)=>`<div class="row"><span class="num small faint w-4">${t.n}</span><div class="flex-1 min-w-0"><div class="small font-semibold">${t.p}</div><div class="flex gap-[3px] mt-2">${t.exp.split('').map(()=>`<span style="width:11px;height:13px;border:1.2px solid #3A4740;border-radius:2px"></span>`).join('')}</div></div><button class="iconbtn faint">${ic('swap',18)}</button></div>`).join('')}</div>
+  <button class="small font-semibold mt-4 flex items-center gap-2" style="color:var(--pr)">${ic('plus',18)} Добавить задание</button>
+  </div><div class="foot"><button class="btn" data-go="print">${ic('print',22,'#03140B')} Бланки на класс</button></div></div>`},
+
+print:()=>`${R.testnew()}<div class="scrim" data-go="testnew"></div><div class="sheet"><div class="grab"></div>
+  <div class="h2">Бланки для 7-А</div><div class="small muted mt-1">16 бланков · имя и QR на каждом</div>
+  <div class="mt-6 mx-auto rounded-md relative" style="width:150px;height:200px;background:var(--paper)">${(st.twoUp?[0,1]:[0]).map(j=>`<div class="absolute left-2 right-2" style="top:${st.twoUp?(j?104:8):8}px;height:${st.twoUp?88:184}px;border:1px dashed #a4b0a9;border-radius:3px;padding:6px"><div style="font-size:7px;color:#333;font-weight:700">${STUDENTS[j]}</div>${[0,1,2].map(()=>`<div class="flex gap-[2px] mt-[6px]">${Array.from({length:8},()=>`<span style="width:7px;height:7px;border:.6px solid #555"></span>`).join('')}</div>`).join('')}</div>`).join('')}</div>
+  <button class="flex items-center justify-between w-full mt-6 py-2" data-toggle="twoUp"><div class="text-left"><div class="body">2 бланка на лист</div><div class="small muted">${st.twoUp?'8 листов A4':'16 листов A4'}</div></div><span class="w-[52px] h-[32px] rounded-full relative" style="background:${st.twoUp?'var(--pr)':'#33403A'}"><span class="absolute top-[4px] w-6 h-6 rounded-full bg-white transition-all" style="left:${st.twoUp?'24px':'4px'}"></span></span></button>
+  <button class="btn mt-6" data-go="home">${ic('print',22,'#03140B')} Печать</button></div>`,
+
+home:()=>{const done=st.scanned,rv=st.review;
+ return `${sbar()}<div class="view"><div class="scroll stagger">
+  <div class="pt-4 flex items-center justify-between"><div><div class="small muted">Добрый вечер · пн, 3 ноября</div><div class="h1 mt-1">Гөлнара Ильдаровна</div></div>${st.offline?`<span class="tag" style="background:var(--was);color:var(--wa)">${ic('phone',14)} офлайн</span>`:''}</div>
+  <div class="card mt-6 p-5" style="background:linear-gradient(165deg,#16231C,#121815 70%);box-shadow:0 0 0 1px rgba(255,255,255,.04) inset">
+   <div class="glow" style="width:200px;height:200px;right:-70px;top:-80px;background:rgba(37,227,138,.28)"></div>
+   <div class="relative"><span class="tag" style="background:var(--prs);color:var(--pr)">${ic('clock',14)} Сдали сегодня</span>
+   <div class="h2 mt-3">Контрольная «Килешләр»</div>
+   <div class="flex items-baseline justify-between mt-4"><div><span class="num text-[34px] font-bold"><span data-count="${done}">${done}</span></span><span class="body muted"> из 16 проверено</span></div><span class="small muted">7-А</span></div>
+   <div class="flex h-2 rounded-full overflow-hidden mt-3 gap-[2px]" style="background:var(--s3)"><div class="grow" style="width:${(done-rv)/16*100}%;background:var(--pr)"></div><div class="grow" style="width:${rv/16*100}%;background:var(--wa)"></div></div>
+   <button class="btn mt-5" data-go="scan">${ic('scan',22,'#03140B')} ${done?'Продолжить проверку':'Проверить стопку'}</button>
+   ${rv?`<button data-go="review" class="w-full mt-3 h-10 small font-semibold flex items-center justify-between px-1" style="color:var(--wa)"><span>${rv} работы ждут разбора</span>${ic('chev',16)}</button>`:''}</div></div>
+  <div class="card mt-4 p-4 flex items-center gap-3" data-go="hub" style="cursor:pointer"><span class="w-10 h-10 rounded-2xl flex items-center justify-center flex-none" style="background:rgba(255,107,107,.12);color:var(--bad)">${ic('spark',20)}</span><div class="flex-1 min-w-0"><div class="cap faint">Важно сегодня</div><div class="small font-semibold mt-0.5">8-Б: юнәлеш килеше — ошибка у 6 из 14</div></div><span class="faint">${ic('chev',18)}</span></div>
+  <div class="flex items-center justify-between mt-8"><div class="h3">Другие работы</div><button class="small font-semibold" style="color:var(--pr)" data-go="testnew">+ Новый тест</button></div>
+  <div class="card mt-3 px-4">${[['Диктант','8-Б','Бланки не напечатаны','var(--fa)','testnew'],['Күплек сан','7-Б','Проверено 12 из 14','var(--wa)','queue'],['Тартым','7-А','Итоги готовы · качество 47%','var(--pr)','test']].map(([t,c,s,col,g])=>`<button data-go="${g}" class="row w-full text-left"><span class="w-10 h-10 rounded-xl flex items-center justify-center small font-bold flex-none" style="background:var(--s3)">${c}</span><div class="flex-1 min-w-0"><div class="small font-semibold">${t}</div><div class="cap mt-0.5" style="color:${col}">${s}</div></div><span class="faint">${ic('chev',18)}</span></button>`).join('')}</div>
+  </div>${nav('home')}</div>`},
+
+scan:()=>{const i=st.scanned%16;return `<div class="view" style="padding-top:0">${sbar(true)}
+  <div class="cam"></div><div class="paper inn" id="paper">${sheetMini(STUDENTS[i])}</div>
+  <div id="brk"><div class="br a"></div><div class="br b"></div><div class="br c"></div><div class="br d"></div></div>
+  <div class="flash" id="flash"></div><div class="haptic" id="hap"></div>
+  <div class="absolute top-[46px] left-0 right-0 flex items-center justify-between px-4 z-10">
+    <button data-go="queue" class="iconbtn glass">${ic('x',22,'#fff')}</button>
+    <div class="glass h-10 px-4 rounded-full flex items-center text-white text-[15px] font-semibold num"><span id="cnt">${st.scanned}</span>&nbsp;<span class="text-white/60">из 16</span></div>
+    <button data-go="${st.scanned>=15?'done':'queue'}" class="glass h-10 px-4 rounded-full text-white text-[15px] font-semibold">Готово</button></div>
+  <div class="absolute top-[98px] left-5 right-5 h-[3px] rounded-full z-10" style="background:rgba(255,255,255,.15)"><div id="pbar" class="h-full rounded-full" style="width:${st.scanned/16*100}%;background:var(--pr);transition:width .5s"></div></div>
+  <div class="absolute left-0 right-0 flex justify-center z-10" style="top:540px"><div id="hint" class="glass h-9 px-4 rounded-full flex items-center text-white text-[14px] font-medium">Положите лист целиком в рамку</div></div>
+  <div id="toastScan"></div>
+  <div class="absolute left-0 right-0 bottom-0 z-10 pb-9 flex flex-col items-center">
+    <div class="flex items-center justify-between w-full px-9">
+      <button data-go="queue" class="relative w-12 h-14 rounded-md" style="background:var(--paper);transform:rotate(-4deg);box-shadow:4px 4px 0 -1px #cfd6d1,8px 8px 0 -2px #b9c2bc"><span id="badge" class="absolute -top-2 -right-3 min-w-[24px] h-6 px-1.5 rounded-full text-[12px] font-bold flex items-center justify-center num" style="background:var(--pr);color:#03140B;transform:rotate(4deg)">${st.scanned}</span></button>
+      <button class="shutter ${st.auto?'auto':''}" data-act="shoot"><i></i></button>
+      <button data-go="scandark" class="iconbtn glass w-12 h-12">${ic('bolt',22,'#fff')}</button></div>
+    <div class="flex items-center gap-5 mt-4 text-[13px] font-semibold tracking-wide">${[['АВТО',true],['РУЧНОЙ',false]].map(([l,v])=>`<button data-auto="${v?1:0}" style="color:${st.auto===v?'var(--pr)':'rgba(255,255,255,.55)'}">${l}</button>`).join('')}</div></div></div>`},
+
+who:()=>`${R.scan()}<div class="scrim"></div><div class="sheet"><div class="grab"></div>
+  <div class="flex items-center gap-2 cap" style="color:var(--wa)">${ic('qr',16)} QR не прочитался</div>
+  <div class="h2 mt-2">Это работа Гарипова Айдара?</div><div class="small muted mt-1">Подпись на бланке похожа · балл 3 из 6</div>
+  <div class="mt-5 rounded-2xl p-3 flex items-center gap-3" style="background:var(--s2)">${av(3,40,'var(--s2)')}<div class="flex-1"><div class="body font-semibold">Гарипов Айдар</div><div class="cap muted">ещё не сдавал</div></div></div>
+  <button class="btn mt-5" data-go="scan">Да, это он</button>
+  <div class="cap faint mt-5 mb-2">Или выберите — только те, кто не сдал</div>
+  <div class="flex gap-2 flex-wrap">${[11,13,15].map(i=>`<button class="chip" data-go="scan">${short(STUDENTS[i])}</button>`).join('')}</div></div>`,
+
+scandark:()=>`<div class="view" style="padding-top:0">${sbar(true)}
+  <div class="cam" style="filter:brightness(.5)"></div><div class="paper" style="filter:brightness(.4)">${sheetMini(STUDENTS[st.scanned%16])}</div>
+  <div><div class="br a"></div><div class="br b"></div><div class="br c"></div><div class="br d"></div></div>
+  <div class="absolute top-[46px] left-0 right-0 flex items-center justify-between px-4 z-10"><button data-go="scan" class="iconbtn glass">${ic('back',22,'#fff')}</button><div class="glass h-10 px-4 rounded-full flex items-center text-white text-[15px] font-semibold">${st.scanned} из 16</div><span class="w-11"></span></div>
+  <div class="absolute left-0 right-0 z-10 text-center px-10" style="top:530px"><div class="text-white text-[18px] font-semibold">Темновато</div><div class="text-white/70 text-[15px] mt-1">Включите фонарик или поднесите лист к окну</div></div>
+  <div class="absolute left-0 right-0 bottom-0 z-10 pb-12 flex items-center justify-center gap-10">
+    <button data-go="scan" class="iconbtn w-14 h-14" style="background:var(--wa)">${ic('bolt',24,'#1d1404')}</button>
+    <button data-go="scan" class="shutter"><i></i></button><span class="w-14"></span></div></div>`,
+
+queue:()=>{const seg=st.seg||0;const list=STUDENTS.map((n,i)=>({n,i,done:i<st.scanned,rev:i<st.scanned&&REV.includes(i)&&st.review>0})).filter(o=>seg===0||(seg===1&&!o.done)||(seg===2&&o.rev));
+ return `${sbar()}<div class="view">${hdr('Килешләр · 7-А','home')}<div class="scroll">
+  <div class="flex items-baseline justify-between px-1"><div><span class="num text-[30px] font-bold">${st.scanned}</span><span class="body muted"> из 16 проверено</span></div><span class="small muted">${16-st.scanned?`осталось ${16-st.scanned}`:'все сдали'}</span></div>
+  <div class="flex h-2 rounded-full overflow-hidden mt-3 gap-[2px]" style="background:var(--s3)"><div class="grow" style="width:${(st.scanned-st.review)/16*100}%;background:var(--pr)"></div><div class="grow" style="width:${st.review/16*100}%;background:var(--wa)"></div></div>
+  <div class="seg mt-5">${['Все 16','Осталось '+(16-st.scanned),'Разбор '+st.review].map((t,k)=>`<button data-seg="${k}" class="${seg===k?'on':''}">${t}</button>`).join('')}</div>
+  <div class="card mt-4 px-4 stagger">${list.length?list.map(o=>`<div class="row"><span class="relative flex-none">${av(o.i,36,o.rev?'var(--wa)':o.done?'var(--pr)':'var(--s3)')}</span><div class="flex-1 min-w-0"><div class="small font-semibold ${o.done?'':'muted'}">${o.n}</div><div class="cap ${o.rev?'':'faint'}" style="${o.rev?'color:var(--wa)':''}">${o.rev?'спорная буква':o.done?`${score(o.i)} из 6`:'не сдал'}</div></div>${o.rev?`<button data-go="review" class="btn-s" style="background:var(--was);color:var(--wa)">Разобрать</button>`:o.done?gpill(grade(o.i)):`<span class="faint small">—</span>`}</div>`).join(''):`<div class="py-10 text-center small muted">Здесь пусто</div>`}</div>
+  </div><div class="foot" style="padding-bottom:14px"><button class="btn" data-go="scan">${ic('scan',22,'#03140B')} Сканировать</button></div>${nav('queue')}</div>`},
+
+done:()=>`${sbar()}<div class="view"><div class="absolute inset-0 overflow-hidden pointer-events-none" id="conf"></div><div class="scroll flex flex-col items-center text-center">
+  <div class="relative mt-14"><div class="glow" style="width:220px;height:220px;left:-60px;top:-60px;background:rgba(37,227,138,.35)"></div>
+   <div class="w-[104px] h-[104px] rounded-full flex items-center justify-center pop-in relative" style="background:var(--pr);box-shadow:0 20px 50px -10px rgba(37,227,138,.6)"><svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#03140B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="check-draw"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div></div>
+  <div class="h1 mt-9" style="font-size:32px">Класс проверен</div>
+  <div class="body muted mt-2">16 из 16 · за 9 минут 40 секунд</div>
+  <div class="grid grid-cols-3 gap-2.5 w-full mt-9 stagger">${[['clock','≈45','мин сэкономлено','var(--pr)'],['chart',QUAL+'%','качество','var(--g4)'],['eye',st.review,'спорных','var(--wa)']].map(([i,v,l,c])=>`<div class="card py-4 px-2" style="box-shadow:0 0 0 1px color-mix(in srgb,${c} 25%,transparent) inset"><div class="flex justify-center" style="color:${c}">${ic(i,18)}</div><div class="num text-[26px] font-bold mt-1.5" style="color:${c}">${v}</div><div class="cap muted">${l}</div></div>`).join('')}</div>
+  <div class="cap faint mt-4">По сравнению с проверкой вручную</div>
+  </div><div class="foot">${st.review?`<button class="btn" data-go="review">Разобрать ${st.review} спорных</button><button class="w-full h-12 mt-1 small muted" data-go="test">Сразу к итогам</button>`:`<button class="btn" data-go="test">Посмотреть итоги</button><button class="w-full h-12 mt-1 small muted" data-go="report">${ic('share',14)} Отправить завучу</button>`}</div></div>`,
+
+review:()=>{const items=[{i:3,w:'мәктәп',got:'А',alt:'Ә',g:'Ә'},{i:4,w:'көн',got:'О',alt:'Ө',g:'Ө'},{i:7,w:'мәктәп',got:'А',alt:'Ә',g:'Ә'}];const k=Math.min(st.decided,2),it=items[k];
+ return `${sbar()}<div class="view">${hdr(`Разбор · ${k+1} из 3`,'queue',`<button class="small muted px-3" data-go="test">Позже</button>`)}<div class="scroll">
+  <div class="flex items-center justify-between mt-1"><span class="tag" style="background:rgba(255,107,107,.12);color:var(--bad)">${ic('x',12,'currentColor',3)} ${st.no||0}</span><div class="flex gap-1">${items.map((_,n)=>`<span class="h-1.5 rounded-full" style="width:${n===k?22:8}px;background:${n<k?'var(--pr)':n===k?'var(--tx)':'var(--s3)'};transition:width .3s"></span>`).join('')}</div><span class="tag" style="background:rgba(37,227,138,.12);color:var(--ok)">${ic('check',12,'currentColor',3)} ${st.yes||0}</span></div>
+  <div class="flex items-center gap-3 mt-5">${av(it.i,36,'var(--bg)')}<div><div class="small font-semibold">${STUDENTS[it.i]}</div><div class="cap muted">${it.w} → задание ${it.w==='көн'?3:4}</div></div></div>
+  <div class="card-stack mt-5">${k<2?`<div class="rcard back"></div>`:''}<div class="rcard" id="rcard"><span class="stamp no">ОШИБКА</span><span class="stamp ok">ВЕРНО</span>
+    <div class="rounded-2xl flex items-center justify-center hand" style="width:170px;height:186px;background:#fff;font-size:130px;line-height:1">${it.g}</div>
+    <div class="mt-5 body"><span class="muted">Это</span> <b>${it.alt}</b> <span class="muted">или</span> <b>${it.got}</b>?</div></div></div>
+  <div class="cap faint text-center mt-4">← смахните или нажмите кнопку →</div>
+  ${st.decided===0?`<button data-go="group" class="w-full mt-4 h-11 rounded-xl small font-semibold flex items-center justify-center gap-2" style="color:var(--wa);background:var(--was)">${ic('people',16)} Так же ещё у 5 учеников</button>`:''}
+  </div><div class="foot grid grid-cols-2 gap-3"><button class="btn2" data-decide="no" style="color:var(--er)">${ic('x',20,'#FF6B6B',2.6)} Ошибка</button><button class="btn" data-decide="ok">${ic('check',20,'#03140B',2.8)} Верно</button></div>
+  ${st.decided>0?`<div class="toast" style="top:48px;bottom:auto"><span class="flex-1">${STUDENTS[items[st.decided-1].i].split(' ')[1]}: ${st.last==='ok'?'засчитано':'ошибка'}</span><button data-undo="1" class="flex items-center gap-1.5" style="color:var(--prd)">${ic('undo',16,'#0D8F54')} Отменить</button></div>`:''}</div>`},
+
+group:()=>`${R.review()}<div class="scrim" data-go="review"></div><div class="sheet"><div class="grab"></div>
+  <div class="h2">Одна буква в 6 работах</div><div class="small muted mt-1">мәктәп → вторая буква</div>
+  <div class="mt-6 grid grid-cols-6 gap-2">${[0,1,2,3,4,5].map(i=>`<div class="hand rounded-lg flex items-center justify-center" style="height:52px;background:#fff;font-size:32px;transform:rotate(${(i%3-1)*3}deg)">Ә</div>`).join('')}</div>
+  <button class="btn mt-8" data-groupok="1">Всем «Ә» — верно</button><button class="w-full h-12 mt-2 small muted" data-go="review">Решать по одной</button></div>`,
+
+journal:()=>`${AR.test()}<div class="scrim" data-go="test"></div><div class="sheet"><div class="grab"></div>
+  <div class="h2">В электронный журнал</div><div class="small muted mt-1">Контрольная работа · 3 ноября · в порядке журнала</div>
+  <div class="mt-5 rounded-2xl px-4" style="background:var(--s2)">${STUDENTS.slice(0,5).map((n,i)=>`<div class="row" style="padding:9px 0;border-color:#2A352F"><span class="flex-1 small">${n}</span>${gpill(grade(i),28)}</div>`).join('')}<div class="cap faint py-2.5">и ещё 11</div></div>
+  <button class="btn mt-5 ${st.copied?'bump':''}" data-copy="1">${st.copied?ic('check',22,'#03140B',2.6)+' Скопировано · 16 оценок':ic('copy',22,'#03140B')+' Скопировать колонку'}</button>
+  <button class="w-full h-12 mt-1 small muted">Скачать gradebook.xlsx</button></div>`,
+
+more:()=>`${sbar()}<div class="view"><div class="px-5 pt-3 pb-1 h1">Ещё</div><div class="scroll stagger">
+  <div class="card mt-4 p-5" style="${st.offline?'background:linear-gradient(160deg,#2A2312,#141713 70%)':''}"><div class="flex items-center gap-4">${st.offline?`<span class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background:var(--was);color:var(--wa)">${ic('phone',22)}</span><div class="flex-1"><div class="body font-semibold">3 работы на телефоне</div><div class="small muted">Отправим сами, когда появится сеть</div></div>`:`<span class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background:var(--prs);color:var(--pr)">${ic('check',22,'currentColor',2.6)}</span><div class="flex-1"><div class="body font-semibold">Всё отправлено</div><div class="small muted">30 работ · сегодня, 18:05</div></div>`}</div></div>
+  <div class="eyebrow mt-7 mb-2 px-1">Последние работы</div>
+  <div class="card px-4">${(st.offline?[['Килешләр','7-А','16 работ','Отправлено · 18:05','ok'],['Күплек сан','7-Б','12 из 14','Ждёт сети · 3 работы','wait'],['Диктант','8-Б','—','Бланки не напечатаны','none']]:[['Килешләр','7-А','16 работ','Отправлено · 18:05','ok'],['Күплек сан','7-Б','14 работ','Отправлено · 17:40','ok'],['Диктант','8-Б','—','Бланки не напечатаны','none']]).map(([t,c,n,s,k])=>`<div class="row"><span class="w-10 h-10 rounded-xl flex items-center justify-center small font-bold flex-none" style="background:var(--s3)">${c}</span><div class="flex-1 min-w-0"><div class="small font-semibold">${t} <span class="faint font-normal">· ${n}</span></div><div class="cap mt-0.5 flex items-center gap-1.5" style="color:${k==='ok'?'var(--pr)':k==='wait'?'var(--wa)':'var(--fa)'}">${k==='ok'?ic('check',13,'currentColor',3):k==='wait'?ic('clock',13):''}${s}</div>${k==='wait'?`<div class="h-1 rounded-full mt-2" style="background:var(--s3)"><div class="h-full rounded-full" style="width:78%;background:var(--wa)"></div></div>`:''}</div></div>`).join('')}</div>
+  <div class="card px-4 mt-4">${[['people','Классы и ученики'],['copy','Экспорт в журнал'],['cpu','Распознавание · модель 1.3'],['shield','Для завуча и директора','trust']].map(([i,t,g])=>`<div class="row" ${g?`data-go="${g}"`:''} style="cursor:pointer;padding:15px 0"><span class="muted">${ic(i,20)}</span><span class="flex-1 small font-medium">${t}</span><span class="faint">${ic('chev',18)}</span></div>`).join('')}</div>
+  </div>${nav('more')}</div>`
+};
+Object.keys(AR).forEach(k=>{if(!R[k])R[k]=AR[k]});
+
+/* ---------- engine ---------- */
+const screenEl=document.getElementById('screen');
+function go(id){const i=idx(id);if(i>=0){cur=i;render()}}
+function render(keep){timers.forEach(clearTimeout);timers=[];const s=SCREENS[cur];let html=R[s.id]();
+  const over=OVER[s.id]&&(OVER[s.id]===prevId)||(prevId&&OVER[prevId]===s.id);
+  const dir=keep||over||prevId===s.id||prevId===null?'':(idx(prevId)<cur?'fwd':'bwd');
+  if(dir)html=html.replace('class="view"','class="view '+dir+'"');
+  if(keep||over||OVER[s.id])html=html.replace(/class="scroll stagger"/g,'class="scroll"');
+  screenEl.innerHTML=html+(st.toast?`<div class="toast"><span class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#0D8F54">${ic('check',20,'#fff',2.6)}</span>${st.toast}</div>`:'')+'<div class="gbar"></div>';prevId=s.id;
+  if(!STILL&&!keep&&!OVER[s.id])screenEl.querySelectorAll('[data-count]').forEach(el=>{const to=+el.dataset.count;const t0=performance.now();const step=t=>{const k=Math.min(1,(t-t0)/900);el.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(step)};el.textContent='0';requestAnimationFrame(step)});
+  if(s.id==='review')bindSwipe();
+  if(s.id==='done'&&!STILL&&!keep)confetti();
+  document.getElementById('counter').textContent=`${cur+1} / ${SCREENS.length}`;rail();notes();
+  if(s.id==='scan'&&st.auto&&!keep)runScan()}
+function confetti(){const c=document.getElementById('conf');if(!c)return;const cols=['#25E38A','#5CC8F0','#F5B942','#B69CFF','#F2F6F3'];c.innerHTML=Array.from({length:42},(_,k)=>`<i class="confetti" style="left:${Math.random()*100}%;background:${cols[k%5]};animation-duration:${1.6+Math.random()*1.6}s;animation-delay:${Math.random()*.4}s"></i>`).join('')}
+function shoot(){const T=(f,ms)=>timers.push(setTimeout(f,ms));const b=document.getElementById('brk');if(!b)return;b.classList.add('lock');const h=document.getElementById('hint');h.textContent='Держите';h.style.color='#25E38A';
+  T(()=>{const f=document.getElementById('flash');if(!f)return;f.classList.add('go');document.getElementById('hap').classList.add('go');const i=st.scanned%16;st.scanned=Math.min(16,st.scanned+1);
+    ['cnt','badge'].forEach(id=>{const c=document.getElementById(id);c.textContent=st.scanned;c.classList.add('bump')});document.getElementById('pbar').style.width=st.scanned/16*100+'%';h.parentElement.style.opacity=0;
+    const g=grade(i);document.getElementById('toastScan').innerHTML=`<div class="toast" style="top:530px;bottom:auto">${gpill(g,36)}<div class="flex-1"><div>${STUDENTS[i]}</div><div class="text-[13px] font-medium" style="color:#56655C">${score(i)} из 6${REV.includes(i)?' · 1 спорная буква':''}</div></div></div>`},800);
+  T(()=>{const p=document.getElementById('paper');if(p)p.classList.add('out')},1800);
+  T(()=>{if(SCREENS[cur].id!=='scan')return;if(st.scanned===12&&!st.whoShown){st.whoShown=1;go('who')}else if(st.scanned<16)render();else go('done')},2500)}
+function runScan(){if(STILL)return;timers.push(setTimeout(shoot,1100))}
+function rail(){const s=SCREENS[cur];document.getElementById('rail').innerHTML=STAGES.map((t,n)=>{const list=SCREENS.map((x,i)=>({x,i})).filter(o=>o.x.stage===n);const on=s.stage===n;
+  return `<button data-jump="${list[0].i}" class="text-left py-1.5 flex items-center gap-3 text-sm ${on?'text-[var(--foreground)] font-medium':'text-[var(--muted-foreground)]'} hover:text-[var(--foreground)]"><span class="w-1.5 h-1.5 rounded-full" style="background:${on?'#25E38A':'transparent'};box-shadow:0 0 0 1px ${on?'#25E38A':'currentColor'}"></span>${t}<span class="text-xs opacity-50 ml-auto">${list.length}</span></button>${on?`<div class="ml-[18px] mb-1 flex flex-col">${list.map(o=>`<button data-jump="${o.i}" class="text-left text-[13px] py-1 ${o.i===cur?'text-[var(--foreground)]':'text-[var(--muted-foreground)]'} hover:text-[var(--foreground)]">${o.x.title}</button>`).join('')}</div>`:''}`}).join('')}
+function notes(){const s=SCREENS[cur];document.getElementById('notes').innerHTML=`
+  <div class="text-xs uppercase tracking-wider text-[var(--muted-foreground)]">${STAGES[s.stage]}</div>
+  <h2 class="text-2xl font-semibold mt-1">${s.title}</h2>
+  <p class="text-[var(--muted-foreground)] mt-3">Боль: ${s.pain}</p>
+  <ul class="mt-5 flex flex-col gap-2.5">${s.sol.map(x=>`<li class="flex gap-3"><span class="mt-2 w-1.5 h-1.5 rounded-full flex-none" style="background:#25E38A"></span><span>${x}</span></li>`).join('')}</ul>
+  ${s.meta?`<p class="text-sm text-[var(--muted-foreground)] mt-5">${s.meta}</p>`:''}
+  ${s.ref.length?`<div class="text-xs uppercase tracking-wider text-[var(--muted-foreground)] mt-6">Паттерн из Mobbin / рынка</div><div class="mt-2 flex flex-wrap gap-2">${s.ref.map(([t,u])=>`<a href="${u}" target="_blank" class="text-sm px-3 h-8 inline-flex items-center rounded-lg border border-[var(--border)] hover:bg-[var(--card)]">${t}</a>`).join('')}</div>`:''}
+  ${s.demo==='offline'?`<button data-demo="offline" class="mt-6 text-sm px-3 h-9 rounded-lg border border-[var(--border)] hover:bg-[var(--card)]">Демо: ${st.offline?'вернуть сеть':'выключить сеть'}</button>`:''}`}
+function decide(v){const c=document.getElementById('rcard');if(c){c.style.transition='transform .35s cubic-bezier(.22,1,.36,1),opacity .35s';c.style.transform=`translateX(${v==='ok'?420:-420}px) rotate(${v==='ok'?18:-18}deg)`;c.style.opacity=0}
+  timers.push(setTimeout(()=>{st.decided++;st.last=v;st[v==='ok'?'yes':'no']=(st[v==='ok'?'yes':'no']||0)+1;st.review=Math.max(0,st.review-1);if(st.decided>=3){st.decided=0;go('test')}else render(true)},260))}
+function bindSwipe(){const c=document.getElementById('rcard');if(!c)return;let x0=null,dx=0;const ok=c.querySelector('.stamp.ok'),no=c.querySelector('.stamp.no');
+  c.addEventListener('pointerdown',e=>{x0=e.clientX;c.setPointerCapture(e.pointerId);c.style.transition='none'});
+  c.addEventListener('pointermove',e=>{if(x0===null)return;dx=e.clientX-x0;c.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;ok.style.opacity=Math.max(0,dx/90);no.style.opacity=Math.max(0,-dx/90);c.style.background=dx>0?`color-mix(in srgb,#14301F ${Math.min(100,dx)}%,#131916)`:`color-mix(in srgb,#2E1818 ${Math.min(100,-dx)}%,#131916)`});
+  c.addEventListener('pointerup',()=>{if(x0===null)return;x0=null;if(Math.abs(dx)>90)decide(dx>0?'ok':'no');else{c.style.transition='transform .4s cubic-bezier(.34,1.56,.64,1)';c.style.transform='';ok.style.opacity=0;no.style.opacity=0;c.style.background=''}dx=0})}
+const TOASTS={cards:'Карточки добавлены в печать',copy:'Скопировано · вставьте в Word',pdf:'PDF готов · выберите получателя'};
+screenEl.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-stu],[data-task],[data-col],[data-sort],[data-letter],[data-act],[data-period],[data-seg],[data-toggle],[data-topic],[data-decide],[data-undo],[data-groupok],[data-copy],[data-auto]');if(!t)return;const d=t.dataset;
+  if(d.stu!==undefined){st.student=+d.stu;go('student')}
+  else if(d.task!==undefined){st.task=+d.task;go('task')}
+  else if(d.col!==undefined){st.col=st.col===+d.col?null:+d.col;render(true)}
+  else if(d.sort){st.sort=d.sort;render(true)}
+  else if(d.period){st.period=d.period;render(true)}
+  else if(d.letter!==undefined){st.letter=d.letter||null;render(true)}
+  else if(d.seg!==undefined){st.seg=+d.seg;render(true)}
+  else if(d.auto!==undefined){st.auto=d.auto==='1';render()}
+  else if(d.act==='shoot'){timers.forEach(clearTimeout);timers=[];shoot()}
+  else if(d.act){st.toast=TOASTS[d.act];render(true);setTimeout(()=>{st.toast='';render(true)},1800)}
+  else if(d.toggle){st[d.toggle]=!st[d.toggle];render(true)}
+  else if(d.topic){st.topic=d.topic;render(true)}
+  else if(d.decide){decide(d.decide)}
+  else if(d.undo){st.decided=Math.max(0,st.decided-1);st[st.last==='ok'?'yes':'no']--;st.review++;render(true)}
+  else if(d.groupok){st.decided=Math.max(st.decided,1);st.last='ok';st.yes=(st.yes||0)+1;st.review=Math.max(0,st.review-1);cur=idx('review');render(true)}
+  else if(d.copy){st.copied=true;render(true)}
+  else if(d.go){if(d.go==='task')st.task=3;go(d.go)}});
+document.getElementById('notes').addEventListener('click',e=>{if(e.target.closest('[data-demo]')){st.offline=!st.offline;render(true)}});
+document.getElementById('rail').addEventListener('click',e=>{const b=e.target.closest('[data-jump]');if(b){cur=+b.dataset.jump;render()}});
+document.getElementById('prev').onclick=()=>{cur=(cur-1+SCREENS.length)%SCREENS.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%SCREENS.length;render()};
+document.addEventListener('keydown',e=>{if(SCREENS[cur].id==='review'&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){decide(e.key==='ArrowRight'?'ok':'no');return}if(e.key==='ArrowRight')document.getElementById('next').click();if(e.key==='ArrowLeft')document.getElementById('prev').click()});
+{const [h,m]=location.hash.slice(1).split('~');const i=idx(h);if(i>=0)cur=i;if(m==='still'){STILL=true;document.body.classList.add('still')}if(location.hash.includes('col'))st.col=3;if(location.hash.includes('letter'))st.letter='ә';if(location.hash.includes('off'))st.offline=true}
+render();
+
+</script>
+</body>
+</html>

@@ -65,3 +65,6 @@ yarn-error.*
 .claude/settings.local.json
 .claude/worktrees/
 .pnpm-store/
+
+# agent farm (local orchestration, not committed)
+.farm/
