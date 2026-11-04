@@ -74,7 +74,7 @@ export function ExportGradebookScreen() {
     }
 
     return ordered;
-  }, [ctx.students, ctx.submissions]);
+  }, [ctx]);
 
   const visibleStudents = studentRows.slice(0, 5);
   const remainingCount = Math.max(0, studentRows.length - visibleStudents.length);

@@ -107,7 +107,7 @@ export function MoreScreen() {
           status,
         };
       });
-  }, [rows, ctx.tests]);
+  }, [rows, ctx]);
 
   return (
     <Screen edges={['top']}>
