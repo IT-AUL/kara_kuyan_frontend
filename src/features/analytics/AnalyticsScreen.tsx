@@ -1,39 +1,104 @@
-import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useActiveContext } from '@/data/context';
-import { classAnalyticsResource, progressResource } from '@/data/hub';
-import { useResource } from '@/data/resource';
 import {
-  BarChart,
+  AccuracyBar,
+  AppIcon,
   Button,
   Card,
-  MetricTile,
+  colors,
+  EmptyState,
+  fontFamilies,
+  fontSizes,
+  HeroCard,
+  MiniBars,
   Notice,
+  radius,
   Screen,
   ScreenHeader,
   SectionHeader,
-  SegmentedTabs,
-  StatusPill,
+  spacing,
+  Tag,
   textStyles,
+  touchTarget,
+  zoneColor,
 } from '@/design-system';
-import { colors, fontFamilies, spacing } from '@/design-system/tokens';
 
-const TABS = ['Обзор', 'Темы', 'Ученики'] as const;
+import { useClassInsights } from './data';
+
+type ActionItem = {
+  key: string;
+  title: string;
+  subtitle: string;
+  barColor: string;
+  onPress?: () => void;
+};
 
 export function AnalyticsScreen() {
   const router = useRouter();
   const ctx = useActiveContext();
-  const [activeTab, setActiveTab] = useState(0);
-  const analytics = useResource(ctx.classId ? classAnalyticsResource(ctx.classId) : null);
-  const series = useResource(ctx.classId ? progressResource(ctx.classId) : null);
-  const data = analytics.data;
-  const points = series.data ?? [];
-  const topics = [...(data?.topMistakes ?? [])].filter((t) => t.affectedStudents > 0).sort((a, b) => b.failureRatePct - a.failureRatePct);
-  const top = topics[0];
-  const delta = points.length >= 2 ? points[points.length - 1].value - points[points.length - 2].value : null;
-  const dist = data?.gradeDistribution ?? {};
+  const insights = useClassInsights(ctx.classId);
+  const { analytics, assignments, trend, status } = insights;
+
+  const latestAssignment = assignments[0] ?? null;
+
+  const actionItems: ActionItem[] = [];
+
+  const worstTopic = [...(analytics?.topMistakes ?? [])]
+    .filter((t) => t.affectedStudents > 0)
+    .sort((a, b) => b.failureRatePct - a.failureRatePct)[0];
+
+  if (worstTopic && analytics) {
+    const topicAccuracy = Math.max(0, Math.min(100, 100 - worstTopic.failureRatePct));
+    actionItems.push({
+      key: `topic-${worstTopic.topicCode}`,
+      title: worstTopic.topicName,
+      subtitle: `Ошибка у ${worstTopic.affectedStudents} из ${analytics.studentsCount}`,
+      barColor: zoneColor(topicAccuracy),
+      onPress: latestAssignment
+        ? () =>
+            router.push({
+              pathname: '/analytics-test',
+              params: { id: latestAssignment.assignmentId },
+            })
+        : undefined,
+    });
+  }
+
+  const strugglingStudents = (analytics?.students ?? []).filter((s) => s.averageScorePct < 50);
+  if (strugglingStudents.length > 0) {
+    actionItems.push({
+      key: 'students-below-50',
+      title: `${strugglingStudents.length} учеников ниже 50%`,
+      subtitle: strugglingStudents
+        .slice(0, 2)
+        .map((s) => s.fullName)
+        .join(', '),
+      barColor: colors.zoneBad,
+    });
+  }
+
+  if (latestAssignment) {
+    actionItems.push({
+      key: `latest-${latestAssignment.assignmentId}`,
+      title: `Итоги «${latestAssignment.title}» готовы`,
+      subtitle: `Средний результат ${Math.round(latestAssignment.averageScorePct)}%`,
+      barColor: colors.zoneOk,
+      onPress: () =>
+        router.push({
+          pathname: '/analytics-test',
+          params: { id: latestAssignment.assignmentId },
+        }),
+    });
+  }
+
+  const sortedTopics = [...(analytics?.topMistakes ?? [])]
+    .map((t) => ({
+      ...t,
+      accuracyPct: Math.max(0, Math.min(100, 100 - t.failureRatePct)),
+    }))
+    .sort((a, b) => a.accuracyPct - b.accuracyPct);
 
   return (
     <Screen
@@ -42,144 +107,212 @@ export function AnalyticsScreen() {
           icon="export"
           onPress={() => router.push('/export-gradebook')}
           title="Экспортировать ведомость"
+          variant="secondary"
         />
       }
     >
-      <ScreenHeader
-        showBack
-        subtitle={ctx.className ?? 'Класс не выбран'}
-        title="Аналитика класса"
-      />
+      <ScreenHeader subtitle={ctx.className ?? undefined} title="Аналитика" />
 
-      <SegmentedTabs activeIndex={activeTab} onTabChange={setActiveTab} tabs={TABS} />
+      {status === 'offline' ? (
+        <Notice message="Нет связи: показаны сохранённые данные" />
+      ) : null}
+      {status === 'error' ? (
+        <Notice
+          actionLabel="Повторить"
+          message="Не удалось загрузить аналитику."
+          onAction={() => void insights.refresh()}
+          tone="error"
+        />
+      ) : null}
 
-      {analytics.offline ? <Notice message="Нет связи с сервером: показаны сохранённые данные." /> : null}
-      {analytics.status === 'error' ? <Notice actionLabel="Повторить" message="Не удалось загрузить аналитику." onAction={() => void analytics.refresh()} tone="error" /> : null}
-      {!ctx.classId ? <Notice message="Создайте класс, чтобы увидеть аналитику." tone="info" /> : null}
-
-      {activeTab === 0 && data && (
+      {!ctx.classId ? (
+        <EmptyState
+          body="Добавьте класс и проверьте первую работу, чтобы увидеть разбор ошибок и динамику."
+          icon="analytics"
+          title="Создайте класс, чтобы увидеть аналитику"
+        />
+      ) : (
         <>
-          <Card style={styles.statsCard}>
-            <Text style={textStyles.body}>Средний результат класса</Text>
-            <View style={styles.resultRow}>
-              <Text selectable style={textStyles.display}>{Math.round(data.averageScorePct)}%</Text>
-              {delta !== null ? <Text style={styles.delta}>{delta >= 0 ? '+' : ''}{delta}% к прошлой работе</Text> : null}
-            </View>
-          </Card>
-
-          {points.length > 0 ? (
-            <Card style={styles.chartCard}>
-              <BarChart bars={points.map((p) => ({ label: p.label, value: p.value, maxValue: 100 }))} title="Динамика по работам" />
-            </Card>
-          ) : null}
-
-          {top ? (
-            <Card style={styles.recommendation} tone="raised">
-              <StatusPill icon="insight" label="Тема для повторения" tone="info" />
-              <Text selectable style={textStyles.title}>Рекомендуем повторить: {top.topicName}</Text>
-              <Text style={textStyles.bodySmall}>Затронуто учеников: {top.affectedStudents} из {data.studentsCount}</Text>
-            </Card>
-          ) : (
-            <Notice message="Пока мало проверенных работ для рекомендаций." tone="info" />
-          )}
-        </>
-      )}
-
-      {activeTab === 1 && (
-        <View style={styles.section}>
-          <SectionHeader subtitle="Ранжировано по доле ошибок, без рейтинга учеников." title="Темы для повторения" />
-          {topics.length === 0 ? (
-            <Notice message="Ошибок по темам пока нет." tone="info" />
-          ) : (
-            <Card style={styles.topics}>
-              {topics.map((topic, index) => (
-                <View key={topic.topicCode} style={[styles.topicRow, index < topics.length - 1 && styles.topicDivider]}>
-                  <Text style={styles.ordinal}>{index + 1}</Text>
-                  <View style={styles.topicCopy}>
-                    <Text selectable style={textStyles.body}>{topic.topicName}</Text>
-                    <Text style={textStyles.bodySmall}>Ошибки: {Math.round(topic.failureRatePct)}%</Text>
-                  </View>
-                  <Text style={[textStyles.titleSmall, styles.count]}>{topic.affectedStudents}</Text>
+          <HeroCard>
+            <View style={styles.heroContent}>
+              <Tag icon="insight" label="Что важно сейчас" tone="ok" />
+              {actionItems.length === 0 ? (
+                <Text style={textStyles.bodySmall}>
+                  Пока мало данных: проверьте хотя бы одну работу
+                </Text>
+              ) : (
+                <View style={styles.actionList}>
+                  {actionItems.map((item) => (
+                    <Pressable
+                      accessibilityLabel={`${item.title}. ${item.subtitle}`}
+                      accessibilityRole="button"
+                      disabled={!item.onPress}
+                      key={item.key}
+                      onPress={item.onPress}
+                      style={({ pressed }) => [
+                        styles.actionRow,
+                        pressed && item.onPress && styles.pressed,
+                      ]}
+                    >
+                      <View
+                        style={[styles.zoneBar, { backgroundColor: item.barColor }]}
+                      />
+                      <View style={styles.actionCopy}>
+                        <Text style={styles.actionTitle}>{item.title}</Text>
+                        <Text style={styles.actionSubtitle}>{item.subtitle}</Text>
+                      </View>
+                      <View style={styles.chevronCircle}>
+                        <AppIcon color={colors.text} name="chevronRight" size={18} />
+                      </View>
+                    </Pressable>
+                  ))}
                 </View>
-              ))}
-            </Card>
-          )}
-          {data && data.difficultLetters.length > 0 ? (
-            <Text style={textStyles.bodySmall}>
-              Трудные буквы: {data.difficultLetters.map((c) => `${c.letter} (${Math.round(c.errorRatePct)}%)`).join(', ')}
-            </Text>
-          ) : null}
-        </View>
-      )}
+              )}
+            </View>
+          </HeroCard>
 
-      {activeTab === 2 && data && (
-        <View style={styles.section}>
-          <SectionHeader title="Класс в целом" subtitle="Распределение оценок, без списка учеников" />
-          <View style={styles.metrics}>
-            <MetricTile detail={`${ctx.progress.checkedCount}/${ctx.progress.studentCount} работ`} label="Проверено" value={`${ctx.progress.percent}%`} />
-            <MetricTile label="Среднее" value={`${Math.round(data.averageScorePct)}%`} tone="success" />
-          </View>
-          <Card style={styles.chartCard}>
-            <BarChart bars={['5', '4', '3', '2'].map((g) => ({ label: `«${g}»`, value: dist[g] ?? 0 }))} title="Оценки" valueSuffix="" />
-          </Card>
-        </View>
+          {assignments.length > 0 ? (
+            <View style={styles.section}>
+              <SectionHeader title="Работы класса" />
+              <View style={styles.listGap}>
+                {assignments.slice(0, 5).map((item) => {
+                  const score = Math.round(item.averageScorePct);
+                  const scoreColor = zoneColor(item.averageScorePct);
+                  return (
+                    <Pressable
+                      accessibilityLabel={`${item.title}, проверено ${item.checked} из ${item.totalStudents}, ${score}%`}
+                      accessibilityRole="button"
+                      key={item.id || item.assignmentId}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/analytics-test',
+                          params: { id: item.assignmentId },
+                        })
+                      }
+                      style={({ pressed }) => [pressed && styles.pressed]}
+                    >
+                      <Card style={styles.assignmentRow}>
+                        <View style={styles.assignmentCopy}>
+                          <Text style={styles.assignmentTitle}>{item.title}</Text>
+                          <Text style={textStyles.caption}>
+                            Проверено {item.checked} из {item.totalStudents}
+                          </Text>
+                        </View>
+                        <Text style={[textStyles.numeric, { color: scoreColor }]}>
+                          {score}%
+                        </Text>
+                      </Card>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
+
+          {trend.length >= 2 ? (
+            <View style={styles.section}>
+              <SectionHeader title="Динамика" />
+              <Card style={styles.trendCard}>
+                <MiniBars height={48} values={trend} />
+                <Text style={textStyles.bodySmall}>Средний результат по работам</Text>
+              </Card>
+            </View>
+          ) : null}
+
+          {sortedTopics.length > 0 ? (
+            <View style={styles.section}>
+              <SectionHeader title="Темы" />
+              <Card style={styles.topicsCard}>
+                {sortedTopics.map((topic) => (
+                  <AccuracyBar
+                    caption={`ошибка у ${topic.affectedStudents} уч.`}
+                    key={topic.topicCode}
+                    label={topic.topicName}
+                    value={topic.accuracyPct}
+                  />
+                ))}
+              </Card>
+            </View>
+          ) : null}
+        </>
       )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  chartCard: {
+  actionCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  actionList: {
     gap: spacing.sm,
   },
-  count: {
-    color: colors.warning,
-  },
-  delta: {
-    color: colors.primary,
-    fontFamily: fontFamilies.semibold,
-    fontSize: 14,
-  },
-  metrics: {
+  actionRow: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.035)',
+    borderRadius: radius.lg,
     flexDirection: 'row',
     gap: spacing.sm,
+    minHeight: touchTarget,
+    padding: 14,
   },
-  ordinal: {
-    color: colors.textFaint,
-    fontFamily: fontFamilies.medium,
-    fontSize: 14,
-    minWidth: 18,
+  actionSubtitle: {
+    ...textStyles.caption,
+    color: colors.textMuted,
   },
-  recommendation: {
+  actionTitle: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.bodySmall,
+    lineHeight: 20,
+  },
+  assignmentCopy: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  assignmentRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
+  },
+  assignmentTitle: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.body,
+    lineHeight: 22,
+  },
+  chevronCircle: {
+    alignItems: 'center',
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: 18,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
+  },
+  heroContent: {
     gap: spacing.md,
   },
-  resultRow: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
+  listGap: {
     gap: spacing.sm,
+  },
+  pressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.98 }],
   },
   section: {
     gap: spacing.sm,
   },
-  statsCard: {
-    gap: spacing.xs,
+  topicsCard: {
+    gap: spacing.md,
   },
-  topicCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  topicDivider: {
-    borderBottomColor: colors.divider,
-    borderBottomWidth: 1,
-  },
-  topicRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
+  trendCard: {
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
   },
-  topics: {
-    paddingBottom: spacing.xs,
-    paddingTop: spacing.xs,
+  zoneBar: {
+    alignSelf: 'stretch',
+    borderRadius: radius.pill,
+    width: 8,
   },
 });
