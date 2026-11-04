@@ -35,7 +35,7 @@ export const kvStore: KeyValueStore = new SqliteKeyValueStore(db);
  * in-memory fake backend (lab and offline development only, nothing leaves the phone).
  * `EXPO_PUBLIC_TEACHER_UUID` overrides the keystore identity.
  */
-const DEFAULT_API_URL = 'https://tatar-ocr.duckdns.org';
+const DEFAULT_API_URL = 'https://api.kara-kuyan.it-aul.ru';
 const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? process.env.EXPO_PUBLIC_SYNC_URL ?? DEFAULT_API_URL;
 const useFake = apiUrl === 'fake';
 const apiClient = useFake

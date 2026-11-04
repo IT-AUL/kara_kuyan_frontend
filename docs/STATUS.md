@@ -2,8 +2,8 @@
 
 ## State (updated 2026-11-04)
 
-- **Released:** 0.2.0 (GitHub Release, in-app updater); `main` includes the complete **UI & Analytics Redesign v4** (`ui-redesign-v4`).
-- **Product is wired to the live backend** (`https://tatar-ocr.duckdns.org`): handshake/onboarding, classes and roster, offline bundles (cached), scan → evaluate → save → outbox → `batch-sync`, tests hub and test page, constructor (bank / generator / own task / textbook photo, ADR 0009), class assignments with progress, blanks and batch blanks PDF, 7-screen teacher analytics suite and gradebook export. Demo data is gone from product code.
+- **Released:** 0.2.1 (GitHub Release, in-app updater); `main` points to `https://api.kara-kuyan.it-aul.ru` and includes the complete **UI & Analytics Redesign v4** (`ui-redesign-v4`).
+- **Product is wired to the live backend** (`https://api.kara-kuyan.it-aul.ru`, previously `https://tatar-ocr.duckdns.org`): handshake/onboarding, classes and roster, offline bundles (cached), scan → evaluate → save → outbox → `batch-sync`, tests hub and test page, constructor (bank / generator / own task / textbook photo, ADR 0009), class assignments with progress, blanks and batch blanks PDF, 7-screen teacher analytics suite and gradebook export. Demo data is gone from product code.
 - **On-device OCR**: CameraX, ArUco rectify, ONNX FP32+XNNPACK (≈0.4 s native per sheet), file import (ADR 0007), name-cell detection from printed lines, forced check of a refused sheet with warnings.
 - **Screen roles (v4)**: **Главная** (hero progress + primary scan CTA + actionable insight + other works + shortcuts), **Проверка** (class queue + «Класс проверен» celebration + swipe review cards with undo), **Аналитика** (week action hub → test results with качество/успеваемость/СОУ/средний балл → per-task wrong-answer grouping → class heatmap → Tatar letters map → student profile → printable/shareable zavuch report), **Ещё** (plain-Russian sync state, classes, all tests, export, privacy).
 - **Gates (2026-11-04):** `lint` (0 errors/warnings), `typecheck` (0 errors), `pnpm test --runInBand` (18 suites / 107 passed, 9 opt-in live skipped by default), `check-deps` (up to date), `doctor` (21/21 passed); visually verified across 4 Android emulator profiles (`Android 11 720p 1.15x font 2GB`, `Android 13 1080p 4GB`, `Android 15 Pixel 7 6GB`, `Android 15 Tablet 1200×1920 4GB`).
@@ -33,6 +33,7 @@
 | `figma-ux-alignment` | Static UI prototype aligned with Figma mockups: SegmentedTabs, SearchBar, BarChart, Analytics grade dynamics & repeat topic insight, Assignments search & CTA, Classes tabs & add student, Home recent activity. Verified on-device (SM-S928B). | `harness/changes/archive/figma-ux-alignment/tasks.md`, `reviews/review.md`, `evidence/` |
 
 | `ui-redesign-v4` | Full v4 UI & 7-screen analytics redesign (Mobbin patterns + Russian school zavuch metrics, swipe review cards, heatmap, Tatar letters map, student profile, zavuch report); verified across 4 Android profiles (API 30–35, 720p+1.15x..1200w tablet); all 5 gates green (107 tests) | `harness/changes/archive/ui-redesign-v4/` |
+| `prod-api-domain` | Default backend URL switched to `https://api.kara-kuyan.it-aul.ru`; OpenAPI 27/27 exact match, full TLS chain (`ISRG Root X1/X2`), and 9/9 live read+write+v4-analytics scenario verified | `harness/changes/archive/prod-api-domain/` |
 | `p0-camera-runtime-spike` (parked) | Benchmark, parity, geometry/QR, backend review; ADRs 0005 and 0006 | `harness/changes/parking/p0-camera-runtime-spike/` |
 
 ## Blocked / open items

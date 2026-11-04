@@ -1,4 +1,4 @@
-// Opt-in check against the real backend: `LIVE_API_URL=https://tatar-ocr.duckdns.org pnpm test src/adapters/api/live`.
+// Opt-in check against the real backend: `LIVE_API_URL=https://api.kara-kuyan.it-aul.ru pnpm test src/adapters/api/live`.
 // Skipped by default. Without `LIVE_WRITE=1` it only reads. With `LIVE_WRITE=1` it walks the whole teacher scenario
 // and provisions what it needs itself (the server database can be reset on deploy, so no fixture is assumed):
 // a probe class (`LIVE_CLASS`, created through bulk import once), a custom and two generated tasks, one test assigned
@@ -150,15 +150,22 @@ jest.setTimeout(60_000);
       const variant = test.variants[0];
       const outcome: SheetOutcome = {
         check: { ok: true }, assignmentId: test.assignmentId, variant: variant.variantId, qrRecognised: true, studentNameText: '',
-        tasks: variant.questions.map((q) => ({
-          number: q.questionNumber, markerId: q.markerId, prompt: q.prompt, topicTag: q.topicTag,
-          expected: q.expectedAnswer, recognized: q.expectedAnswer, status: 'correct' as const,
-          cells: q.expectedCells.map((c) => ({ index: c.index, expected: c.char, predicted: c.char, confidence: 0.97, verdict: 'match' as const })),
-        })),
+        tasks: variant.questions.map((q, idx) => {
+          const wrong = idx === variant.questions.length - 1;
+          const written = wrong ? 'ХАТА' : q.expectedAnswer;
+          return {
+            number: q.questionNumber, markerId: q.markerId, prompt: q.prompt, topicTag: q.topicTag,
+            expected: q.expectedAnswer, recognized: written, status: wrong ? ('error' as const) : ('correct' as const),
+            cells: q.expectedCells.map((c, ci) => ({
+              index: c.index, expected: c.char, predicted: wrong ? (written[ci] ?? '') : c.char,
+              confidence: 0.97, verdict: wrong ? ('mismatch' as const) : ('match' as const),
+            })),
+          };
+        }),
       };
       const submission = buildSubmission({
         uuid: `kk-live-${test.assignmentId}`, outcome, overrides: {},
-        student: { id: students[0].studentId, name: students[0].fullName }, checkedAt: new Date(), grade: 5,
+        student: { id: students[0].studentId, name: students[0].fullName }, checkedAt: new Date(), grade: 4,
       });
       const req = { assignmentId: test.assignmentId, classId: CLASS, syncedAt: new Date().toISOString(), submission };
       const first = await gateway.send(req);
@@ -169,15 +176,31 @@ jest.setTimeout(60_000);
       expect(subs.ok && subs.value.length).toBe(1);
     });
 
-    it('shows the saved work in progress, analytics and the gradebook export', async () => {
-      if (!test) throw new Error('no test from the previous step');
-      const [list, classA, assignA] = await Promise.all([
-        api.listClassAssignments(CLASS), api.classAnalytics(CLASS), api.assignmentAnalytics(test.assignmentId),
+    it('shows the saved work in progress, v4 analytics (class, assignment wrong answers, student profile) and gradebook export', async () => {
+      if (!test || students.length === 0) throw new Error('no test or roster from the previous step');
+      const [list, classA, assignA, studentA] = await Promise.all([
+        api.listClassAssignments(CLASS),
+        api.classAnalytics(CLASS),
+        api.assignmentAnalytics(test.assignmentId),
+        api.studentAnalytics(students[0].studentId),
       ]);
-      for (const r of [list, classA, assignA]) expect(r).toEqual(expect.objectContaining({ ok: true }));
+      for (const r of [list, classA, assignA, studentA]) expect(r).toEqual(expect.objectContaining({ ok: true }));
       const progress = list.ok ? list.value.find((a) => a.assignmentId === test?.assignmentId) : undefined;
       expect(progress?.checked).toBe(1);
       expect(assignA.ok && assignA.value.totalSubmissions).toBe(1);
+      if (assignA.ok) {
+        const lastQ = assignA.value.questions[assignA.value.questions.length - 1];
+        expect(lastQ?.wrongAnswers).toEqual(
+          expect.arrayContaining([expect.objectContaining({ studentId: students[0].studentId, writtenAnswer: 'ХАТА' })]),
+        );
+      }
+      if (classA.ok) {
+        expect(classA.value.students.some((s) => s.studentId === students[0].studentId)).toBe(true);
+      }
+      if (studentA.ok) {
+        expect(studentA.value.studentId).toBe(students[0].studentId);
+        expect(studentA.value.history.some((h) => h.assignmentId === test?.assignmentId)).toBe(true);
+      }
       const xlsx = await download(await api.gradebookTarget(test.assignmentId, CLASS, 'xlsx'));
       expect(xlsx).toEqual(expect.objectContaining({ status: 200, head: 'PK\u0003\u0004' }));
       const csv = await download(await api.gradebookTarget(test.assignmentId, CLASS, 'csv'));
