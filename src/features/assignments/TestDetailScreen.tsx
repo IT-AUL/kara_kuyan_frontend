@@ -9,8 +9,25 @@ import { hiddenTests, useHiddenTests } from '@/data/hiddenTests';
 import { session } from '@/data/session';
 import { useTestOverview } from '@/data/testOverview';
 import { percentOf } from '@/domain/tests/summary';
-import { AppIcon, BarChart, Button, Card, EmptyState, MetricTile, Notice, Screen, ScreenHeader, SectionHeader, SegmentedTabs, StatusPill, textStyles } from '@/design-system';
-import { colors, fontFamilies, hairline, radius, spacing } from '@/design-system/tokens';
+import {
+  AppIcon,
+  Avatar,
+  BarChart,
+  Button,
+  Card,
+  EmptyState,
+  GradePill,
+  HeroCard,
+  Notice,
+  ProgressStrip,
+  Screen,
+  ScreenHeader,
+  SectionHeader,
+  SegmentedTabs,
+  Tag,
+  textStyles,
+} from '@/design-system';
+import { colors, fontFamilies, fontSizes, hairline, radius, spacing } from '@/design-system/tokens';
 
 import { TaskRow } from './components/TaskRow';
 import { shareBlank, shareClassBlanks } from './print';
@@ -69,29 +86,78 @@ export function TestDetailScreen() {
     setMessage(r.ok ? null : `Не удалось получить бланк: ${r.message}`);
   };
 
+  const titleText = test?.title ?? o.bundle?.title ?? 'Тест';
+  const metaParts = [
+    ctx.className || null,
+    test ? `${test.gradeLevel} класс` : null,
+    test ? `${test.questionsCount} заданий` : null,
+  ].filter(Boolean);
+
   return (
     <Screen
       footer={<Button disabled={!variant || !ctx.classId} icon="scan" onPress={scan} title="Сканировать лист" />}
       onRefresh={() => void o.refresh()}
       refreshing={o.bundleState.status === 'loading'}
     >
-      <ScreenHeader showBack size="compact" titleLines={2} subtitle={test ? `${test.gradeLevel} класс · ${test.questionsCount} заданий` : undefined} title={test?.title ?? o.bundle?.title ?? 'Тест'} />
-      <View style={styles.pills}>
-        {isCurrent ? <StatusPill icon="checkCircle" label="Текущий тест" tone="info" /> : null}
-        {assigned ? <StatusPill icon="classes" label={`Назначен: ${ctx.className}`} tone="neutral" /> : null}
-        {dueText ? <StatusPill icon="time" label={`Срок: ${dueText}`} tone="warning" /> : null}
-        {serverAssignment && ['completed', 'closed', 'archived', 'done', 'finished'].includes(serverAssignment.status.toLowerCase()) ? <StatusPill label="Завершён" tone="neutral" /> : null}
-      </View>
+      <ScreenHeader showBack size="compact" titleLines={2} title={titleText} />
+
+      <HeroCard>
+        <View style={styles.heroBody}>
+          <View style={styles.pills}>
+            {isCurrent ? <Tag icon="checkCircle" label="Текущий тест" tone="ok" /> : null}
+            {assigned ? <Tag icon="classes" label={`Назначен: ${ctx.className}`} tone="neutral" /> : null}
+            {dueText ? <Tag icon="time" label={`Срок: ${dueText}`} tone="mid" /> : null}
+            {serverAssignment && ['completed', 'closed', 'archived', 'done', 'finished'].includes(serverAssignment.status.toLowerCase()) ? (
+              <Tag label="Завершён" tone="neutral" />
+            ) : null}
+          </View>
+
+          <Text numberOfLines={2} style={textStyles.title}>
+            {titleText}
+          </Text>
+          {metaParts.length > 0 ? <Text style={textStyles.bodySmall}>{metaParts.join(' · ')}</Text> : null}
+
+          <View style={styles.progressHead}>
+            <View style={styles.progressLeft}>
+              <Text style={styles.progressCount}>{o.progress.checked}</Text>
+              <Text style={textStyles.bodySmall}>{` из ${o.progress.total} проверено`}</Text>
+            </View>
+            <Text style={textStyles.bodySmall}>
+              {o.average !== null ? `средний ${o.average}%` : o.progress.remaining > 0 ? `осталось ${o.progress.remaining}` : 'все проверены'}
+            </Text>
+          </View>
+
+          <ProgressStrip done={o.progress.checked} total={o.progress.total} />
+
+          <View style={styles.heroActions}>
+            <Button disabled={!variant || !ctx.classId} icon="scan" onPress={scan} title="Сканировать" variant="primary" />
+            <View style={styles.secondaryActions}>
+              <View style={styles.grow}>
+                <Button
+                  compact
+                  disabled={!variant && !ctx.classId}
+                  icon="print"
+                  onPress={() => {
+                    setTab(3);
+                    if (ctx.classId) void printClass();
+                    else void print();
+                  }}
+                  title="Бланки"
+                  variant="secondary"
+                />
+              </View>
+              <View style={styles.grow}>
+                <Button compact icon="analytics" onPress={() => setTab(0)} title="Итоги" variant="secondary" />
+              </View>
+            </View>
+          </View>
+        </View>
+      </HeroCard>
+
       {ctx.classId && test?.assignedClasses && !assigned ? (
         <Button disabled={assigning} icon="classes" onPress={() => void assign()} title={assigning ? 'Назначаем…' : `Назначить классу ${ctx.className}`} variant="secondary" />
       ) : null}
       {o.offline ? <Notice message="Нет связи: показаны сохранённые данные." /> : null}
-
-      <View style={styles.kpis}>
-        <MetricTile label="Проверено" value={`${o.progress.checked}/${o.progress.total}`} />
-        <MetricTile label="Средний" value={o.average === null ? '—' : `${o.average}%`} tone="success" />
-        <MetricTile label="Осталось" value={`${o.progress.remaining}`} />
-      </View>
 
       <SegmentedTabs activeIndex={tab} onTabChange={setTab} tabs={TABS} />
 
@@ -130,25 +196,31 @@ export function TestDetailScreen() {
           {o.bundleState.status === 'error' && !o.bundle ? (
             <EmptyState body="Сервер не отдал состав этого теста. Попробуйте позже." icon="library" title="Состав недоступен" />
           ) : (
-            (variant?.questions ?? []).map((q) => {
-              const hit = hitsByTask.get(q.questionNumber);
-              const server = serverByTask.get(q.questionNumber);
-              return (
-                <TaskRow
-                  answer={q.expectedAnswer}
-                  cellCount={q.expectedCells.length}
-                  dense
-                  index={q.questionNumber}
-                  key={q.questionNumber}
-                  prompt={q.prompt}
-                  right={
-                    hit ? <StatusPill label={`${hit.correct}/${hit.total}`} tone={hit.correct === hit.total ? 'success' : 'warning'} />
-                    : server && server.accuracyPct > 0 ? <StatusPill label={`${Math.round(server.accuracyPct)}%`} tone="neutral" /> : undefined
-                  }
-                  topicName={q.topicName ?? q.topicTag}
-                />
-              );
-            })
+            <Card style={styles.tasksCard}>
+              {(variant?.questions ?? []).map((q, idx, list) => {
+                const hit = hitsByTask.get(q.questionNumber);
+                const server = serverByTask.get(q.questionNumber);
+                return (
+                  <TaskRow
+                    answer={q.expectedAnswer}
+                    cellCount={q.expectedCells.length}
+                    dense
+                    index={q.questionNumber}
+                    key={q.questionNumber}
+                    last={idx === list.length - 1}
+                    prompt={q.prompt}
+                    right={
+                      hit ? (
+                        <Tag label={`${hit.correct}/${hit.total}`} tone={hit.correct === hit.total ? 'ok' : 'mid'} />
+                      ) : server && server.accuracyPct > 0 ? (
+                        <Tag label={`${Math.round(server.accuracyPct)}%`} tone="neutral" />
+                      ) : undefined
+                    }
+                    topicName={q.topicName ?? q.topicTag}
+                  />
+                );
+              })}
+            </Card>
           )}
         </View>
       ) : null}
@@ -159,6 +231,7 @@ export function TestDetailScreen() {
           <Card style={styles.list}>
             {o.rows.map((r, i) => {
               const open = openStudent === r.studentId && r.work !== null;
+              const safeGrade = r.work ? (Math.min(5, Math.max(2, Math.round(r.work.grade))) as 2 | 3 | 4 | 5) : null;
               return (
                 <View key={r.studentId} style={i < o.rows.length - 1 ? styles.divider : undefined}>
                   <Pressable
@@ -168,16 +241,16 @@ export function TestDetailScreen() {
                     onPress={() => setOpenStudent(open ? null : r.studentId)}
                     style={styles.studentRow}
                   >
-                    <View style={styles.avatar}><Text style={styles.avatarText}>{r.name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('')}</Text></View>
+                    <Avatar name={r.name} ring={r.work ? 'done' : 'none'} size={36} />
                     <Text numberOfLines={2} style={[textStyles.body, styles.grow]}>{r.name}</Text>
-                    {r.work ? (
+                    {r.work && safeGrade ? (
                       <>
                         <Text style={styles.score}>{r.work.score}/{r.work.maxScore}</Text>
-                        <View style={styles.grade}><Text style={styles.gradeText}>{r.work.grade}</Text></View>
+                        <GradePill grade={safeGrade} />
                         <AppIcon color={colors.textFaint} name={open ? 'arrowBack' : 'chevronRight'} size={18} />
                       </>
                     ) : (
-                      <View style={styles.center}><StatusPill label="Не проверен" tone="neutral" /></View>
+                      <View style={styles.center}><Tag label="Не проверен" tone="neutral" /></View>
                     )}
                   </Pressable>
                   {open && r.work?.tasks ? (
@@ -222,27 +295,45 @@ export function TestDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  avatar: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: 18, height: 36, justifyContent: 'center', width: 36 },
-  avatarText: { color: colors.successSoft, fontFamily: fontFamilies.semibold, fontSize: 13 },
   block: { gap: spacing.sm },
   center: { alignSelf: 'center' },
   chart: { gap: spacing.sm },
   divider: { borderBottomColor: colors.divider, borderBottomWidth: hairline },
-  grade: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill, height: 30, justifyContent: 'center', width: 30 },
-  gradeText: { color: colors.successSoft, fontFamily: fontFamilies.bold, fontSize: 15 },
   grow: { flex: 1 },
   hardRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, minHeight: 56, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
-  hit: { color: colors.warning, fontFamily: fontFamilies.bold, fontSize: 16, fontVariant: ['tabular-nums'] },
-  kpis: { flexDirection: 'row', gap: spacing.sm },
+  heroActions: { gap: spacing.xs, marginTop: spacing.xs },
+  heroBody: { gap: spacing.sm },
+  hit: { color: colors.warning, fontFamily: fontFamilies.bold, fontSize: fontSizes.body, fontVariant: ['tabular-nums'] },
   list: { paddingHorizontal: 0, paddingVertical: 0 },
-  number: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: 15, minWidth: 18 },
+  number: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: fontSizes.bodySmall, minWidth: 18 },
   pills: { alignItems: 'flex-start', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   printBox: { gap: spacing.sm, padding: spacing.md },
-  score: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: 14, fontVariant: ['tabular-nums'] },
+  progressCount: {
+    color: colors.text,
+    fontFamily: fontFamilies.bold,
+    fontSize: fontSizes.display,
+    fontVariant: ['tabular-nums'],
+  },
+  progressHead: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.xxs,
+  },
+  progressLeft: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+  },
+  score: { color: colors.textMuted, fontFamily: fontFamilies.semibold, fontSize: fontSizes.bodySmall, fontVariant: ['tabular-nums'] },
+  secondaryActions: { flexDirection: 'row', gap: spacing.xs },
   studentRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, minHeight: 56, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   taskBad: { backgroundColor: colors.errorSoft },
   taskChip: { borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 4 },
   taskOk: { backgroundColor: colors.primarySoft },
-  taskText: { fontFamily: fontFamilies.semibold, fontSize: 13 },
+  taskText: { fontFamily: fontFamilies.semibold, fontSize: fontSizes.caption },
   tasks: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, paddingBottom: spacing.sm, paddingHorizontal: spacing.md },
+  tasksCard: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+  },
 });

@@ -1,14 +1,15 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { backendApi } from '@/composition';
-import { bundleResource, testsResource } from '@/data/hub';
+import { bankResource, bundleResource, testsResource } from '@/data/hub';
+import { useResource } from '@/data/resource';
 import { session } from '@/data/session';
 import { testDraft, useTestDraft } from '@/data/testDraft';
-import { draftIssues, draftStats, SHEET_CAPACITY } from '@/domain/constructor/draft';
-import { AppIcon, Button, Card, Field, Notice, Screen, ScreenHeader, Stepper, StatusPill, textStyles } from '@/design-system';
-import { colors, radius, spacing, touchTarget } from '@/design-system/tokens';
+import { draftIssues, draftStats, SHEET_CAPACITY, uniqueTopics } from '@/domain/constructor/draft';
+import { AppIcon, Button, Card, Field, Notice, Screen, ScreenHeader, Stepper, Tag, textStyles } from '@/design-system';
+import { colors, fontFamilies, fontSizes, radius, spacing, touchTarget } from '@/design-system/tokens';
 
 import { AddTasks } from './components/AddTasks';
 import { TaskRow } from './components/TaskRow';
@@ -18,11 +19,13 @@ type Created = { id: string; title: string; variants: number };
 
 /**
  * Test constructor. One screen, top to bottom: name and grade, the tasks in order (as printed, letters in
- * cells), three ways to add tasks, and a footer that always shows what will be created.
+ * cells), ways to add tasks, and a footer that always shows what will be created.
  */
 export function TestFormScreen() {
   const router = useRouter();
   const draft = useTestDraft();
+  const bank = useResource(bankResource);
+  const [topicFilter, setTopicFilter] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<Created | null>(null);
@@ -30,6 +33,15 @@ export function TestFormScreen() {
 
   const stats = draftStats(draft);
   const blocking = draftIssues(draft);
+  const topics = useMemo(
+    () => uniqueTopics(draft.tasks.length > 0 ? draft.tasks : (bank.data ?? [])),
+    [draft.tasks, bank.data],
+  );
+  const activeTopic = topicFilter && topics.some((t) => t.tag === topicFilter) ? topicFilter : null;
+  const shownTasks = useMemo(
+    () => (activeTopic ? draft.tasks.filter((t) => t.topicTag === activeTopic) : draft.tasks),
+    [draft.tasks, activeTopic],
+  );
 
   const submit = async () => {
     if (!backendApi || blocking.length > 0) return;
@@ -72,10 +84,20 @@ export function TestFormScreen() {
       >
         <ScreenHeader eyebrow="Готово" subtitle="Тест сохранён на сервере и стал текущим." title={created.title} />
         <Card style={styles.done} tone="raised">
-          <StatusPill icon="checkCircle" label="Тест создан" tone="success" />
+          <Tag icon="checkCircle" label="Тест создан" tone="ok" />
           <Text style={textStyles.bodySmall}>Распечатайте бланки: на каждом свой QR-код, по нему приложение узнает работу при сканировании.</Text>
           {Array.from({ length: created.variants }, (_, i) => (
-            <Button icon="print" key={i} onPress={async () => { setMessage('Готовим бланк…'); const r = await shareBlank(created.id, i + 1); setMessage(r.ok ? null : `Не удалось получить бланк: ${r.message}`); }} title={`Бланк (PDF), вариант ${i + 1}`} variant="secondary" />
+            <Button
+              icon="print"
+              key={i}
+              onPress={async () => {
+                setMessage('Готовим бланк…');
+                const r = await shareBlank(created.id, i + 1);
+                setMessage(r.ok ? null : `Не удалось получить бланк: ${r.message}`);
+              }}
+              title={`Бланк (PDF), вариант ${i + 1}`}
+              variant="secondary"
+            />
           ))}
         </Card>
         {message ? <Notice message={message} tone="info" /> : null}
@@ -101,80 +123,168 @@ export function TestFormScreen() {
     >
       <ScreenHeader showBack size="compact" title="Новый тест" />
 
+      {topics.length > 0 ? (
+        <ScrollView contentContainerStyle={styles.chipsRow} horizontal showsHorizontalScrollIndicator={false}>
+          <Pressable
+            accessibilityLabel="Все темы"
+            accessibilityRole="button"
+            accessibilityState={{ selected: activeTopic === null }}
+            hitSlop={5}
+            onPress={() => setTopicFilter(null)}
+            style={[styles.pillChip, activeTopic === null && styles.pillChipActive]}
+          >
+            <Text numberOfLines={1} style={[styles.pillChipText, activeTopic === null && styles.pillChipTextActive]}>
+              Все темы
+            </Text>
+          </Pressable>
+          {topics.map((t) => {
+            const on = activeTopic === t.tag;
+            return (
+              <Pressable
+                accessibilityLabel={t.name}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                hitSlop={5}
+                key={t.tag}
+                onPress={() => setTopicFilter(on ? null : t.tag)}
+                style={[styles.pillChip, on && styles.pillChipActive]}
+              >
+                <Text numberOfLines={1} style={[styles.pillChipText, on && styles.pillChipTextActive]}>
+                  {t.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      ) : null}
+
+      <View style={styles.headerBlock}>
+        <Text accessibilityRole="header" style={textStyles.title}>
+          {draft.title.trim() || 'Новый тест'}
+        </Text>
+        <Text style={textStyles.caption}>{`${stats.taskCount} заданий · ${draft.gradeLevel} класс`}</Text>
+      </View>
+
       <Field label="Название" onChangeText={(title) => testDraft.setMeta({ title })} placeholder="Контрольная работа №4" value={draft.title} />
       <View style={styles.pair}>
         <Stepper compact label="Класс" max={9} min={5} onChange={(gradeLevel) => testDraft.setMeta({ gradeLevel })} value={draft.gradeLevel} />
         <Stepper compact label="Вариантов" max={4} min={1} onChange={(variants) => testDraft.setMeta({ variants })} value={draft.variants} />
       </View>
 
-      <View style={styles.sectionHead}>
-        <Text accessibilityRole="header" style={textStyles.titleSmall}>Задания{draft.tasks.length > 0 ? ` · ${draft.tasks.length}` : ''}</Text>
-        {draft.tasks.length > 0 ? <Pressable accessibilityRole="button" hitSlop={8} onPress={() => testDraft.clear()}><Text style={styles.clear}>Очистить</Text></Pressable> : null}
-      </View>
-
-      <AddTasks compact={draft.tasks.length > 0} />
-
-      {draft.tasks.length === 0 ? (
+      {shownTasks.length === 0 ? (
         <Text style={styles.hint}>Можно ничего не добавлять: сервер сам подберёт задания для этого класса.</Text>
       ) : (
-        <View style={styles.list}>
-          {draft.tasks.map((t, i) => (
+        <Card style={styles.tasksCard}>
+          {shownTasks.map((t, i) => (
             <TaskRow
+              actionLabel="Убрать задание"
               answer={t.expectedAnswer}
               cellCount={t.cellCount}
               dense
-              footer={
-                <View style={styles.actions}>
-                  <IconAction disabled={i === 0} label="Выше" name="arrowBack" onPress={() => testDraft.moveTask(t.taskId, -1)} rotate="90deg" />
-                  <IconAction disabled={i === draft.tasks.length - 1} label="Ниже" name="arrowBack" onPress={() => testDraft.moveTask(t.taskId, 1)} rotate="-90deg" />
-                  <View style={styles.spacer} />
-                  <IconAction label="Убрать задание" name="close" onPress={() => testDraft.removeTask(t.taskId)} />
-                </View>
-              }
               index={i + 1}
               key={t.taskId}
+              last={i === shownTasks.length - 1}
+              onAction={() => testDraft.removeTask(t.taskId)}
               prompt={t.prompt}
               topicName={t.topicName}
             />
           ))}
-        </View>
+        </Card>
       )}
+
+      <View style={styles.sectionHead}>
+        <Pressable
+          accessibilityLabel="Добавить задание"
+          accessibilityRole="button"
+          hitSlop={4}
+          onPress={() => router.push('/task-picker')}
+          style={styles.addBtn}
+        >
+          <AppIcon color={colors.primary} name="add" size={18} />
+          <Text style={styles.addBtnText}>Добавить задание</Text>
+        </Pressable>
+        {draft.tasks.length > 0 ? (
+          <Pressable
+            accessibilityLabel="Очистить задания"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => testDraft.clear()}
+            style={styles.clearBtn}
+          >
+            <Text style={styles.clear}>Очистить</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      <AddTasks compact={draft.tasks.length > 0} />
 
       {error ? <Notice message={error} tone="error" /> : null}
     </Screen>
   );
 }
 
-function IconAction({ name, label, onPress, disabled = false, rotate }: { name: 'arrowBack' | 'close'; label: string; onPress: () => void; disabled?: boolean; rotate?: string }) {
-  return (
-    <Pressable
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      android_ripple={{ borderless: true, color: 'rgba(244, 248, 245, 0.12)' }}
-      disabled={disabled}
-      onPress={onPress}
-      style={[styles.icon, disabled && styles.iconOff]}
-    >
-      <View style={rotate ? { transform: [{ rotate }] } : undefined}>
-        <AppIcon color={colors.textMuted} name={name} size={20} />
-      </View>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  actions: { alignItems: 'center', borderColor: colors.divider, borderTopWidth: 1, flexDirection: 'row', paddingHorizontal: spacing.xs },
-  adders: { gap: spacing.xs },
-  clear: { color: colors.textMuted, fontSize: 14, fontWeight: '600', padding: spacing.xs },
+  addBtn: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    minHeight: touchTarget,
+    paddingVertical: spacing.xs,
+  },
+  addBtnText: {
+    color: colors.primary,
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.bodySmall,
+  },
+  chipsRow: {
+    gap: spacing.xs,
+    paddingRight: spacing.lg,
+  },
+  clear: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.bodySmall,
+  },
+  clearBtn: {
+    justifyContent: 'center',
+    minHeight: touchTarget,
+    paddingHorizontal: spacing.xs,
+  },
   done: { gap: spacing.sm },
   footer: { gap: spacing.xs },
-  icon: { alignItems: 'center', borderRadius: radius.md, height: touchTarget, justifyContent: 'center', width: touchTarget },
-  iconOff: { opacity: 0.3 },
-  list: { gap: spacing.sm },
+  headerBlock: {
+    gap: spacing.xxs,
+  },
+  hint: { color: colors.textFaint, fontSize: fontSizes.caption, textAlign: 'center' },
   pair: { flexDirection: 'row', gap: spacing.sm },
-  sectionHead: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
-  spacer: { flex: 1 },
-  hint: { color: colors.textFaint, fontSize: 13, textAlign: 'center' },
-  summary: { color: colors.textMuted, fontSize: 14, textAlign: 'center' },
+  pillChip: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    height: 38,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  pillChipActive: {
+    backgroundColor: colors.text,
+  },
+  pillChipText: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.medium,
+    fontSize: fontSizes.bodySmall,
+  },
+  pillChipTextActive: {
+    color: colors.background,
+    fontFamily: fontFamilies.semibold,
+  },
+  sectionHead: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  summary: { color: colors.textMuted, fontSize: fontSizes.bodySmall, textAlign: 'center' },
+  tasksCard: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+  },
 });

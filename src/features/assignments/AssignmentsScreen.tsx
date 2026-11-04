@@ -5,9 +5,22 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useActiveContext } from '@/data/context';
 import { useHiddenTests } from '@/data/hiddenTests';
 import { useTestDraft } from '@/data/testDraft';
-import { AppIcon, Button, Chips, EmptyState, GlowLayer, Notice, ProgressBar, Screen, ScreenHeader, SearchBar, StatusPill, textStyles } from '@/design-system';
-import { withAlpha } from '@/design-system/color';
-import { colors, hairline, radius, spacing } from '@/design-system/tokens';
+import {
+  AppIcon,
+  Button,
+  Card,
+  Chips,
+  EmptyState,
+  HeroCard,
+  Notice,
+  ProgressStrip,
+  Screen,
+  ScreenHeader,
+  SearchBar,
+  Tag,
+  textStyles,
+} from '@/design-system';
+import { colors, fontFamilies, fontSizes, spacing, touchTarget } from '@/design-system/tokens';
 
 import { TestCard } from './components/TestCard';
 
@@ -82,28 +95,37 @@ export function AssignmentsScreen() {
           accessibilityLabel={`${current.title}. Сейчас проверяем. Проверено ${ctx.progress.checkedCount} из ${ctx.progress.studentCount}`}
           accessibilityRole="button"
           onPress={() => open(current.testId)}
-          style={styles.hero}
         >
-          <GlowLayer color={colors.primary} size={240} style={styles.glow} />
-          <StatusPill icon="scan" label="Сейчас проверяем" tone="info" />
-          <Text numberOfLines={2} style={textStyles.title}>{current.title}</Text>
-          <Text style={textStyles.bodySmall}>{ctx.className} · проверено {ctx.progress.checkedCount} из {ctx.progress.studentCount}</Text>
-          <ProgressBar percent={ctx.progress.percent} />
-          <View style={styles.more}>
-            <Text style={styles.moreText}>Итоги, задания, ученики, бланк</Text>
-            <AppIcon color={colors.primary} name="chevronRight" size={18} />
-          </View>
+          <HeroCard>
+            <View style={styles.heroBody}>
+              <Tag icon="scan" label="Сейчас проверяем" tone="ok" />
+              <Text numberOfLines={2} style={textStyles.title}>{current.title}</Text>
+              <Text style={textStyles.bodySmall}>{ctx.className} · проверено {ctx.progress.checkedCount} из {ctx.progress.studentCount}</Text>
+              <ProgressStrip done={ctx.progress.checkedCount} total={ctx.progress.studentCount} />
+              <View style={styles.more}>
+                <Text style={styles.moreText}>Итоги, задания, ученики, бланк</Text>
+                <AppIcon color={colors.primary} name="chevronRight" size={18} />
+              </View>
+            </View>
+          </HeroCard>
         </Pressable>
       ) : null}
 
       {hasDraft && view !== 'hidden' ? (
-        <Pressable accessibilityLabel={`Черновик: ${draft.title.trim() || 'без названия'}`} accessibilityRole="button" android_ripple={{ color: 'rgba(244, 248, 245, 0.08)' }} onPress={() => router.push('/test-form')} style={styles.draft}>
-          <AppIcon color={colors.warning} name="edit" size={22} />
-          <View style={styles.grow}>
-            <Text numberOfLines={1} style={styles.draftTitle}>{draft.title.trim() || 'Без названия'}</Text>
-            <Text style={textStyles.caption}>Черновик · {draft.tasks.length} заданий</Text>
-          </View>
-          <AppIcon color={colors.textFaint} name="chevronRight" size={20} />
+        <Pressable
+          accessibilityLabel={`Черновик: ${draft.title.trim() || 'без названия'}`}
+          accessibilityRole="button"
+          android_ripple={{ color: 'rgba(244, 248, 245, 0.08)' }}
+          onPress={() => router.push('/test-form')}
+        >
+          <Card style={styles.draftCard}>
+            <View style={styles.draftCopy}>
+              <Text numberOfLines={1} style={styles.draftTitle}>{draft.title.trim() || 'Без названия'}</Text>
+              <Text style={textStyles.caption}>{`${draft.tasks.length} заданий · ${draft.gradeLevel} класс`}</Text>
+            </View>
+            <Tag label="черновик" tone="mid" />
+            <AppIcon color={colors.textFaint} name="chevronRight" size={20} />
+          </Card>
         </Pressable>
       ) : null}
 
@@ -121,7 +143,7 @@ export function AssignmentsScreen() {
       {ctx.tests.length > 6 ? <SearchBar onChangeText={setQuery} placeholder="Поиск по названию" value={query} /> : null}
 
       {ctx.tests.length === 0 ? (
-        <EmptyState actionLabel="Создать тест" body="Соберите тест из банка заданий или сгенерируйте: бланк для печати создаст сервер." icon="library" onAction={() => router.push('/test-form')} title="Пока нет тестов" />
+        <EmptyState actionLabel="Создать тест" body="Соберите тест из банка заданий: бланк для печати создаст сервер." icon="library" onAction={() => router.push('/test-form')} title="Пока нет тестов" />
       ) : others.length === 0 ? (
         <Text style={textStyles.bodySmall}>{showHidden ? 'Скрытых тестов нет.' : view === 'class' ? 'Других тестов у этого класса нет. Откройте «Все», чтобы назначить.' : 'Других тестов нет.'}</Text>
       ) : (
@@ -134,23 +156,21 @@ export function AssignmentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  draft: {
+  draftCard: {
     alignItems: 'center',
-    backgroundColor: withAlpha(colors.warning, 0.07),
-    borderColor: withAlpha(colors.warning, 0.45),
-    borderRadius: radius.lg,
-    borderStyle: 'dashed',
-    borderWidth: 1,
     flexDirection: 'row',
     gap: spacing.sm,
-    minHeight: 64,
+    minHeight: touchTarget,
     padding: spacing.md,
   },
-  draftTitle: { color: colors.text, fontSize: 16, fontWeight: '600' },
-  glow: { right: -80, top: -100 },
-  grow: { flex: 1 },
-  hero: { backgroundColor: colors.surface, borderColor: colors.divider, borderRadius: radius.xl, borderWidth: hairline, gap: spacing.sm, overflow: 'hidden', padding: spacing.lg },
+  draftCopy: { flex: 1, gap: spacing.xxs },
+  draftTitle: {
+    ...textStyles.bodySmall,
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+  },
+  heroBody: { gap: spacing.sm },
   list: { gap: spacing.xs },
   more: { alignItems: 'center', flexDirection: 'row', gap: 2, minHeight: 32 },
-  moreText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  moreText: { color: colors.primary, fontFamily: fontFamilies.semibold, fontSize: fontSizes.bodySmall },
 });
