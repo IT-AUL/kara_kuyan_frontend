@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, fontFamilies, spacing } from '../tokens';
@@ -11,8 +11,8 @@ type ToastProps = {
 };
 
 export function Toast({ message, actionLabel, onAction, visible }: ToastProps) {
-  const translateY = useRef(new Animated.Value(40)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const [translateY] = useState(() => new Animated.Value(40));
+  const [opacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (visible) {
