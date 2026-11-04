@@ -36,7 +36,14 @@ export function SegmentedTabs({ tabs, activeIndex: controlledIndex, onTabChange 
               pressed && styles.pressed,
             ]}
           >
-            <Text style={[styles.label, isActive && styles.labelActive]}>{tab}</Text>
+            <Text
+              adjustsFontSizeToFit
+              minimumFontScale={0.78}
+              numberOfLines={1}
+              style={[styles.label, isActive && styles.labelActive]}
+            >
+              {tab}
+            </Text>
           </Pressable>
         );
       })}
@@ -69,9 +76,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 9,
     flex: 1,
-    height: 32,
     justifyContent: 'center',
-    paddingHorizontal: spacing.xs,
+    minHeight: 36,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
   },
   tabActive: {
     backgroundColor: colors.surfaceHigh,

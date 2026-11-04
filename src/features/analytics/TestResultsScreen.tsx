@@ -144,19 +144,40 @@ export function TestResultsScreen() {
                   <Text style={textStyles.numeric}>
                     {succ !== null ? `${succ}%` : '—'}
                   </Text>
-                  <Text style={styles.metricLabel}>успеваемость</Text>
+                  <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.78}
+                    numberOfLines={1}
+                    style={styles.metricLabel}
+                  >
+                    успеваемость
+                  </Text>
                 </View>
                 <View style={styles.metricCol}>
                   <Text style={textStyles.numeric}>
                     {avg !== null ? avg.toFixed(1).replace('.', ',') : '—'}
                   </Text>
-                  <Text style={styles.metricLabel}>средний балл</Text>
+                  <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.78}
+                    numberOfLines={1}
+                    style={styles.metricLabel}
+                  >
+                    средний балл
+                  </Text>
                 </View>
                 <View style={styles.metricCol}>
                   <Text style={textStyles.numeric}>
                     {souVal !== null ? `${souVal}%` : '—'}
                   </Text>
-                  <Text style={styles.metricLabel}>СОУ</Text>
+                  <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.78}
+                    numberOfLines={1}
+                    style={styles.metricLabel}
+                  >
+                    СОУ
+                  </Text>
                 </View>
               </View>
             </View>

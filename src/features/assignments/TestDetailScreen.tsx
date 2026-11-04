@@ -95,7 +95,6 @@ export function TestDetailScreen() {
 
   return (
     <Screen
-      footer={<Button disabled={!variant || !ctx.classId} icon="scan" onPress={scan} title="Сканировать лист" />}
       onRefresh={() => void o.refresh()}
       refreshing={o.bundleState.status === 'loading'}
     >
@@ -317,6 +316,8 @@ const styles = StyleSheet.create({
   progressHead: {
     alignItems: 'baseline',
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
     justifyContent: 'space-between',
     marginTop: spacing.xxs,
   },

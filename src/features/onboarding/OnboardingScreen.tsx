@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   input: {
     color: colors.text,
     fontFamily: fontFamilies.semibold,
-    fontSize: 17,
+    fontSize: 15,
     paddingVertical: 0,
   },
   inputLabel: {

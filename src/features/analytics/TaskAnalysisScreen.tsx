@@ -43,7 +43,10 @@ export function TaskAnalysisScreen() {
   const { analytics, overview, status } = results;
 
   const question =
-    analytics?.questions.find((q) => q.number === qParam) ?? null;
+    analytics?.questions.find((q) => q.number === qParam) ??
+    (Number.isNaN(qParam)
+      ? [...(analytics?.questions ?? [])].sort((a, b) => a.accuracyPct - b.accuracyPct)[0] ?? null
+      : null);
 
   const headerNumber = question?.number ?? (Number.isFinite(qParam) && qParam > 0 ? qParam : null);
   const headerTitle = headerNumber !== null ? `Задание ${headerNumber}` : 'Задание';

@@ -195,25 +195,33 @@ export function ReportScreen() {
             <Text style={styles.tileValue}>
               {quality !== null ? `${quality}%` : '—'}
             </Text>
-            <Text style={styles.tileLabel}>качество</Text>
+            <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.tileLabel}>
+              качество
+            </Text>
           </View>
           <View style={styles.tile}>
             <Text style={styles.tileValue}>
               {succ !== null ? `${succ}%` : '—'}
             </Text>
-            <Text style={styles.tileLabel}>успеваем.</Text>
+            <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.tileLabel}>
+              успеваем.
+            </Text>
           </View>
           <View style={styles.tile}>
             <Text style={styles.tileValue}>
               {avg !== null ? avg.toFixed(1).replace('.', ',') : '—'}
             </Text>
-            <Text style={styles.tileLabel}>ср. балл</Text>
+            <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.tileLabel}>
+              ср. балл
+            </Text>
           </View>
           <View style={styles.tile}>
             <Text style={styles.tileValue}>
               {souVal !== null ? `${souVal}%` : '—'}
             </Text>
-            <Text style={styles.tileLabel}>СОУ</Text>
+            <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.tileLabel}>
+              СОУ
+            </Text>
           </View>
         </View>
 
@@ -244,8 +252,8 @@ export function ReportScreen() {
             <Text style={[styles.tableHeaderCell, styles.colPrompt]}>
               Задание
             </Text>
-            <Text style={[styles.tableHeaderCell, styles.colCorrect]}>
-              Справились
+            <Text numberOfLines={1} style={[styles.tableHeaderCell, styles.colCorrect]}>
+              Верно
             </Text>
             <Text style={[styles.tableHeaderCell, styles.colPct]}>%</Text>
           </View>

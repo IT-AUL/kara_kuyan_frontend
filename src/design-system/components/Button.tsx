@@ -43,8 +43,13 @@ export function Button({
       ]}
     >
       <View style={styles.content}>
-        {icon ? <AppIcon color={fgColor} name={icon} size={22} /> : null}
-        <Text style={[styles.label, compact && styles.labelCompact, { color: fgColor }]}>
+        {icon ? <AppIcon color={fgColor} name={icon} size={compact ? 18 : 20} /> : null}
+        <Text
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+          numberOfLines={1}
+          style={[styles.label, compact && styles.labelCompact, { color: fgColor }]}
+        >
           {title}
         </Text>
       </View>
@@ -65,17 +70,18 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     height: 56,
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   compact: {
     height: 44,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
   },
   content: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.xs,
     justifyContent: 'center',
+    maxWidth: '100%',
   },
   danger: {
     backgroundColor: colors.surfaceRaised,
