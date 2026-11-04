@@ -1,12 +1,12 @@
 # Status
 
-## State (updated 2026-09-20)
+## State (updated 2026-11-04)
 
-- **Released:** 0.1.4 (GitHub Release, in-app updater); `main` == `origin/main`, tree clean at `4d46804`. The test phone runs a **debug** 0.1.0 build (release 0.1.3 was replaced at the user's request; app data was reset).
-- **Product is wired to the live backend** (`https://tatar-ocr.duckdns.org`): handshake/onboarding, classes and roster, offline bundles (cached), scan → evaluate → save → outbox → `batch-sync`, tests hub and test page, constructor (bank / generator / own task / textbook photo, ADR 0009), class assignments with progress, blanks and batch blanks PDF, analytics and gradebook export. Demo data is gone from product code.
+- **Released:** 0.1.6 (GitHub Release, in-app updater); `main` includes the complete **UI & Analytics Redesign v4** (`ui-redesign-v4`).
+- **Product is wired to the live backend** (`https://tatar-ocr.duckdns.org`): handshake/onboarding, classes and roster, offline bundles (cached), scan → evaluate → save → outbox → `batch-sync`, tests hub and test page, constructor (bank / generator / own task / textbook photo, ADR 0009), class assignments with progress, blanks and batch blanks PDF, 7-screen teacher analytics suite and gradebook export. Demo data is gone from product code.
 - **On-device OCR**: CameraX, ArUco rectify, ONNX FP32+XNNPACK (≈0.4 s native per sheet), file import (ADR 0007), name-cell detection from printed lines, forced check of a refused sheet with warnings.
-- **Screen roles**: Главная (next action), Проверка (class queue), Тесты → test page, Ещё (class, analytics, export).
-- **Gates (2026-09-20):** `typecheck`, `lint`, `pnpm test --runInBand` (80 passed, 6 opt-in live skipped by default), `check-deps`, `doctor` pass; live suite 6/6 (with `LIVE_WRITE=1`).
+- **Screen roles (v4)**: **Главная** (hero progress + primary scan CTA + actionable insight + other works + shortcuts), **Проверка** (class queue + «Класс проверен» celebration + swipe review cards with undo), **Аналитика** (week action hub → test results with качество/успеваемость/СОУ/средний балл → per-task wrong-answer grouping → class heatmap → Tatar letters map → student profile → printable/shareable zavuch report), **Ещё** (plain-Russian sync state, classes, all tests, export, privacy).
+- **Gates (2026-11-04):** `lint` (0 errors/warnings), `typecheck` (0 errors), `pnpm test --runInBand` (18 suites / 107 passed, 9 opt-in live skipped by default), `check-deps` (up to date), `doctor` (21/21 passed); visually verified across 4 Android emulator profiles (`Android 11 720p 1.15x font 2GB`, `Android 13 1080p 4GB`, `Android 15 Pixel 7 6GB`, `Android 15 Tablet 1200×1920 4GB`).
 - **Not verified on the phone:** textbook-photo flow end to end (+ no image left in cache), «Всё равно проверить» result and banners, batch-blanks PDF, first-sheet auto-assign. Network-capture and filesystem privacy audits still TBD (task 10 of `backend-integration`).
 - **Open with others:** user's 10 handwritten calibration sheets; backend answers (isolation by teacher, template version/geometry, preprocessing 11 %/35 px vs our 8 %/30, retention of textbook photos) — `docs/contracts/contract-gaps.md` items 27–32 and `docs/contracts/backend-requests-2026-09-19.md`.
 
@@ -32,7 +32,7 @@
 | `android-device-polish` | All 12 core routes verified on Samsung SM-S928B (384×832dp); device gate 48/48 PASS; a11y labels added to MetricTile, Card, AssessmentCard, CharacterCells; static gates all green (lint, typecheck, tests, check-deps, doctor) | `harness/changes/archive/android-device-polish/tasks.md`, `reviews/review.md`, `evidence/after/` |
 | `figma-ux-alignment` | Static UI prototype aligned with Figma mockups: SegmentedTabs, SearchBar, BarChart, Analytics grade dynamics & repeat topic insight, Assignments search & CTA, Classes tabs & add student, Home recent activity. Verified on-device (SM-S928B). | `harness/changes/archive/figma-ux-alignment/tasks.md`, `reviews/review.md`, `evidence/` |
 
-| `scan-check-flow` (active) | Real scan → result → review → save loop in the app, verified on SM-S928B; QR-based sheet validation | `harness/changes/active/scan-check-flow/` |
+| `ui-redesign-v4` (active, reviewed — ACCEPT) | Full v4 UI & 7-screen analytics redesign (Mobbin patterns + Russian school zavuch metrics, swipe review cards, heatmap, Tatar letters map, student profile, zavuch report); verified across 4 Android profiles (API 30–35, 720p+1.15x..1200w tablet); all 5 gates green (107 tests) | `harness/changes/active/ui-redesign-v4/` |
 | `p0-camera-runtime-spike` (parked) | Benchmark, parity, geometry/QR, backend review; ADRs 0005 and 0006 | `harness/changes/parking/p0-camera-runtime-spike/` |
 
 ## Blocked / open items

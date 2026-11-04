@@ -25,13 +25,13 @@ Research and rationale: `docs/design/v4/06-mobbin-patterns.md`, `docs/design/v4/
 
 ## Acceptance criteria
 
-- [ ] AC1 Design system: tokens and the primitives listed in `plan.md` exist, are exported from `@/design-system`, and have unit tests for any pure helpers.
-- [ ] AC2 Each redesigned screen matches its reference screenshot in `docs/design/v4/shots/` in structure, copy and color roles (lead visual review on Android emulator/device; screenshots recorded per task).
-- [ ] AC3 Analytics: hub, test results, task breakdown, class map, letters, student profile, zavuch report are reachable and render real API data, with empty/offline/error states.
-- [ ] AC4 Analytics math (quality, success rate, SOU, average grade, accuracy zones, wrong-answer grouping) lives in `src/domain/analytics/` with unit tests using the formulas in `07-analytics-concept.md`.
-- [ ] AC5 Zero-photo and architecture rules hold: no UI file imports `src/adapters/**` directly; no image data leaves native memory; no feature-to-feature imports.
-- [ ] AC6 Gates green on `main` after the last merge: `pnpm run lint`, `pnpm run typecheck`, `pnpm test --runInBand`, `pnpm run check-deps`, `pnpm run doctor`.
-- [ ] AC7 Independent review recorded in `reviews/review.md`.
+- [x] AC1 Design system: tokens and the primitives listed in `plan.md` exist, are exported from `@/design-system`, and have unit tests for any pure helpers.
+- [x] AC2 Each redesigned screen matches its reference screenshot in `docs/design/v4/shots/` in structure, copy and color roles (lead visual review on Android emulator/device; screenshots recorded per task).
+- [x] AC3 Analytics: hub, test results, task breakdown, class map, letters, student profile, zavuch report are reachable and render real API data, with empty/offline/error states.
+- [x] AC4 Analytics math (quality, success rate, SOU, average grade, accuracy zones, wrong-answer grouping) lives in `src/domain/analytics/` with unit tests using the formulas in `07-analytics-concept.md`.
+- [x] AC5 Zero-photo and architecture rules hold: no UI file imports `src/adapters/**` directly; no image data leaves native memory; no feature-to-feature imports.
+- [x] AC6 Gates green on `main` after the last merge: `pnpm run lint`, `pnpm run typecheck`, `pnpm test --runInBand`, `pnpm run check-deps`, `pnpm run doctor`.
+- [x] AC7 Independent review recorded in `reviews/review.md`.
 
 ## Open questions
 

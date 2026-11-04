@@ -72,4 +72,6 @@ Rule: one writer per file. Everything else is read-only analysis.
 
 ## Deviations
 
-<recorded during execution>
+- Added paper-contrast tokens (`paperSurface`, `paperBorder`, `paperDivider`, `paperText`, `paperTextMuted`, `paperTextFaint`, `paperPrimary`, `paperOk`, `paperMid`, `paperBad`) to `src/design-system/tokens.ts` (`11e2823`) so `ReportScreen` (light zavuch report document sheet) meets WCAG contrast without raw `#hex` literals in `src/features/**`.
+- Added `app/ds-gallery.tsx` (`84753f6`, `SafeAreaView` polish `e6e314e`) so every Design System v4 primitive can be visually verified on real Android emulators.
+- Ran a 4-device Android verification matrix on `pc` (`Android 11 720×1520 320dpi 1.15x font 2GB`, `Android 13 1080×2340 440dpi 4GB`, `Android 15 Pixel 7 1080×2400 420dpi 6GB`, `Android 15 Tablet 1200×1920 280dpi 4GB`) and applied responsive polish for `360dp + 1.15x` large-font devices (`af91e77`, `4cbd5f1`, `9b34bd2`, `6da63f3`).
