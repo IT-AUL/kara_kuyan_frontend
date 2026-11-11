@@ -1,7 +1,13 @@
 import type { SheetEvidence } from '../ocr/evidence';
 import { matchStudent, normalizeName } from '../roster/match';
 import type { OfflineBundle } from './bundle';
-import { evaluateSheet, scoreOutcome } from './evaluate';
+import {
+  cellFixKey,
+  countUncertainCells,
+  evaluateSheet,
+  resolveTaskWithFixes,
+  scoreOutcome,
+} from './evaluate';
 
 const alphabet = ['А', 'Ә', 'Д', 'К', 'Т', 'Н'];
 const bundle: OfflineBundle = {
@@ -70,8 +76,8 @@ describe('evaluateSheet with a forced target', () => {
   });
 });
 
-describe('evaluateSheet', () => {
-  it('grades tasks against the bundle and keeps the recognised text', () => {
+describe('evaluateSheet & Top-3 cell fixes', () => {
+  it('grades tasks against the bundle and keeps recognised text + Zero-Touch status', () => {
     const outcome = evaluateSheet(
       evidence([
         { questionNumber: 1, markerId: 11, cells: [sure(0, 'К'), sure(1, 'А'), sure(2, 'Т'), empty(3)] },
@@ -84,7 +90,51 @@ describe('evaluateSheet', () => {
     expect(outcome.qrRecognised).toBe(true);
     expect(outcome.tasks.map((t) => t.status)).toEqual(['error', 'correct']);
     expect(outcome.tasks[0].recognized).toBe('КАТ');
-    expect(scoreOutcome(outcome, {})).toEqual({ score: 1, maxScore: 2, reviewLeft: 0 });
+    expect(scoreOutcome(outcome, {})).toEqual({ score: 1, maxScore: 2, reviewLeft: 0, uncertainCells: 0 });
+  });
+
+  it('populates top3 hypotheses and resolves yellow uncertain cells in 1 tap', () => {
+    const uncertainCell = {
+      index: 2,
+      isEmpty: false,
+      probabilities: alphabet.map((c) => (c === 'Т' ? 0.62 : c === 'Д' ? 0.31 : c === 'Н' ? 0.05 : 0.005)),
+    };
+    const outcome = evaluateSheet(
+      evidence([
+        { questionNumber: 1, markerId: 11, cells: [sure(0, 'К'), sure(1, 'А'), uncertainCell, empty(3)] },
+        { questionNumber: 2, markerId: 12, cells: [sure(0, 'Т'), sure(1, 'А')] },
+      ]),
+      bundle,
+    );
+
+    expect(outcome.tasks[0].status).toBe('review');
+    expect(outcome.tasks[0].cells[2].verdict).toBe('uncertain');
+    expect(outcome.tasks[0].cells[2].top3?.map((x) => x.char)).toEqual(['Т', 'Д', 'Н']);
+    expect(countUncertainCells(outcome)).toBe(1);
+
+    // 1-tap select second candidate 'Д' -> matches expected 'КАД' -> auto-resolves to 'correct'!
+    const fixesMatch = { [cellFixKey(1, 2)]: 'Д' };
+    const resolvedMatch = resolveTaskWithFixes(outcome.tasks[0], fixesMatch);
+    expect(resolvedMatch.recognized).toBe('КАД');
+    expect(resolvedMatch.status).toBe('correct');
+    expect(scoreOutcome(outcome, {}, fixesMatch)).toEqual({
+      score: 2,
+      maxScore: 2,
+      reviewLeft: 0,
+      uncertainCells: 0,
+    });
+
+    // 1-tap select first candidate 'Т' -> student wrote 'КАТ' -> auto-resolves to 'error' with exact answer!
+    const fixesErr = { [cellFixKey(1, 2)]: 'Т' };
+    const resolvedErr = resolveTaskWithFixes(outcome.tasks[0], fixesErr);
+    expect(resolvedErr.recognized).toBe('КАТ');
+    expect(resolvedErr.status).toBe('error');
+    expect(scoreOutcome(outcome, {}, fixesErr)).toEqual({
+      score: 1,
+      maxScore: 2,
+      reviewLeft: 0,
+      uncertainCells: 0,
+    });
   });
 
   it('marks tasks that were not found on the sheet as missing and applies overrides', () => {

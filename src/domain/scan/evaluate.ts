@@ -1,6 +1,8 @@
 import {
   evaluateQuestion,
-  proposedThresholds,
+  extractTopCandidates,
+  v4Thresholds,
+  type CellCandidate,
   type CellVerdict,
   type DecisionThresholds,
   type TaskOcrStatus,
@@ -8,15 +10,21 @@ import {
 import type { SheetEvidence } from '../ocr/evidence';
 import { parseQrSignature, type OfflineBundle } from './bundle';
 
+export type { CellCandidate };
+
 export type EvaluatedCell = {
   index: number;
   /** Expected character from the bundle; a space where the cell must stay empty. */
   expected: string;
   /** Top-1 character read; a space when the cell was empty. */
   predicted: string;
-  /** Probability of the predicted character (1 for an empty cell). */
+  /** Probability of the predicted character (1 for an empty cell or teacher-fixed cell). */
   confidence: number;
   verdict: CellVerdict;
+  /** Top-3 candidate hypotheses from the v4 model (`98.25%` recall on handwritten Tatar). */
+  top3?: readonly CellCandidate[];
+  /** True when the teacher explicitly confirmed/replaced this cell in 1 tap. */
+  fixedByTeacher?: boolean;
 };
 
 export type EvaluatedTask = {
@@ -25,7 +33,7 @@ export type EvaluatedTask = {
   prompt: string;
   topicTag: string;
   expected: string;
-  /** Top-1 text per cell; empty cells are spaces. */
+  /** Top-1 text per cell; empty cells are spaces, trailing spaces trimmed. */
   recognized: string;
   status: TaskOcrStatus;
   cells: readonly EvaluatedCell[];
@@ -63,10 +71,11 @@ export type SheetOutcome = {
 
 export type Override = 'accept' | 'reject';
 
-function maxProbability(probabilities: readonly number[]): { index: number; probability: number } {
-  let best = 0;
-  for (let i = 1; i < probabilities.length; i += 1) if (probabilities[i] > probabilities[best]) best = i;
-  return { index: best, probability: probabilities[best] ?? 0 };
+/** Map from `${taskNumber}:${cellIndex}` to teacher-selected character (`' '` for blank or uppercase letter). */
+export type CellFixes = Readonly<Record<string, string>>;
+
+export function cellFixKey(taskNumber: number, cellIndex: number): string {
+  return `${taskNumber}:${cellIndex}`;
 }
 
 function rejected(check: Extract<SheetCheck, { ok: false }>, evidence: SheetEvidence, assignmentId = ''): SheetOutcome {
@@ -74,15 +83,13 @@ function rejected(check: Extract<SheetCheck, { ok: false }>, evidence: SheetEvid
 }
 
 /**
- * Compares recognised evidence with the expected answers, task by task. The sheet is first matched to a
- * known assignment through its QR (`tid`, `var`, `n_q`): an unreadable QR, an unknown assignment or
- * variant, or a different number of tasks yields a rejected outcome instead of a silent guess.
+ * Compares recognised evidence with the expected answers, task by task.
+ * Retains Top-3 candidates per cell from probabilities (zero pixels in JS, ADR 0003).
  */
 export function evaluateSheet(
   evidence: SheetEvidence,
   bundles: OfflineBundle | readonly OfflineBundle[],
-  thresholds: DecisionThresholds = proposedThresholds,
-  /** Teacher override: grade against this test/variant whatever the QR says (adds a `forced` warning). */
+  thresholds: DecisionThresholds = v4Thresholds,
   force?: ForceTarget,
 ): SheetOutcome {
   const catalog = Array.isArray(bundles) ? (bundles as readonly OfflineBundle[]) : [bundles as OfflineBundle];
@@ -128,7 +135,7 @@ export function evaluateSheet(
     };
     if (!seen) {
       const cells = q.expectedCells.map<EvaluatedCell>((c, index) => ({
-        index, expected: c.char, predicted: ' ', confidence: 1, verdict: 'blank',
+        index, expected: c.char, predicted: ' ', confidence: 1, verdict: 'blank', top3: [],
       }));
       return { ...base, recognized: '', status: 'missing', cells };
     }
@@ -138,16 +145,25 @@ export function evaluateSheet(
       evidence.alphabet,
       thresholds,
     );
-    const cells = seen.cells.map<EvaluatedCell>((c, index) => {
-      const top = c.isEmpty ? null : maxProbability(c.probabilities);
-      return {
+
+    const cellCount = decision.cells.length > 0 ? decision.cells.length : q.expectedCells.length;
+    const cells: EvaluatedCell[] = [];
+    for (let index = 0; index < cellCount; index += 1) {
+      const seenCell = seen.cells[index];
+      const expectedChar = q.expectedCells[index]?.char ?? ' ';
+      const top3 = seenCell && !seenCell.isEmpty
+        ? extractTopCandidates(seenCell.probabilities, evidence.alphabet, 3)
+        : [];
+      const top1 = top3[0];
+      cells.push({
         index,
-        expected: q.expectedCells[index]?.char ?? ' ',
-        predicted: top === null ? ' ' : (evidence.alphabet[top.index] ?? '?'),
-        confidence: top === null ? 1 : Math.round(top.probability * 1000) / 1000,
+        expected: expectedChar,
+        predicted: !seenCell || seenCell.isEmpty || !top1 ? ' ' : top1.char,
+        confidence: !seenCell || seenCell.isEmpty || !top1 ? 1 : top1.confidence,
         verdict: decision.cells[index]?.verdict ?? 'uncertain',
-      };
-    });
+        top3,
+      });
+    }
     const recognized = cells.map((c) => c.predicted).join('').trimEnd();
     return { ...base, recognized, status: decision.status, cells };
   });
@@ -163,23 +179,107 @@ export function evaluateSheet(
   };
 }
 
-/** Status shown to the teacher after their overrides. */
-export function effectiveStatus(task: EvaluatedTask, override: Override | undefined): TaskOcrStatus {
+function verdictAfterFix(expected: string, chosen: string): CellVerdict {
+  const expBlank = expected.trim() === '';
+  const chosenBlank = chosen.trim() === '';
+  if (expBlank) return chosenBlank ? 'match' : 'mismatch';
+  if (chosenBlank) return 'blank';
+  return chosen === expected ? 'match' : 'mismatch';
+}
+
+function recomputeTaskStatus(cells: readonly EvaluatedCell[]): TaskOcrStatus {
+  const answerCells = cells.filter((c) => c.expected.trim() !== '');
+  if (answerCells.length > 0 && answerCells.every((c) => c.verdict === 'blank')) {
+    return 'missing';
+  }
+  if (cells.some((c) => c.verdict === 'mismatch' || c.verdict === 'blank')) {
+    return 'error';
+  }
+  if (cells.some((c) => c.verdict === 'uncertain')) {
+    return 'review';
+  }
+  return 'correct';
+}
+
+/**
+ * Applies 1-tap teacher letter fixes to a task and automatically resolves its status
+ * (`correct` / `error` / `missing` / `review`) from the updated cells.
+ */
+export function resolveTaskWithFixes(task: EvaluatedTask, cellFixes?: CellFixes): EvaluatedTask {
+  if (!cellFixes) return task;
+  let touched = false;
+  const cells = task.cells.map<EvaluatedCell>((c) => {
+    const fixed = cellFixes[cellFixKey(task.number, c.index)];
+    if (fixed === undefined) return c;
+    touched = true;
+    const normalized = fixed.trim() === '' ? ' ' : fixed.trim()[0]!;
+    return {
+      ...c,
+      predicted: normalized,
+      confidence: 1,
+      verdict: verdictAfterFix(c.expected, normalized),
+      fixedByTeacher: true,
+    };
+  });
+  if (!touched) return task;
+  const recognized = cells.map((c) => c.predicted).join('').trimEnd();
+  return {
+    ...task,
+    cells,
+    recognized,
+    status: recomputeTaskStatus(cells),
+  };
+}
+
+/** Counts yellow spot-focus (`uncertain`) cells remaining across un-overridden tasks. */
+export function countUncertainCells(
+  outcome: SheetOutcome | null,
+  overrides: Readonly<Record<number, Override>> = {},
+  cellFixes?: CellFixes,
+): number {
+  if (!outcome) return 0;
+  let count = 0;
+  for (const rawTask of outcome.tasks) {
+    if (overrides[rawTask.number]) continue;
+    const task = resolveTaskWithFixes(rawTask, cellFixes);
+    if (task.status !== 'review') continue;
+    for (const c of task.cells) {
+      if (c.verdict === 'uncertain') count += 1;
+    }
+  }
+  return count;
+}
+
+/** Status shown to the teacher after 1-tap cell fixes and whole-task overrides. */
+export function effectiveStatus(
+  task: EvaluatedTask,
+  override: Override | undefined,
+  cellFixes?: CellFixes,
+): TaskOcrStatus {
   if (override === 'accept') return 'correct';
   if (override === 'reject') return 'error';
-  return task.status;
+  return resolveTaskWithFixes(task, cellFixes).status;
 }
 
 export function scoreOutcome(
   outcome: SheetOutcome,
   overrides: Readonly<Record<number, Override>>,
-): { score: number; maxScore: number; reviewLeft: number } {
+  cellFixes?: CellFixes,
+): { score: number; maxScore: number; reviewLeft: number; uncertainCells: number } {
   let score = 0;
   let reviewLeft = 0;
-  for (const task of outcome.tasks) {
-    const status = effectiveStatus(task, overrides[task.number]);
+  let uncertainCells = 0;
+  for (const rawTask of outcome.tasks) {
+    const resolved = resolveTaskWithFixes(rawTask, cellFixes);
+    const override = overrides[rawTask.number];
+    const status = override === 'accept' ? 'correct' : override === 'reject' ? 'error' : resolved.status;
     if (status === 'correct') score += 1;
-    if (status === 'review') reviewLeft += 1;
+    if (status === 'review') {
+      reviewLeft += 1;
+      for (const c of resolved.cells) {
+        if (c.verdict === 'uncertain') uncertainCells += 1;
+      }
+    }
   }
-  return { score, maxScore: outcome.tasks.length, reviewLeft };
+  return { score, maxScore: outcome.tasks.length, reviewLeft, uncertainCells };
 }

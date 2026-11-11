@@ -6,27 +6,27 @@
 2. **Geometry** — ArUco corner detection (`DICT_4X4_50`; ids 0 top-left, 1 top-right, 2 bottom-left, 3 bottom-right), perspective rectification to a 2100×2970 px A4 canvas; fallback largest-quad contour. Rows/cells are located from each question's own marker plus grid-line detection, not fixed coordinates.
 3. **QR decode** — student/assessment/variant identity; teacher fallback via «Изменить ученика».
 4. **Cell crops** — 10×10 mm cells cut per the offline-bundle template geometry.
-5. **Preprocessing — authoritative version is the authors' source** (`docs/contracts/ocr-server-pipeline-reference.md`, ported in `tools/ocr-lab/preprocess_server.py`); the block below is the older integration guide, kept for history.
-   **Older guide version — superseded.** The steps below are from the older integration guide. The authors' "updated block" (`docs/contracts/ocr-server-pipeline-reference.md`) differs: trim 8%, ink segmentation (`gray < median − 22`), frame-remnant filter, empty cell if ink area < 30 px, crop and scale the glyph to 46 px, centre on 64×64. Exact parity needs the authors' source (`contract-gaps.md` item 18). Guide version:
-   5. **Preprocessing (exact, per cell):** 3–5% border trim → aspect-preserving square padding (edge-median background color) → grayscale + 2nd/98th percentile contrast stretch → `INTER_AREA` resize to 64×64 → normalize to `[-1, 1]` (paper ≈ +1, ink ≈ −1).
-6. **Batched inference** — `[N, 1, 64, 64]` float32 through ONNX Runtime; all cells of a sheet in few batched runs.
-7. **Top-K + confidence** — softmax over 39 logits; top-1 char + confidence, top-3 candidates retained for review.
-8. **Answer-level comparison** — per-cell prediction vs `expected_cells` from the offline bundle → task-level status (Верно / Ошибка / Требует проверки / Не выполнено).
-9. **HITL** — flagged tasks go to teacher review; overrides win.
+5. **Preprocessing — authoritative `v4` version (`DanisGaleev/tatar_ocr@7a5cce4`, `blank_pipeline.py`)**:
+   - Sheet rectification: 60 px white border padding, 3-pass ArUco detection (`CORNER_REFINE_SUBPIX`, `C=7` → `C=12` → `CLAHE`), exact 4-corner perspective warp (`INTER_LANCZOS4`), balanced multi-marker RANSAC homography, or `estimateAffinePartial2D` similarity fallback when corner markers are shadowed.
+   - Grid localization & border suppression: `MORPH_CLOSE` (`9×1`, `1×9`) + long-kernel `MORPH_OPEN` (`180×1`, `1×50`), 15 student-name cells, dynamic 8–12 question cells, and non-destructive perimeter border suppression (`suppressGridBorders`) protecting the inner `84%` safe core of every cell.
+   - Per-cell segmentation (`CellPreprocessor`): `4%` (`min 5 px`) inner trim → contrast-adaptive ink threshold (`22.0` / `16.0` / `max(7.0, 0.32 * Δ)`) → hollow-box & perimeter remnant filter → top-diacritic re-attachment (`≤ 22 px` above body) → 4-criterion empty filter (`ink < 35 px`, `coreFrac < 0.005`, `Blackhat P98 < 10 & contrast < 25`, top-band intrusion) → aspect-preserving scale to **`48 px`** (`75%` occupancy) → 2nd/98th percentile contrast stretch → center on `64×64` (`250` paper background) → normalize `((x / 255) - 0.5) / 0.5`.
+   - Stage 6 post-filter: deterministic geometric `Ё`/`Й` constraint — demotes `Ё → Е` and `Й → О/И` when no isolated top diacritic (`≥ 10 px`) exists above the main glyph body.
+6. **Batched inference** — `[N, 1, 64, 64]` float32 through ONNX Runtime (`TatarOCRNetV3_MultiScale` `v4`, adaptive big.LITTLE threads + background warmup).
+7. **Top-K + calibrated `τ = 85%` threshold** — softmax over 39 logits; non-empty cells with `confidence < 0.85` are marked `uncertain` (yellow spot-focus) with Top-3 candidates retained for 1-tap teacher selection; `confidence >= 0.85` cells are auto-accepted as `match` or confirmed `mismatch`.
+8. **Answer-level comparison** — per-cell prediction (or 1-tap teacher cell fix) vs `expected_cells` from the offline bundle → task-level status (Верно / Ошибка / Требует проверки / Не выполнено).
+9. **HITL** — Zero-Touch sheets (`0` uncertain cells) save in 1 gesture; uncertain cells resolve in 1 tap from Top-3 candidates or whole-card swipe.
 10. **Discard buffers** — all pixel memory freed; nothing image-derived persists.
 
-## Verified model facts (see `docs/contracts/model-manifest.md`)
+## Verified `v4` model facts
 
-| Property | FP32 | INT8 |
+| Property | FP32 (`tatar_ocr_v4_handwritten39_fp32.onnx`) | INT8 (`tatar_ocr_v4_handwritten39_int8.onnx`) |
 |---|---|---|
-| Size | 3,292,452 B | 844,010 B |
-| SHA-256 | `fafcbf65c2953a45ad5001764831ee7cd6c099d609dccfcc53ee5bc8866e322c` | `0dbbf6304d6e2053c8b6f4c9a978dbb426d4a5dd3c08b34dd883aa237cd68de9` |
-| IR / opset | v8 / 17 | v8 / 17 |
-| Input | float `[batch,1,64,64]` NCHW | float `[batch,1,64,64]` NCHW |
-| Output | float logits `[batch,39]` | float logits `[batch,39]` |
-| Graph | 20 nodes: 6 Conv, 7 ReLU, 2 MaxPool, 1 AveragePool, 1 Flatten, 2 Gemm, 1 BatchNorm | 66 nodes: `DynamicQuantizeLinear`, `ConvInteger`, `MatMulInteger` (dynamic quantization) |
-
-PyTorch checkpoint `finetuned_uppercase39.pth`: ~3.2 MB, SHA-256 `b55481b407751ece8237c77bbfa6270cc3a271d73d04b3ef58a4c25ee01361d3`.
+| Architecture | `TatarOCRNetV3_MultiScale` (`1×1, 3×3, 5×5, 7×7` DWConv + SE `r=8`) | Dynamic `QUInt8` (`DynamicQuantizeLinear` + `ConvInteger`) |
+| Size | 3,782,792 B (~3.61 MB) | 1,024,619 B (~0.98 MB) |
+| SHA-256 | `b9cbbfd045921fa7f2e92bf54d2eaf84c9266075ad09a0d0b175031d8a948aa5` | `656096ed97d25cfdd07390f292a7b9a9f838481adf126587e40dccae25c9f191` |
+| Opset | 14 | 14 |
+| Input | float `input` `[batch, 1, 64, 64]` NCHW | float `input` `[batch, 1, 64, 64]` NCHW |
+| Output | float `output` `[batch, 39]` | float `output` `[batch, 39]` |
 
 ## 39-class alphabet (index order — versioned contract)
 

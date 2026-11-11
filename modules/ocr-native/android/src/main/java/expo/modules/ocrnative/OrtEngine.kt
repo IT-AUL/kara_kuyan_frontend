@@ -7,18 +7,32 @@ import java.nio.FloatBuffer
 import kotlin.math.exp
 
 /**
- * Thin wrapper over ONNX Runtime Android for the 39-class cell classifier.
- * Input `input` [N,1,64,64] float32, output `logits` [N,39] float32 (verified on both artifacts).
+ * Thin wrapper over ONNX Runtime Android for the 39-class `TatarOCRNetV3_MultiScale` (v4) cell classifier.
+ * Input `input` [N,1,64,64] float32, output `output` [N,39] float32.
+ *
+ * Tuned for heterogeneous Android SoCs:
+ * - GraphOptimizationLevel.ALL_OPT + memory pattern optimization
+ * - `session.intra_op.allow_spinning = "0"` to prevent battery/thermal throttling and big.LITTLE contention
+ * - Thread pool isolated to physical big/Prime cores via [CpuTopology]
+ * - Explicit [warmup] to pre-pack XNNPACK multi-scale kernels off the critical capture path
  */
-class OrtEngine(modelPath: String, private val lane: Lane, private val threads: Int = PHYSICAL_THREADS) : AutoCloseable {
-  /** XNNPACK for the FP32 graph; plain CPU EP for FP32 baseline and for the dynamic-INT8 graph (XNNPACK cannot run ConvInteger). */
+class OrtEngine(
+  modelPath: String,
+  val lane: Lane,
+  val threads: Int = CpuTopology.optimalThreads,
+) : AutoCloseable {
+  /** XNNPACK for FP32 graph; plain CPU EP for dynamic-INT8 (`ConvInteger`) fallback and benchmarking. */
   enum class Lane { FP32_XNNPACK, CPU }
 
   private val env: OrtEnvironment = OrtEnvironment.getEnvironment()
   private val session: OrtSession
+  private val inputName: String
 
   init {
     val options = OrtSession.SessionOptions()
+    options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
+    options.setMemoryPatternOptimization(true)
+    options.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.SEQUENTIAL)
     options.addConfigEntry("session.intra_op.allow_spinning", "0")
     when (lane) {
       Lane.FP32_XNNPACK -> {
@@ -28,13 +42,23 @@ class OrtEngine(modelPath: String, private val lane: Lane, private val threads: 
       Lane.CPU -> options.setIntraOpNumThreads(threads)
     }
     session = env.createSession(modelPath, options)
+    inputName = session.inputNames.firstOrNull() ?: "input"
+  }
+
+  /** Pre-packs kernels and initializes arenas so the teacher's first sheet sees warm latency. */
+  fun warmup() {
+    val dummy = FloatArray(CellPreprocessor.SIZE * CellPreprocessor.SIZE)
+    infer(dummy, 1)
   }
 
   /** [tensors] holds n * 64 * 64 floats. Returns raw logits, one row per cell. */
   fun infer(tensors: FloatArray, n: Int): Array<FloatArray> {
+    if (n <= 0) return emptyArray()
+    val cellLen = CellPreprocessor.SIZE * CellPreprocessor.SIZE
     val shape = longArrayOf(n.toLong(), 1, CellPreprocessor.SIZE.toLong(), CellPreprocessor.SIZE.toLong())
-    OnnxTensor.createTensor(env, FloatBuffer.wrap(tensors), shape).use { input ->
-      session.run(mapOf("input" to input)).use { result ->
+    val buf = FloatBuffer.wrap(tensors, 0, n * cellLen)
+    OnnxTensor.createTensor(env, buf, shape).use { input ->
+      session.run(mapOf(inputName to input)).use { result ->
         @Suppress("UNCHECKED_CAST")
         return (result[0].value as Array<FloatArray>).map { it.copyOf() }.toTypedArray()
       }
@@ -44,9 +68,6 @@ class OrtEngine(modelPath: String, private val lane: Lane, private val threads: 
   override fun close() = session.close()
 
   companion object {
-    /** Big cores on SM8650 (1 prime + 5 performance + 2 efficiency); tune during the benchmark task. */
-    const val PHYSICAL_THREADS = 4
-
     fun softmax(logits: FloatArray): FloatArray {
       val m = logits.max()
       val e = FloatArray(logits.size) { exp(logits[it] - m) }

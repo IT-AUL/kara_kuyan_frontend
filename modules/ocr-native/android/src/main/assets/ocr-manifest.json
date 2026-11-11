@@ -1,6 +1,9 @@
 {
-  "manifest_version": 1,
-  "note": "Spike manifest. Class order measured on the models and confirmed by the authors' registry (Ә at index 1). See docs/contracts/model-manifest.md.",
+  "manifest_version": 2,
+  "model_version": "4.0.0",
+  "architecture": "TatarOCRNetV3_MultiScale",
+  "confidence_threshold": 0.85,
+  "note": "Production v4 handwritten Tatar OCR manifest (DanisGaleev/tatar_ocr@7a5cce4). Class order verified with Ә at index 1.",
   "template_version": "tatar-ocr-a4-v1",
   "alphabet": [
     "А",
@@ -45,12 +48,12 @@
   ],
   "models": {
     "fp32": {
-      "file": "tatar_ocr_uppercase39_fp32.onnx",
-      "sha256": "fafcbf65c2953a45ad5001764831ee7cd6c099d609dccfcc53ee5bc8866e322c"
+      "file": "tatar_ocr_v4_handwritten39_fp32.onnx",
+      "sha256": "b9cbbfd045921fa7f2e92bf54d2eaf84c9266075ad09a0d0b175031d8a948aa5"
     },
     "int8": {
-      "file": "tatar_ocr_uppercase39_int8.onnx",
-      "sha256": "0dbbf6304d6e2053c8b6f4c9a978dbb426d4a5dd3c08b34dd883aa237cd68de9"
+      "file": "tatar_ocr_v4_handwritten39_int8.onnx",
+      "sha256": "656096ed97d25cfdd07390f292a7b9a9f838481adf126587e40dccae25c9f191"
     }
   }
 }

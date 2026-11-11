@@ -12,15 +12,17 @@ import org.json.JSONObject
 import org.opencv.android.OpenCVLoader
 import org.opencv.core.Core
 import org.opencv.imgcodecs.Imgcodecs
-import org.opencv.imgproc.Imgproc
-import org.opencv.core.Mat
 import java.io.File
 import kotlin.math.abs
 
 class OcrNativeModule : Module() {
   private var pendingPick: Promise? = null
 
-  private companion object { const val PICK_REQUEST = 7311 }
+  private companion object {
+    const val PICK_REQUEST = 7311
+    const val FP32_MODEL = "tatar_ocr_v4_handwritten39_fp32.onnx"
+    const val INT8_MODEL = "tatar_ocr_v4_handwritten39_int8.onnx"
+  }
 
   override fun definition() = ModuleDefinition {
     Name("OcrNative")
@@ -31,6 +33,7 @@ class OcrNativeModule : Module() {
         .put("opencvLoaded", cvOk)
         .put("opencvVersion", if (cvOk) Core.VERSION else JSONObject.NULL)
         .put("abi", android.os.Build.SUPPORTED_ABIS.firstOrNull())
+        .put("optimalThreads", CpuTopology.optimalThreads)
         .put("filesDir", appContext.reactContext?.filesDir?.absolutePath ?: JSONObject.NULL)
         .toString()
     }
@@ -48,16 +51,16 @@ class OcrNativeModule : Module() {
       Permissions.getPermissionsWithPermissionsManager(appContext.permissions, promise, Manifest.permission.CAMERA)
     }
 
-    // Captures a still in memory, reads it, returns structured evidence (numbers and text only).
     AsyncFunction("captureSheet") {
       CameraController.capture(appContext.reactContext ?: throw IllegalStateException("no context"))
     }
 
-    // Lets the teacher pick an existing image of a sheet (system picker, no storage permission). The file is read
-    // straight into native memory, processed and released: never copied, cached, or shown to JS (ADR 0007).
     AsyncFunction("pickAndReadSheet") { promise: Promise ->
       val activity = appContext.currentActivity
-      if (activity == null) { promise.reject("NO_ACTIVITY", "no foreground activity", null); return@AsyncFunction }
+      if (activity == null) {
+        promise.reject("NO_ACTIVITY", "no foreground activity", null)
+        return@AsyncFunction
+      }
       pendingPick?.reject("PICK_SUPERSEDED", "another pick started", null)
       pendingPick = promise
       val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -77,7 +80,10 @@ class OcrNativeModule : Module() {
         return@OnActivityResult
       }
       val context = appContext.reactContext
-      if (context == null) { promise.reject("NO_CONTEXT", "no context", null); return@OnActivityResult }
+      if (context == null) {
+        promise.reject("NO_CONTEXT", "no context", null)
+        return@OnActivityResult
+      }
       Thread {
         try {
           val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
@@ -89,23 +95,53 @@ class OcrNativeModule : Module() {
       }.start()
     }
 
-    // Dev-only sheet pipeline test (spike task 10): still images from <filesDir>/ocr-lab/sheets.
-    AsyncFunction("sheetTest") { runs: Int ->
-      val root = File(appContext.reactContext?.filesDir ?: throw IllegalStateException("no files dir"), "ocr-lab")
-      runSheetTest(root, runs)
+    // Dev-only full v4 sheet pipeline benchmark on <filesDir>/ocr-lab/sheets using the bundled production SheetReader.
+    AsyncFunction("sheetTest") { runs: Int, promise: Promise ->
+      val ctx = appContext.reactContext
+      if (ctx == null) {
+        promise.reject("NO_CONTEXT", "no context", null)
+        return@AsyncFunction
+      }
+      Thread {
+        try {
+          val root = File(ctx.filesDir, "ocr-lab")
+          promise.resolve(runSheetTest(ctx, root, runs))
+        } catch (e: Throwable) {
+          promise.reject("SHEET_TEST_FAILED", e.message ?: e.toString(), e)
+        }
+      }.start()
     }
 
-    // Dev-only benchmark (spike task 9): full-sheet batch, thread sweep, first run vs warm runs.
-    AsyncFunction("benchmark") { cells: Int, runs: Int ->
-      val root = File(appContext.reactContext?.filesDir ?: throw IllegalStateException("no files dir"), "ocr-lab")
-      runBenchmark(File(root, "fixtures"), File(root, "models"), cells, runs)
+    AsyncFunction("benchmark") { cells: Int, runs: Int, promise: Promise ->
+      val ctx = appContext.reactContext
+      if (ctx == null) {
+        promise.reject("NO_CONTEXT", "no files dir", null)
+        return@AsyncFunction
+      }
+      Thread {
+        try {
+          val root = File(ctx.filesDir, "ocr-lab")
+          promise.resolve(runBenchmark(File(root, "fixtures"), File(root, "models"), cells, runs))
+        } catch (e: Throwable) {
+          promise.reject("BENCH_FAILED", e.message ?: e.toString(), e)
+        }
+      }.start()
     }
 
-    // Dev-only parity self-test (spike tasks 7-8). Fixtures and models are pushed to
-    // <filesDir>/ocr-lab/{fixtures,models} with `adb` + `run-as`; nothing is bundled in the app.
-    AsyncFunction("selfTest") {
-      val root = File(appContext.reactContext?.filesDir ?: throw IllegalStateException("no files dir"), "ocr-lab")
-      runSelfTest(File(root, "fixtures"), File(root, "models"))
+    AsyncFunction("selfTest") { promise: Promise ->
+      val ctx = appContext.reactContext
+      if (ctx == null) {
+        promise.reject("NO_CONTEXT", "no files dir", null)
+        return@AsyncFunction
+      }
+      Thread {
+        try {
+          val root = File(ctx.filesDir, "ocr-lab")
+          promise.resolve(runSelfTest(File(root, "fixtures"), File(root, "models")))
+        } catch (e: Throwable) {
+          promise.reject("SELFTEST_FAILED", e.message ?: e.toString(), e)
+        }
+      }.start()
     }
   }
 
@@ -138,7 +174,7 @@ class OcrNativeModule : Module() {
         if (d > cellMax) cellMax = d
       }
       if (cellMax == 0) exact++
-      if (cellMax > maxDiff) maxDiff = cellMax
+      if (cellMax > maxDiff) maxDiff = dMax(maxDiff, cellMax)
       CellPreprocessor.toTensor(r.inp64, tensors, i * size)
     }
     val preprocessMs = (System.nanoTime() - t0) / 1e6
@@ -150,35 +186,43 @@ class OcrNativeModule : Module() {
 
     val lanes = JSONArray()
     for ((name, lane, key) in listOf(
-      Triple("tatar_ocr_uppercase39_fp32.onnx", OrtEngine.Lane.FP32_XNNPACK, "logits_fp32"),
-      Triple("tatar_ocr_uppercase39_int8.onnx", OrtEngine.Lane.CPU, "logits_int8"),
+      Triple(FP32_MODEL, OrtEngine.Lane.FP32_XNNPACK, "logits_fp32"),
+      Triple(INT8_MODEL, OrtEngine.Lane.CPU, "logits_int8"),
     )) {
       val model = File(models, name)
       val entry = JSONObject().put("model", name)
-      if (!model.exists()) { lanes.put(entry.put("error", "missing")); continue }
+      if (!model.exists()) {
+        lanes.put(entry.put("error", "missing"))
+        continue
+      }
       try {
         OrtEngine(model.absolutePath, lane).use { engine ->
           val t1 = System.nanoTime()
           val logits = engine.infer(tensors, n)
           val ms = (System.nanoTime() - t1) / 1e6
-          val goldenLogits = golden.getJSONArray(key)
-          var maxLogitDiff = 0.0
-          var argmaxOk = 0
           var labelOk = 0
           for (i in 0 until n) {
-            val g = goldenLogits.getJSONArray(i)
             var best = 0
-            for (k in logits[i].indices) {
-              maxLogitDiff = maxOf(maxLogitDiff, abs(logits[i][k] - g.getDouble(k)))
-              if (logits[i][k] > logits[i][best]) best = k
-            }
-            var goldenBest = 0
-            for (k in 0 until g.length()) if (g.getDouble(k) > g.getDouble(goldenBest)) goldenBest = k
-            if (best == goldenBest) argmaxOk++
+            for (k in logits[i].indices) if (logits[i][k] > logits[i][best]) best = k
             if (best == labels.getInt(i)) labelOk++
           }
-          entry.put("maxLogitDiffVsGolden", maxLogitDiff).put("argmaxMatchesGolden", argmaxOk)
-            .put("argmaxMatchesLabel", labelOk).put("batchOfCellsMs", ms)
+          if (golden.has(key)) {
+            val goldenLogits = golden.getJSONArray(key)
+            var maxLogitDiff = 0.0
+            var argmaxOk = 0
+            for (i in 0 until n) {
+              val g = goldenLogits.getJSONArray(i)
+              val best = logits[i].indices.maxByOrNull { logits[i][it] } ?: 0
+              var goldenBest = 0
+              for (k in 0 until g.length()) {
+                maxLogitDiff = maxOf(maxLogitDiff, abs(logits[i][k] - g.getDouble(k)))
+                if (g.getDouble(k) > g.getDouble(goldenBest)) goldenBest = k
+              }
+              if (best == goldenBest) argmaxOk++
+            }
+            entry.put("maxLogitDiffVsGolden", maxLogitDiff).put("argmaxMatchesGolden", argmaxOk)
+          }
+          entry.put("argmaxMatchesLabel", labelOk).put("batchOfCellsMs", ms)
         }
       } catch (e: Throwable) {
         entry.put("error", e.toString())
@@ -188,6 +232,8 @@ class OcrNativeModule : Module() {
     report.put("lanes", lanes)
     return report.toString()
   }
+
+  private fun dMax(a: Int, b: Int) = if (a >= b) a else b
 
   private fun stats(ms: List<Double>): JSONObject {
     val sorted = ms.sorted()
@@ -216,15 +262,16 @@ class OcrNativeModule : Module() {
       (System.nanoTime() - t) / 1e6
     }
     report.put("cells", cells).put("runs", runs)
+      .put("optimalThreads", CpuTopology.optimalThreads)
       .put("preprocess", JSONObject().put("coldMsForAllCells", preCold).put("warmMsForAllCells", stats(preWarm)))
 
     val configs = JSONArray()
     val lanes = listOf(
-      Triple("tatar_ocr_uppercase39_fp32.onnx", OrtEngine.Lane.FP32_XNNPACK, "fp32+xnnpack"),
-      Triple("tatar_ocr_uppercase39_fp32.onnx", OrtEngine.Lane.CPU, "fp32+cpu"),
-      Triple("tatar_ocr_uppercase39_int8.onnx", OrtEngine.Lane.CPU, "int8+cpu"),
+      Triple(FP32_MODEL, OrtEngine.Lane.FP32_XNNPACK, "v4-fp32+xnnpack"),
+      Triple(FP32_MODEL, OrtEngine.Lane.CPU, "v4-fp32+cpu"),
+      Triple(INT8_MODEL, OrtEngine.Lane.CPU, "v4-int8+cpu"),
     )
-    for ((file, lane, label) in lanes) for (threads in listOf(1, 2, 4, 6, 8)) {
+    for ((file, lane, label) in lanes) for (threads in listOf(1, 2, 4)) {
       val entry = JSONObject().put("lane", label).put("threads", threads)
       try {
         val t0 = System.nanoTime()
@@ -252,74 +299,77 @@ class OcrNativeModule : Module() {
 
   private fun median(v: List<Double>) = v.sorted().let { it[it.size / 2] }
 
-  private fun runSheetTest(root: File, runs: Int): String {
+  private fun runSheetTest(context: android.content.Context, root: File, runs: Int): String {
     val report = JSONObject()
     if (!OpenCVLoader.initLocal()) return report.put("error", "OpenCV failed to load").toString()
-    val alphabet = JSONObject(File(root, "fixtures/golden.json").readText()).getJSONArray("alphabet")
-      .let { a -> List(a.length()) { a.getString(it) } }
-    val images = File(root, "sheets").listFiles { f -> f.extension in setOf("jpg", "jpeg", "png") }?.sortedBy { it.name }
+    val images = File(root, "sheets").listFiles { f -> f.extension.lowercase() in setOf("jpg", "jpeg", "png") }?.sortedBy { it.name }
       ?: return report.put("error", "no sheets dir").toString()
-    val pipeline = SheetPipeline()
+    val reader = CameraController.getReader(context)
     val results = JSONArray()
-    OrtEngine(File(root, "models/tatar_ocr_uppercase39_fp32.onnx").absolutePath, OrtEngine.Lane.FP32_XNNPACK, 6).use { engine ->
-      for (file in images) {
-        val entry = JSONObject().put("file", file.name)
-        val perRun = HashMap<String, MutableList<Double>>()
-        fun rec(k: String, ms: Double) { perRun.getOrPut(k) { ArrayList() }.add(ms) }
-        try {
-          for (run in 0 until runs) {
-            val tAll = System.nanoTime()
-            var t = System.nanoTime()
-            fun lap(k: String) { val n = System.nanoTime(); rec(k, (n - t) / 1e6); t = n }
 
-            val img = Imgcodecs.imread(file.absolutePath); lap("decode")
-            val (rect, method, used) = pipeline.rectify(img); lap("rectify")
-            img.release()
-            val gray = Mat(); Imgproc.cvtColor(rect, gray, Imgproc.COLOR_BGR2GRAY)
-            val (nameBoxes, rows) = pipeline.locate(rect, gray); lap("locate")
-
-            val boxes = nameBoxes + rows.flatMap { it.boxes }
-            val tensors = FloatArray(boxes.size * CellPreprocessor.SIZE * CellPreprocessor.SIZE)
-            val filled = ArrayList<Int>()
-            boxes.forEachIndexed { i, b ->
-              val r = CellPreprocessor.preprocess(pipeline.cropGray(gray, b), tolerantLines = true)
-              if (!r.isEmpty) { CellPreprocessor.toTensor(r.inp64, tensors, filled.size * CellPreprocessor.SIZE * CellPreprocessor.SIZE); filled.add(i) }
-            }
-            lap("preprocess")
-            val logits = if (filled.isNotEmpty()) engine.infer(tensors.copyOf(filled.size * CellPreprocessor.SIZE * CellPreprocessor.SIZE), filled.size) else emptyArray()
-            lap("infer")
-            val chars = arrayOfNulls<String>(boxes.size)
-            filled.forEachIndexed { k, i -> chars[i] = alphabet[logits[k].indices.maxByOrNull { logits[k][it] }!!] }
-            val qrCv = pipeline.qrWithOpenCv(rect); lap("qrOpenCv")
-            val qrMl = try { pipeline.qrWithMlKit(rect) } catch (e: Throwable) { "error: $e" }; lap("qrMlKit")
-            rec("total", (System.nanoTime() - tAll) / 1e6)
-
-            if (run == 0) {
-              var idx = nameBoxes.size
-              entry.put("method", method).put("markersUsed", used)
-                .put("name", nameBoxes.indices.joinToString("") { chars[it] ?: "" })
-                .put("rows", JSONArray().also { arr ->
-                  for (row in rows) {
-                    arr.put(JSONObject().put("marker", row.markerId).put("cells", row.boxes.size)
-                      .put("text", row.boxes.indices.joinToString("") { chars[idx + it] ?: "" }))
-                    idx += row.boxes.size
+    for (file in images) {
+      val entry = JSONObject().put("file", file.name)
+      val totals = ArrayList<Double>()
+      try {
+        for (run in 0 until runs.coerceAtLeast(1)) {
+          val t0 = System.nanoTime()
+          val img = Imgcodecs.imread(file.absolutePath)
+          val res = reader.read(img)
+          img.release()
+          totals.add((System.nanoTime() - t0) / 1e6)
+          if (run == 0) {
+            val ev = res.evidence
+            val alphabet = ev.optJSONArray("alphabet")?.let { a -> List(a.length()) { a.getString(it) } } ?: emptyList()
+            val rowsOut = JSONArray()
+            val qs = ev.optJSONArray("questions") ?: JSONArray()
+            for (qi in 0 until qs.length()) {
+              val q = qs.getJSONObject(qi)
+              val cells = q.getJSONArray("cells")
+              val text = StringBuilder()
+              val cellItems = JSONArray()
+              for (ci in 0 until cells.length()) {
+                val c = cells.getJSONObject(ci)
+                val empty = c.getBoolean("isEmpty")
+                if (empty) {
+                  cellItems.put(JSONObject().put("idx", ci + 1).put("char", "").put("conf", 100.0).put("empty", true))
+                } else {
+                  val probs = c.getJSONArray("probabilities")
+                  val sortedIdx = (0 until probs.length()).sortedByDescending { probs.getDouble(it) }
+                  val topIdx = sortedIdx.first()
+                  val ch = alphabet.getOrElse(topIdx) { "?" }
+                  val conf = Math.round(probs.getDouble(topIdx) * 1000.0) / 10.0
+                  val top3 = JSONArray().also { t3 ->
+                    sortedIdx.take(3).forEach { k ->
+                      t3.put(JSONObject().put("char", alphabet.getOrElse(k) { "?" }).put("conf", Math.round(probs.getDouble(k) * 1000.0) / 10.0))
+                    }
                   }
-                })
-                .put("qrOpenCv", qrCv).put("qrMlKit", qrMl)
+                  text.append(ch)
+                  cellItems.put(JSONObject().put("idx", ci + 1).put("char", ch).put("conf", conf).put("empty", false).put("top3", top3))
+                }
+              }
+              rowsOut.put(
+                JSONObject()
+                  .put("q_num", q.getInt("questionNumber"))
+                  .put("marker", q.getInt("markerId"))
+                  .put("text", text.toString())
+                  .put("cells", cellItems),
+              )
             }
-            gray.release(); rect.release()
+            entry.put("method", res.method)
+              .put("markersUsed", ev.optInt("markersUsed"))
+              .put("name", ev.optString("studentNameText"))
+              .put("qr", ev.opt("qrPayload"))
+              .put("stageTimingsMs", ev.optJSONObject("stageTimingsMs"))
+              .put("rows", rowsOut)
           }
-          val stages = JSONObject()
-          for ((k, v) in perRun) {
-            stages.put(k, JSONObject().put("coldMs", v[0]).put("warmMedianMs", if (v.size > 1) median(v.drop(1)) else JSONObject.NULL))
-          }
-          entry.put("stages", stages)
-        } catch (e: Throwable) {
-          entry.put("error", e.toString())
         }
-        results.put(entry)
+        entry.put("coldTotalMs", totals.first())
+        if (totals.size > 1) entry.put("warmMedianMs", median(totals.drop(1)))
+      } catch (e: Throwable) {
+        entry.put("error", e.toString())
       }
+      results.put(entry)
     }
-    return report.put("runs", runs).put("sheets", results).toString()
+    return report.put("runs", runs).put("optimalThreads", CpuTopology.optimalThreads).put("sheets", results).toString()
   }
 }

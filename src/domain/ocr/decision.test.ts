@@ -1,4 +1,11 @@
-import { evaluateCell, evaluateQuestion, proposedThresholds } from './decision';
+import {
+  V4_CONFIDENCE_THRESHOLD,
+  evaluateCell,
+  evaluateQuestion,
+  extractTopCandidates,
+  proposedThresholds,
+  v4Thresholds,
+} from './decision';
 import type { CellEvidence, QuestionEvidence } from './evidence';
 
 const alphabet = ['А', 'Д', 'Ә', 'Л', 'Н', 'Ө', 'С', 'Т', 'Ң'];
@@ -22,15 +29,41 @@ function sure(char: string, index: number): CellEvidence {
   return cell(index, { [char]: 0.97, А: 0.01 });
 }
 
-describe('evaluateCell', () => {
-  it('accepts a confident, clearly leading expected character', () => {
+describe('extractTopCandidates', () => {
+  it('returns the top-3 characters ordered by probability without image bytes', () => {
+    const top3 = extractTopCandidates(
+      alphabet.map((c) => (c === 'Ә' ? 0.7421 : c === 'А' ? 0.1894 : c === 'Н' ? 0.0412 : 0.001)),
+      alphabet,
+      3,
+    );
+    expect(top3).toEqual([
+      { char: 'Ә', confidence: 0.742 },
+      { char: 'А', confidence: 0.189 },
+      { char: 'Н', confidence: 0.041 },
+    ]);
+  });
+});
+
+describe('evaluateCell (v4 τ = 85%)', () => {
+  it('calibrated threshold equals 0.85', () => {
+    expect(V4_CONFIDENCE_THRESHOLD).toBe(0.85);
+    expect(v4Thresholds.acceptMinProbability).toBe(0.85);
+    expect(v4Thresholds.rejectMinProbability).toBe(0.85);
+  });
+
+  it('accepts a confident expected character at or above τ = 85%', () => {
     const d = evaluateCell(cell(0, { Д: 0.94, Т: 0.04 }), { char: 'Д' }, alphabet, proposedThresholds);
     expect(d.verdict).toBe('match');
     expect(d.expectedProbability).toBeCloseTo(0.94);
     expect(d.bestAlternative?.char).toBe('Т');
   });
 
-  it('confirms a mismatch when a different letter is confidently recognised', () => {
+  it('flags sub-85% recognition (e.g. 82%) as yellow uncertain spot-focus cell', () => {
+    const d = evaluateCell(cell(0, { Д: 0.82, Т: 0.14 }), { char: 'Д' }, alphabet, v4Thresholds);
+    expect(d.verdict).toBe('uncertain');
+  });
+
+  it('confirms a mismatch when a different letter is confidently recognised (>= 85%)', () => {
     const d = evaluateCell(cell(0, { Т: 0.9, Д: 0.06 }), { char: 'Д' }, alphabet, proposedThresholds);
     expect(d.verdict).toBe('mismatch');
   });
@@ -85,6 +118,11 @@ describe('evaluateQuestion', () => {
     );
   });
 
+  it('tolerates extra unwritten trailing grid boxes detected by dynamic 8..12 cell snapping', () => {
+    const dynamicTen = [...clean, cell(8, {}, 0), cell(9, {}, 0)];
+    expect(evaluateQuestion(question(dynamicTen), expectedWord, alphabet, v4Thresholds).status).toBe('correct');
+  });
+
   it('marks the demo case ӨСТӘЛТӘН vs ӨСТӘЛДӘН as an error', () => {
     const cells = [...clean];
     cells[5] = cell(5, { Т: 0.92, Д: 0.05 });
@@ -119,7 +157,7 @@ describe('evaluateQuestion', () => {
     expect(evaluateQuestion(question(cells), expected, alphabet, proposedThresholds).status).toBe('correct');
   });
 
-  it('refuses to guess when cell counts disagree or nothing is expected', () => {
+  it('refuses to guess when non-blank cell counts disagree or nothing is expected', () => {
     const short = evaluateQuestion(question(clean.slice(0, 3)), expectedWord, alphabet, proposedThresholds);
     expect(short).toMatchObject({ status: 'review', reason: 'cell-count-mismatch' });
     const none = evaluateQuestion(question([]), [], alphabet, proposedThresholds);

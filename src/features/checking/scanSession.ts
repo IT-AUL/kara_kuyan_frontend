@@ -6,8 +6,8 @@ import { session as appSession } from '@/data/session';
 import { gradeForPercent, scorePercent } from '@/domain/assessment/grading';
 import type { OfflineBundle } from '@/domain/scan/bundle';
 import { parseQrSignature } from '@/domain/scan/bundle';
-import type { Override, RejectionReason, SheetOutcome } from '@/domain/scan/evaluate';
-import { evaluateSheet, scoreOutcome } from '@/domain/scan/evaluate';
+import type { CellFixes, Override, RejectionReason, SheetOutcome } from '@/domain/scan/evaluate';
+import { cellFixKey, evaluateSheet, scoreOutcome } from '@/domain/scan/evaluate';
 import { buildSubmission } from '@/domain/sync/payload';
 import { matchStudent } from '@/domain/roster/match';
 import type { Student } from '@/domain/assessment/model';
@@ -23,6 +23,7 @@ type State = {
   student: Student | null;
   studentMatched: boolean;
   overrides: Readonly<Record<number, Override>>;
+  cellFixes: CellFixes;
   captureMs: number | null;
   /** Why the last sheet was refused, when the teacher may still check it anyway (see `forceCheck`). */
   rejection: RejectionReason | null;
@@ -30,7 +31,7 @@ type State = {
 
 const initial: State = {
   phase: 'idle', error: null, outcome: null, student: null, studentMatched: false,
-  overrides: {}, captureMs: null, rejection: null,
+  overrides: {}, cellFixes: {}, captureMs: null, rejection: null,
 };
 
 let state: State = initial;
@@ -90,7 +91,16 @@ export type ScanResult = 'done' | 'cancelled';
 /** Reads a sheet (camera or picked file), then evaluates it against the cached assignment bundles. */
 async function processSheet(read: (session: OcrSession) => Promise<SheetEvidence>, phaseWhileReading: boolean): Promise<ScanResult> {
   if (state.phase === 'processing') return 'done';
-  set({ phase: phaseWhileReading ? 'processing' : 'idle', error: null, rejection: null, outcome: null, overrides: {}, student: null, studentMatched: false });
+  set({
+    phase: phaseWhileReading ? 'processing' : 'idle',
+    error: null,
+    rejection: null,
+    outcome: null,
+    overrides: {},
+    cellFixes: {},
+    student: null,
+    studentMatched: false,
+  });
   const started = Date.now();
   try {
     const active = await getSession();
@@ -198,7 +208,7 @@ export const scanSession = {
       return;
     }
     const student = matchStudent(outcome.studentNameText, currentRoster(outcome.variant));
-    set({ phase: 'ready', error: null, rejection: null, outcome, student, studentMatched: student !== null });
+    set({ phase: 'ready', error: null, rejection: null, outcome, overrides: {}, cellFixes: {}, student, studentMatched: student !== null });
   },
 
   selectStudent(id: string) {
@@ -209,15 +219,36 @@ export const scanSession = {
     set({ overrides: { ...state.overrides, [taskNumber]: verdict } });
   },
 
+  clearOverride(taskNumber: number) {
+    const next = { ...state.overrides };
+    delete next[taskNumber];
+    set({ overrides: next });
+  },
+
+  fixCell(taskNumber: number, cellIndex: number, char: string) {
+    const nextOverrides = { ...state.overrides };
+    delete nextOverrides[taskNumber];
+    set({
+      overrides: nextOverrides,
+      cellFixes: { ...state.cellFixes, [cellFixKey(taskNumber, cellIndex)]: char },
+    });
+  },
+
+  clearCellFix(taskNumber: number, cellIndex: number) {
+    const next = { ...state.cellFixes };
+    delete next[cellFixKey(taskNumber, cellIndex)];
+    set({ cellFixes: next });
+  },
+
   /** Stores the checked sheet and its outbox row in one transaction, then nudges the sync engine. */
-  async save() {
-    const { outcome, student, overrides } = state;
-    if (!outcome || !student) return;
-    const { score, maxScore } = scoreOutcome(outcome, overrides);
+  async save(): Promise<boolean> {
+    const { outcome, student, overrides, cellFixes } = state;
+    if (!outcome || !student) return false;
+    const { score, maxScore } = scoreOutcome(outcome, overrides, cellFixes);
     const { profile, activeClassId } = appSession.getState();
     if (!profile || !activeClassId) {
       set({ error: 'Выберите класс, прежде чем сохранять результат.' });
-      return;
+      return false;
     }
     const classId = activeClassId;
     const uuid = newUuid();
@@ -228,19 +259,37 @@ export const scanSession = {
       classId,
       savedAt: now,
       payload: buildSubmission({
-        uuid, outcome, overrides, student, checkedAt: new Date(now),
+        uuid, outcome, overrides, cellFixes, student, checkedAt: new Date(now),
         grade: gradeForPercent(scorePercent(score, maxScore), profile.gradingScale),
       }),
     });
     ensureAssigned(classId, outcome.assignmentId);
     lastEvidence = null;
-    set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null, rejection: null });
+    set({ phase: 'idle', outcome: null, overrides: {}, cellFixes: {}, student: null, studentMatched: false, error: null, rejection: null });
     void syncScheduler.trigger();
+    return true;
   },
 
   reset() {
     lastEvidence = null;
-    set({ phase: 'idle', outcome: null, overrides: {}, student: null, studentMatched: false, error: null, rejection: null });
+    set({ phase: 'idle', outcome: null, overrides: {}, cellFixes: {}, student: null, studentMatched: false, error: null, rejection: null });
+  },
+
+  /** Dev-only helper used by `OcrLabScreen` to verify Zero-Touch and Spot-Focus Top-3 flows on device/emulator. */
+  seedForDev(outcome: SheetOutcome, student: Student | null, captureMs = 185) {
+    if (!__DEV__) return;
+    lastEvidence = null;
+    set({
+      phase: 'ready',
+      outcome,
+      overrides: {},
+      cellFixes: {},
+      student,
+      studentMatched: student !== null,
+      captureMs,
+      error: null,
+      rejection: null,
+    });
   },
 };
 

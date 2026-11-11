@@ -1,6 +1,6 @@
 import type { Student } from '../assessment/model';
-import type { EvaluatedTask, Override, SheetOutcome } from '../scan/evaluate';
-import { effectiveStatus, scoreOutcome } from '../scan/evaluate';
+import type { CellFixes, EvaluatedTask, Override, SheetOutcome } from '../scan/evaluate';
+import { effectiveStatus, resolveTaskWithFixes, scoreOutcome } from '../scan/evaluate';
 
 // Wire shape of one submission as the backend's `SubmissionItem` (docs/contracts/openapi-live-2026-09-19.json).
 export type CellPayload = {
@@ -36,8 +36,6 @@ export type SubmissionPayload = {
 
 /**
  * Status the backend's own checker (generators/checker.py) would assign to a cell without an override.
- * Expected-empty cell: blank → EMPTY_MATCH, anything else → MISMATCH. Expected letter: equal → MATCH,
- * blank → EMPTY_MISMATCH, another letter → MISMATCH.
  */
 export function cellStatus(expected: string, predicted: string): CellPayload['status'] {
   if (expected === ' ') return predicted === ' ' ? 'EMPTY_MATCH' : 'MISMATCH';
@@ -46,8 +44,8 @@ export function cellStatus(expected: string, predicted: string): CellPayload['st
 }
 
 /**
- * The teacher decides per answer; the backend records overrides per cell. An accepted answer marks its
- * non-matching cells CORRECT, a rejected one marks them WRONG (the first cell when none stands out).
+ * Builds per-cell wire payloads, preserving both 1-tap teacher letter fixes (`fixedByTeacher`)
+ * and whole-answer swipe overrides (`override`).
  */
 function cellPayloads(task: EvaluatedTask, override: Override | undefined): CellPayload[] {
   const nonMatching = task.cells.filter((c) => {
@@ -63,7 +61,20 @@ function cellPayloads(task: EvaluatedTask, override: Override | undefined): Cell
       confidence: c.confidence,
     };
     if (override && carrier.has(c.index)) {
-      return { ...base, status: 'FLAG_OVERRIDDEN_BY_TEACHER', teacher_override: override === 'accept' ? 'CORRECT' : 'WRONG' };
+      return {
+        ...base,
+        status: 'FLAG_OVERRIDDEN_BY_TEACHER',
+        teacher_override: override === 'accept' ? 'CORRECT' : 'WRONG',
+      };
+    }
+    if (c.fixedByTeacher) {
+      const natural = cellStatus(c.expected, c.predicted);
+      const cellOk = natural === 'MATCH' || natural === 'EMPTY_MATCH';
+      return {
+        ...base,
+        status: 'FLAG_OVERRIDDEN_BY_TEACHER',
+        teacher_override: cellOk ? 'CORRECT' : 'WRONG',
+      };
     }
     return { ...base, status: cellStatus(c.expected, c.predicted) };
   });
@@ -73,13 +84,30 @@ export type BuildSubmissionInput = {
   uuid: string;
   outcome: SheetOutcome;
   overrides: Readonly<Record<number, Override>>;
+  cellFixes?: CellFixes;
   student: Pick<Student, 'id' | 'name'>;
   checkedAt: Date;
   grade: number;
 };
 
-export function buildSubmission({ uuid, outcome, overrides, student, checkedAt, grade }: BuildSubmissionInput): SubmissionPayload {
-  const { score, maxScore } = scoreOutcome(outcome, overrides);
+export function buildSubmission({
+  uuid,
+  outcome,
+  overrides,
+  cellFixes,
+  student,
+  checkedAt,
+  grade,
+}: BuildSubmissionInput): SubmissionPayload {
+  const { score, maxScore } = scoreOutcome(outcome, overrides, cellFixes);
+  const reviewedTasks = new Set<number>(Object.keys(overrides).map(Number));
+  if (cellFixes) {
+    for (const key of Object.keys(cellFixes)) {
+      const taskNum = Number(key.split(':')[0]);
+      if (!Number.isNaN(taskNum)) reviewedTasks.add(taskNum);
+    }
+  }
+
   return {
     client_submission_uuid: uuid,
     student_id: student.id,
@@ -89,14 +117,18 @@ export function buildSubmission({ uuid, outcome, overrides, student, checkedAt, 
     overall_score: score,
     max_score: maxScore,
     final_grade: grade,
-    teacher_reviewed_flags: Object.keys(overrides).length,
-    questions_results: outcome.tasks.map<QuestionResultPayload>((task) => ({
-      question_number: task.number,
-      marker_id: task.markerId,
-      topic_tag: task.topicTag,
-      is_correct: effectiveStatus(task, overrides[task.number]) === 'correct',
-      points_earned: effectiveStatus(task, overrides[task.number]) === 'correct' ? 1 : 0,
-      cells: cellPayloads(task, overrides[task.number]),
-    })),
+    teacher_reviewed_flags: reviewedTasks.size,
+    questions_results: outcome.tasks.map<QuestionResultPayload>((rawTask) => {
+      const task = resolveTaskWithFixes(rawTask, cellFixes);
+      const isCorrect = effectiveStatus(rawTask, overrides[rawTask.number], cellFixes) === 'correct';
+      return {
+        question_number: task.number,
+        marker_id: task.markerId,
+        topic_tag: task.topicTag,
+        is_correct: isCorrect,
+        points_earned: isCorrect ? 1 : 0,
+        cells: cellPayloads(task, overrides[rawTask.number]),
+      };
+    }),
   };
 }

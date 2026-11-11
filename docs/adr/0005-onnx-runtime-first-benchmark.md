@@ -17,3 +17,8 @@ Start with **ONNX Runtime Android inside the native OCR module**. Benchmark matr
 - Positive: shortest path for existing artifacts; official Android AAR support; CPU-first is the documented mobile starting point.
 - Negative: adds a native AAR dependency; dynamic INT8 may not beat FP32+XNNPACK — the decision is provisional until device numbers exist.
 - Constraint: no unverified external latency claims accepted; only instrumented runs against the ≤3 s sheet budget decide.
+
+> **Amendment (2026-11-11, `ocr-v4-prime`):** Upgraded bundled weights from `v1` (`TatarOCRNet`) to **`v4` (`TatarOCRNetV3_MultiScale`: `tatar_ocr_v4_handwritten39_fp32.onnx` 3.61 MB & `tatar_ocr_v4_handwritten39_int8.onnx` 0.98 MB)** trained on real Tatar handwriting (`97.98%` validation accuracy, `98.25%` Top-3). To keep inference fast across budget `2+6`, mid-range `4+4`, and flagship `1+3+4` / `1+5+2` Android SoCs without barrier synchronization stalls on LITTLE efficiency cores:
+> 1. `CpuTopology` inspects `/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_max_freq` at runtime and sizes `intra_op_num_threads` to the physical big/Prime core count (clamped to `[2, 4]`), replacing the hardcoded `6` threads.
+> 2. `OrtEngine` enables `GraphOptimizationLevel.ALL_OPT`, `setMemoryPatternOptimization(true)`, `session.intra_op.allow_spinning = "0"`, and executes a background `[1, 1, 64, 64]` warmup inference on camera start so XNNPACK kernel packing incurs zero first-sheet latency.
+> 3. `FP32 + XNNPACK` remains the primary lane with automatic runtime fallback to `INT8 + CPU` (`ConvInteger`) if XNNPACK initialization fails on older/32-bit Android ROMs.

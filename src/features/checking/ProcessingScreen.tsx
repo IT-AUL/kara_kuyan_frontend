@@ -8,11 +8,17 @@ import { scanSession, useScanSession } from './scanSession';
 
 export function ProcessingScreen() {
   const router = useRouter();
-  const { phase, error, rejection } = useScanSession();
+  const { phase, error, rejection, studentMatched, student, outcome } = useScanSession();
 
   useEffect(() => {
-    if (phase === 'ready') router.replace('/student-identified');
-  }, [phase, router]);
+    if (phase !== 'ready') return;
+    const hasWarnings = Boolean(outcome?.warnings && outcome.warnings.length > 0);
+    if (studentMatched && student && !hasWarnings) {
+      router.replace('/assessment-result');
+    } else {
+      router.replace('/student-identified');
+    }
+  }, [phase, studentMatched, student, outcome, router]);
 
   const retry = () => {
     scanSession.reset();

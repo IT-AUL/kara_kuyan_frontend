@@ -134,4 +134,45 @@ describe('ReviewCard', () => {
     lastEndHandler?.({ translationX: -120 });
     expect(onDecide).toHaveBeenCalledWith('reject');
   });
+
+  it('renders yellow spot-focus cells (<85%), Top-3 chips, and invokes onPickChar in 1 tap', () => {
+    const onDecide = jest.fn();
+    const onPickChar = jest.fn();
+    const onOpenFullAlphabet = jest.fn();
+    const element = ReviewCard({
+      expected: 'ӘНИ',
+      recognized: 'АНИ',
+      onDecide,
+      onPickChar,
+      onOpenFullAlphabet,
+      selectedCellIndex: 0,
+      cells: [
+        {
+          index: 0,
+          expected: 'Ә',
+          predicted: 'А',
+          confidence: 0.74,
+          verdict: 'uncertain',
+          top3: [
+            { char: 'А', confidence: 0.74 },
+            { char: 'Ә', confidence: 0.21 },
+            { char: 'Э', confidence: 0.04 },
+          ],
+        },
+        { index: 1, expected: 'Н', predicted: 'Н', confidence: 0.99, verdict: 'match', top3: [{ char: 'Н', confidence: 0.99 }] },
+        { index: 2, expected: 'И', predicted: 'И', confidence: 0.98, verdict: 'match', top3: [{ char: 'И', confidence: 0.98 }] },
+        { index: 3, expected: ' ', predicted: ' ', confidence: 1, verdict: 'match', top3: [] },
+      ],
+    });
+
+    const texts = collectTexts(element);
+    expect(texts).toContain('Ячейка 1 · Top-3 подсказки (1 тап)');
+    expect(texts).toContain('74%');
+    expect(texts).toContain('21%');
+    expect(texts).toContain('Пусто');
+    expect(texts).toContain('Другая буква (39)…');
+
+    const a11yLabels = collectAccessibilityLabels(element);
+    expect(a11yLabels).toContain('Выбрать букву Ә, вероятность 21%');
+  });
 });
