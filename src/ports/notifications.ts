@@ -44,4 +44,5 @@ export interface NotificationsPort {
   syncDailyReminder(spec: DailyReminderSpec): Promise<void>;
   onResponse(listener: (event: NotificationTapEvent) => void): () => void;
   openSystemSettings(): Promise<void>;
+  openExternalUrl(url: string): Promise<void>;
 }

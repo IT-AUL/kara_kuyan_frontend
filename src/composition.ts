@@ -5,7 +5,9 @@ import { CameraPreview } from '@/adapters/ocr-native/CameraPreview';
 import { nativeOcrEngine } from '@/adapters/ocr-native/engine';
 import { githubReleases } from '@/adapters/app-updater/github-releases';
 import { nativeInstaller } from '@/adapters/app-updater/native-installer';
+import { expoBackgroundAnnouncementsWorker } from '@/adapters/notifications/background-sync';
 import { expoNotificationsAdapter } from '@/adapters/notifications/expo-notifications';
+import { createAnnouncementsAdapter } from '@/adapters/notifications/remote-announcements';
 import { ApiClient } from '@/adapters/api/client';
 import { BackendApi } from '@/adapters/api/backend';
 import { getTeacherUuid } from '@/adapters/identity/teacher-identity';
@@ -17,6 +19,7 @@ import { HttpGateway } from '@/adapters/sync/http-gateway';
 import { SyncScheduler } from '@/adapters/sync/scheduler';
 import { SyncEngine } from '@/features/checking/sync/syncEngine';
 import type { ApkInstaller, ReleaseSource } from '@/ports/app-updater';
+import type { AnnouncementsPort, BackgroundAnnouncementsWorker } from '@/ports/announcements';
 import type { KeyValueStore } from '@/ports/key-value';
 import type { NotificationsPort } from '@/ports/notifications';
 import type { OcrEngine } from '@/ports/ocr-engine';
@@ -54,5 +57,13 @@ export const syncScheduler = new SyncScheduler(syncEngine);
 export const releaseSource: ReleaseSource = githubReleases;
 export const apkInstaller: ApkInstaller = nativeInstaller;
 
-// Android Notifications & News/Events Port (ADR 0010).
+// Android Notifications, Remote Announcements Feed & Background WorkManager Sync (ADR 0010).
 export const notificationsPort: NotificationsPort = expoNotificationsAdapter;
+export const announcementsPort: AnnouncementsPort = createAnnouncementsAdapter({
+  apiClient,
+  kvStore,
+  currentVersion: () => apkInstaller.currentVersion(),
+  cdnUrl: process.env.EXPO_PUBLIC_ANNOUNCEMENTS_URL,
+});
+export const backgroundAnnouncementsWorker: BackgroundAnnouncementsWorker =
+  expoBackgroundAnnouncementsWorker;

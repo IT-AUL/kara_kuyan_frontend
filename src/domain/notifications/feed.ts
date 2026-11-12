@@ -11,7 +11,8 @@ export type NotificationCategoryId =
   | 'pack_complete'
   | 'sync_failed'
   | 'topic_insight'
-  | 'release_update';
+  | 'release_update'
+  | 'remote_announcement';
 
 export type FeedKind = 'event' | 'insight' | 'news' | 'tip';
 
@@ -346,11 +347,18 @@ export function buildNotificationFeed(
   liveEvents: readonly FeedItem[],
   readIds: ReadonlySet<string>,
   dismissedIds: ReadonlySet<string>,
+  remoteItems: readonly FeedItem[] = [],
 ): {
   items: readonly FeedViewItem[];
   unreadCount: number;
 } {
-  const merged = [...liveEvents, ...CURATED_NEWS_AND_TIPS].filter((item) => !dismissedIds.has(item.id));
+  const seen = new Set<string>();
+  const merged: FeedItem[] = [];
+  for (const item of [...liveEvents, ...remoteItems, ...CURATED_NEWS_AND_TIPS]) {
+    if (seen.has(item.id) || dismissedIds.has(item.id)) continue;
+    seen.add(item.id);
+    merged.push(item);
+  }
   const sorted = [...merged].sort((a, b) => {
     const pa = a.pinned ? 1 : 0;
     const pb = b.pinned ? 1 : 0;

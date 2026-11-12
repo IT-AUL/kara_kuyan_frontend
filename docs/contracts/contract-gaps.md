@@ -90,6 +90,7 @@ Still open: repo has no licence (permission to reuse needed); accuracy claims co
 - **Gap 27 still open:** the branch's `blank_pipeline.py` also uses trim 11 % / ink 35 px.
 - The database was reset on deploy (only the seed is left); ids cached on devices before 2026-10-31 now return 404.
 - Evidence: `harness/changes/active/backend-integration/evidence/backend-update-2026-11-03.md`.
+- **33. Optional remote announcements endpoint (`GET /api/v1/announcements`, proposed 2026-11-13):** not present in the live OpenAPI spec yet (`404` on `https://api.kara-kuyan.it-aul.ru`). Per ADR 0010, the app serves remote announcements immediately from `https://it-aul.github.io/kara_kuyan_frontend/announcements.json` and treats `404`/`405` on `GET /api/v1/announcements` silently until the backend adopts `docs/contracts/announcements-feed-contract.md`.
 
 ## Consequence
 

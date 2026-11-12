@@ -7,14 +7,15 @@ import { useActiveContext } from '@/data/context';
 import { classAnalyticsResource } from '@/data/hub';
 import { useResource } from '@/data/resource';
 import { useSyncState } from '@/data/syncState';
+import { isExternalHttpsUrl } from '@/domain/notifications/remote';
 
 import { notificationCenter } from './notificationCenter';
 
 /**
  * Root-mounted observer (active when teacher profile exists):
- * 1. Registers Android notification channels & action buttons on startup (without cold-start permission popup).
- * 2. Routes notification / action-button taps directly into Expo Router.
- * 3. Feeds live checking, sync, and class-analytics signals into `notificationCenter`.
+ * 1. Registers Android notification channels, action buttons & WorkManager background sync on startup.
+ * 2. Routes notification / action-button taps directly into Expo Router or external `https://` browser links.
+ * 3. Refreshes remote announcements on foreground resume (throttled + ETag-cached) and feeds live checking signals.
  */
 export function NotificationObserver() {
   const router = useRouter();
@@ -25,11 +26,16 @@ export function NotificationObserver() {
   useEffect(() => {
     void notificationCenter.init();
     const offResponse = notificationsPort.onResponse((tap) => {
-      router.push(tap.targetRoute as Href);
+      if (isExternalHttpsUrl(tap.targetRoute)) {
+        void notificationsPort.openExternalUrl(tap.targetRoute);
+      } else {
+        router.push(tap.targetRoute as Href);
+      }
     });
     const appSub = AppState.addEventListener('change', (next) => {
       if (next === 'active') {
         void notificationCenter.refreshPermission();
+        void notificationCenter.refreshRemoteFeed();
       }
     });
     return () => {

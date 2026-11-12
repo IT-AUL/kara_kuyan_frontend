@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-13T00:00:00Z",
+  "items": [
+    {
+      "id": "2026-11-remote-feed-ready",
+      "kind": "event",
+      "channelId": "updates_news",
+      "tone": "ok",
+      "icon": "news",
+      "badge": "Канал событий",
+      "title": "Подключена лента важных анонсов для учителей татарского языка",
+      "summary": "Методические подборки, даты олимпиад и обновления сканера приходят без переустановки приложения.",
+      "body": "В этом разделе появляются актуальные объявления для учителей: новые наборы заданий в конструкторе, расписание предметных событий и важные обновления Кара Куян. Лента работает на любых Android-смартфонах (включая устройства без сервисов Google) и сохраняется офлайн.",
+      "publishedAt": "2026-11-13T00:00:00Z",
+      "pinned": true,
+      "systemNotify": false,
+      "minAppVersion": "0.4.0",
+      "actionLabel": "Собрать разминку",
+      "route": "/task-generate",
+      "secondaryActionLabel": "Сайт Кара Куян",
+      "secondaryRoute": "https://it-aul.github.io/kara_kuyan_frontend/"
+    }
+  ]
+}

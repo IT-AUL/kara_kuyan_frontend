@@ -155,6 +155,14 @@ function FeedCard({
   );
 }
 
+function formatSyncTimestamp(ms: number | null): string {
+  if (!ms) return 'Локальный кеш готов · фоновая синхронизация активна';
+  const d = new Date(ms);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `Обновлено сегодня в ${hh}:${mm} · фоновая проверка активна`;
+}
+
 export function NotificationsScreen() {
   const router = useRouter();
   const state = useNotificationCenter();
@@ -169,8 +177,9 @@ export function NotificationsScreen() {
   });
 
   const handleOpenRoute = (id: string, route: string) => {
-    notificationCenter.markRead(id);
-    router.push(route as Href);
+    notificationCenter.openTarget(id, route, (internal) => {
+      router.push(internal as Href);
+    });
   };
 
   const handleToggleExpand = (id: string) => {
@@ -181,7 +190,13 @@ export function NotificationsScreen() {
   const showOptInBanner = state.permission !== 'granted';
 
   return (
-    <Screen edges={['top']}>
+    <Screen
+      edges={['top']}
+      onRefresh={() => {
+        void notificationCenter.refreshRemoteFeed({ force: true });
+      }}
+      refreshing={state.syncingRemote}
+    >
       <ScreenHeader
         right={
           state.unreadCount > 0 ? (
@@ -325,6 +340,20 @@ export function NotificationsScreen() {
                 value={state.preferences.afterSchoolReminder}
               />
             </View>
+          </Card>
+
+          <Card outlined style={styles.settingsCard}>
+            <Text style={textStyles.titleSmall}>Удалённая лента новостей и анонсов</Text>
+            <Text style={textStyles.bodySmall}>
+              {formatSyncTimestamp(state.lastSyncedAt)}
+            </Text>
+            <Button
+              onPress={() => {
+                void notificationCenter.refreshRemoteFeed({ force: true });
+              }}
+              title={state.syncingRemote ? 'Проверяем обновления…' : 'Проверить новости сейчас'}
+              variant="secondary"
+            />
           </Card>
 
           <Card outlined style={styles.settingsCard}>

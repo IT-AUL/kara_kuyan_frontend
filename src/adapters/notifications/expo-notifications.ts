@@ -113,6 +113,13 @@ export const expoNotificationsAdapter: NotificationsPort = {
           options: { opensAppToForeground: true },
         },
       ]),
+      Notifications.setNotificationCategoryAsync('remote_announcement', [
+        {
+          identifier: 'open_announcement',
+          buttonTitle: 'Открыть',
+          options: { opensAppToForeground: true },
+        },
+      ]),
     ]);
 
     initialized = true;
@@ -229,5 +236,10 @@ export const expoNotificationsAdapter: NotificationsPort = {
   async openSystemSettings(): Promise<void> {
     if (Platform.OS === 'web') return;
     await Linking.openSettings();
+  },
+
+  async openExternalUrl(url: string): Promise<void> {
+    if (!/^https:\/\//i.test(url)) return;
+    await Linking.openURL(url);
   },
 };
