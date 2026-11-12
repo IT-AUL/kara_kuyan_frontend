@@ -80,12 +80,19 @@ function isConfusable(a: string, b: string, pairs: DecisionThresholds['confusabl
   return pairs.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
 }
 
-/** Extracts top-K character hypotheses sorted by descending probability (Zero-Photo safe: numbers & chars only). */
+/** Extracts top-K character hypotheses sorted by probability, or preserves canonical C++ Top-3 order when present. */
 export function extractTopCandidates(
   probabilities: readonly number[],
   alphabet: readonly string[],
   k = 3,
+  canonicalTop3?: readonly CellCandidate[],
 ): readonly CellCandidate[] {
+  if (canonicalTop3 && canonicalTop3.length > 0) {
+    return canonicalTop3.slice(0, Math.max(1, k)).map((item) => ({
+      char: item.char,
+      confidence: Math.round(item.confidence * 1000) / 1000,
+    }));
+  }
   if (probabilities.length === 0 || alphabet.length === 0) return [];
   const limit = Math.min(probabilities.length, alphabet.length);
   const indices: number[] = [];
@@ -122,6 +129,38 @@ export function evaluateCell(
 
   if (isBlank) {
     return { verdict: 'blank', expectedProbability: null, bestAlternative: null };
+  }
+
+  // Canonical C++20 `NativeBlankScanner` path: uses Stage-6 diacritic-guarded `char`, `confidence`, and `top3` directly.
+  if (cell.char !== undefined && cell.confidence !== undefined && cell.top3 && cell.top3.length > 0) {
+    if (!alphabet.includes(expected.char)) {
+      return { verdict: 'uncertain', expectedProbability: null, bestAlternative: null };
+    }
+    const top1Char = cell.char;
+    const top1Conf = cell.confidence;
+    const expectedEntry = cell.top3.find((t) => t.char === expected.char);
+    const expectedProbability = top1Char === expected.char ? top1Conf : (expectedEntry?.confidence ?? 0);
+    const altEntry = cell.top3.find((t) => t.char !== expected.char) ?? null;
+    const altProbability = altEntry?.confidence ?? 0;
+    const altChar = altEntry?.char ?? '';
+    const bestAlternative = altEntry ? { char: altChar, probability: altProbability } : null;
+    const requiredMargin = altChar && isConfusable(expected.char, altChar, thresholds.confusablePairs)
+      ? thresholds.confusableMinMargin
+      : thresholds.acceptMinMargin;
+
+    if (
+      top1Char === expected.char &&
+      top1Conf >= thresholds.acceptMinProbability &&
+      top1Conf - altProbability >= requiredMargin
+    ) {
+      return { verdict: 'match', expectedProbability, bestAlternative };
+    }
+
+    if (top1Char !== expected.char && top1Conf >= thresholds.rejectMinProbability) {
+      return { verdict: 'mismatch', expectedProbability, bestAlternative };
+    }
+
+    return { verdict: 'uncertain', expectedProbability, bestAlternative };
   }
 
   const expectedIndex = alphabet.indexOf(expected.char);

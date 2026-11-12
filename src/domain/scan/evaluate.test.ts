@@ -173,6 +173,54 @@ describe('evaluateSheet & Top-3 cell fixes', () => {
     expect(outcome.assignmentId).toBe('T2');
     expect(outcome.tasks.map((t) => t.status)).toEqual(['correct']);
   });
+
+  it('evaluates canonical C++20 NativeBlankScanner BlankResult evidence (with Document Contour Fallback and q_num matching)', () => {
+    const cppCell = (index: number, ch: string, conf: number, alt: string, altConf: number) => ({
+      index,
+      cellIdx: index + 1,
+      isEmpty: false,
+      char: ch,
+      confidence: conf,
+      top3: [
+        { char: ch, confidence: conf },
+        { char: alt, confidence: altConf },
+      ],
+      bbox: [224 + index * 100, 490, 100, 100],
+      probabilities: [],
+    });
+    const cppEvidence: SheetEvidence = {
+      alphabet,
+      modelSha256: '656096ed',
+      qrPayload: '{"tid":"T1","var":1,"page":1,"tot":1,"n_q":2}',
+      studentNameText: 'ГАЛИЕВАМИРР',
+      method: 'Document Contour Fallback',
+      stats: { totalLetters: 5, avgConfidence: 96.2, questionsCount: 4 },
+      questions: [
+        {
+          questionNumber: 1,
+          markerId: null,
+          text: 'КАД',
+          cells: [cppCell(0, 'К', 0.97, 'Н', 0.01), cppCell(1, 'А', 0.96, 'Ә', 0.02), cppCell(2, 'Д', 0.95, 'Т', 0.03), empty(3)],
+        },
+        {
+          questionNumber: 2,
+          markerId: 12,
+          text: 'ТА',
+          cells: [cppCell(0, 'Т', 0.98, 'Д', 0.01), cppCell(1, 'А', 0.94, 'Ә', 0.03)],
+        },
+        // Extra blank min_questions rows (q_num 3 & 4) emitted by NativeBlankScanner are ignored cleanly
+        { questionNumber: 3, markerId: 13, text: '', cells: [empty(0), empty(1)] },
+        { questionNumber: 4, markerId: 14, text: '', cells: [empty(0), empty(1)] },
+      ],
+      stageTimingsMs: { processBlank: 92.4, qr: 6.1 },
+    };
+    const outcome = evaluateSheet(cppEvidence, bundle);
+    expect(outcome.check).toEqual({ ok: true });
+    expect(outcome.tasks.map((t) => t.status)).toEqual(['correct', 'correct']);
+    expect(outcome.tasks[0].recognized).toBe('КАД');
+    expect(outcome.tasks[1].recognized).toBe('ТА');
+    expect(countUncertainCells(outcome)).toBe(0);
+  });
 });
 
 describe('matchStudent', () => {

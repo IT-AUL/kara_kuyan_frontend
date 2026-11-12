@@ -15,6 +15,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { syncScheduler } from '@/composition';
 import { colors } from '@/design-system';
 import { useSession } from '@/data/session';
+import { NotificationObserver } from '@/features/notifications/NotificationObserver';
 import { UpdatePrompt } from '@/features/update/UpdatePrompt';
 
 void SplashScreen.preventAutoHideAsync();
@@ -80,10 +81,12 @@ export default function RootLayout() {
             <Stack.Screen name="task-generate" />
             <Stack.Screen name="task-new" />
             <Stack.Screen name="task-photo" />
+            <Stack.Screen name="notifications" />
           </Stack.Protected>
           <Stack.Screen name="ocr-lab" />
           <Stack.Screen name="ds-gallery" />
         </Stack>
+        {profile !== null ? <NotificationObserver /> : null}
         <UpdatePrompt />
       </ThemeProvider>
     </GestureHandlerRootView>

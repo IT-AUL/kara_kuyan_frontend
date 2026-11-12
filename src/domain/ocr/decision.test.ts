@@ -163,4 +163,48 @@ describe('evaluateQuestion', () => {
     const none = evaluateQuestion(question([]), [], alphabet, proposedThresholds);
     expect(none).toMatchObject({ status: 'review', reason: 'no-expected-cells' });
   });
+
+  it('preserves canonical C++20 NativeBlankScanner Stage-6 diacritic guard ordering (e.g. Ё -> Е)', () => {
+    const extAlphabet = [...alphabet, 'Е', 'Ё'];
+    const guardedCell: CellEvidence = {
+      index: 0,
+      cellIdx: 1,
+      isEmpty: false,
+      char: 'Е',
+      confidence: 0.14,
+      top3: [
+        { char: 'Е', confidence: 0.14 },
+        { char: 'Ё', confidence: 0.84 },
+        { char: 'Ә', confidence: 0.01 },
+      ],
+      bbox: [224, 490, 100, 100],
+      probabilities: [],
+    };
+    expect(extractTopCandidates([], extAlphabet, 3, guardedCell.top3)).toEqual([
+      { char: 'Е', confidence: 0.14 },
+      { char: 'Ё', confidence: 0.84 },
+      { char: 'Ә', confidence: 0.01 },
+    ]);
+    // Because confidence of promoted 'Е' is 0.14 < 0.85, it safely routes to yellow spot-focus review
+    const d = evaluateCell(guardedCell, { char: 'Е' }, extAlphabet, v4Thresholds);
+    expect(d.verdict).toBe('uncertain');
+
+    // Confident canonical C++ match (>= 0.85 with sufficient lead)
+    const confidentCppCell: CellEvidence = {
+      index: 0,
+      cellIdx: 1,
+      isEmpty: false,
+      char: 'Ә',
+      confidence: 0.964,
+      top3: [
+        { char: 'Ә', confidence: 0.964 },
+        { char: 'А', confidence: 0.021 },
+        { char: 'Н', confidence: 0.008 },
+      ],
+      bbox: [224, 490, 100, 100],
+      probabilities: [],
+    };
+    expect(evaluateCell(confidentCppCell, { char: 'Ә' }, extAlphabet, v4Thresholds).verdict).toBe('match');
+    expect(evaluateCell(confidentCppCell, { char: 'А' }, extAlphabet, v4Thresholds).verdict).toBe('mismatch');
+  });
 });

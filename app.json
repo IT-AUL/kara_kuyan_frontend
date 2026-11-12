@@ -4,7 +4,7 @@
     "slug": "kara-kuyan",
     "description": "Проверка рукописных работ по татарскому языку: сканируйте, оценивайте и видите, что повторить с классом. Фото не сохраняются.",
     "primaryColor": "#25E38A",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "karakuyan",
@@ -53,6 +53,13 @@
       "expo-sqlite",
       "expo-secure-store",
       "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#25E38A"
+        }
+      ],
       [
         "expo-image-picker",
         {

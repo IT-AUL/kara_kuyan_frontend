@@ -29,12 +29,27 @@ class OcrNativeModule : Module() {
 
     AsyncFunction("info") {
       val cvOk = OpenCVLoader.initLocal()
+      val ctx = appContext.reactContext
+      val scannerOk = if (ctx != null) {
+        try {
+          CameraController.getReader(ctx)
+          true
+        } catch (_: Throwable) {
+          false
+        }
+      } else {
+        false
+      }
       JSONObject()
         .put("opencvLoaded", cvOk)
         .put("opencvVersion", if (cvOk) Core.VERSION else JSONObject.NULL)
+        .put("engine", "tatar_ocr_core_cpp20")
+        .put("scannerReady", scannerOk)
+        .put("modelFile", INT8_MODEL)
+        .put("specFile", "pipeline_spec.json")
         .put("abi", android.os.Build.SUPPORTED_ABIS.firstOrNull())
         .put("optimalThreads", CpuTopology.optimalThreads)
-        .put("filesDir", appContext.reactContext?.filesDir?.absolutePath ?: JSONObject.NULL)
+        .put("filesDir", ctx?.filesDir?.absolutePath ?: JSONObject.NULL)
         .toString()
     }
 
@@ -95,7 +110,7 @@ class OcrNativeModule : Module() {
       }.start()
     }
 
-    // Dev-only full v4 sheet pipeline benchmark on <filesDir>/ocr-lab/sheets using the bundled production SheetReader.
+    // Dev-only full C++20 NativeBlankScanner benchmark on <filesDir>/ocr-lab/sheets (plus rotated EXIF check).
     AsyncFunction("sheetTest") { runs: Int, promise: Promise ->
       val ctx = appContext.reactContext
       if (ctx == null) {
@@ -108,6 +123,24 @@ class OcrNativeModule : Module() {
           promise.resolve(runSheetTest(ctx, root, runs))
         } catch (e: Throwable) {
           promise.reject("SHEET_TEST_FAILED", e.message ?: e.toString(), e)
+        }
+      }.start()
+    }
+
+    // Dev-only helper to exercise CameraController.readEncoded (EXIF orientation + C++ NativeBlankScanner) on a test file.
+    AsyncFunction("readFileForDev") { relativePath: String, fallbackRotationDegrees: Int, promise: Promise ->
+      val ctx = appContext.reactContext
+      if (ctx == null) {
+        promise.reject("NO_CONTEXT", "no context", null)
+        return@AsyncFunction
+      }
+      Thread {
+        try {
+          val file = File(ctx.filesDir, relativePath)
+          val bytes = file.readBytes()
+          promise.resolve(CameraController.readEncoded(ctx, bytes, fallbackRotationDegrees))
+        } catch (e: Throwable) {
+          promise.reject("READ_FILE_DEV_FAILED", e.message ?: e.toString(), e)
         }
       }.start()
     }
@@ -300,11 +333,10 @@ class OcrNativeModule : Module() {
   private fun median(v: List<Double>) = v.sorted().let { it[it.size / 2] }
 
   private fun runSheetTest(context: android.content.Context, root: File, runs: Int): String {
-    val report = JSONObject()
+    val report = JSONObject().put("engine", "tatar_ocr_core_cpp20")
     if (!OpenCVLoader.initLocal()) return report.put("error", "OpenCV failed to load").toString()
     val images = File(root, "sheets").listFiles { f -> f.extension.lowercase() in setOf("jpg", "jpeg", "png") }?.sortedBy { it.name }
       ?: return report.put("error", "no sheets dir").toString()
-    val reader = CameraController.getReader(context)
     val results = JSONArray()
 
     for (file in images) {
@@ -313,52 +345,64 @@ class OcrNativeModule : Module() {
       try {
         for (run in 0 until runs.coerceAtLeast(1)) {
           val t0 = System.nanoTime()
-          val img = Imgcodecs.imread(file.absolutePath)
-          val res = reader.read(img)
-          img.release()
+          val evStr = CameraController.readEncoded(context, file.readBytes())
           totals.add((System.nanoTime() - t0) / 1e6)
           if (run == 0) {
-            val ev = res.evidence
-            val alphabet = ev.optJSONArray("alphabet")?.let { a -> List(a.length()) { a.getString(it) } } ?: emptyList()
+            val ev = JSONObject(evStr)
             val rowsOut = JSONArray()
             val qs = ev.optJSONArray("questions") ?: JSONArray()
             for (qi in 0 until qs.length()) {
               val q = qs.getJSONObject(qi)
               val cells = q.getJSONArray("cells")
-              val text = StringBuilder()
               val cellItems = JSONArray()
               for (ci in 0 until cells.length()) {
                 val c = cells.getJSONObject(ci)
                 val empty = c.getBoolean("isEmpty")
                 if (empty) {
-                  cellItems.put(JSONObject().put("idx", ci + 1).put("char", "").put("conf", 100.0).put("empty", true))
+                  cellItems.put(
+                    JSONObject()
+                      .put("idx", ci + 1)
+                      .put("char", "")
+                      .put("conf", 100.0)
+                      .put("empty", true)
+                      .put("bbox", c.optJSONArray("bbox")),
+                  )
                 } else {
-                  val probs = c.getJSONArray("probabilities")
-                  val sortedIdx = (0 until probs.length()).sortedByDescending { probs.getDouble(it) }
-                  val topIdx = sortedIdx.first()
-                  val ch = alphabet.getOrElse(topIdx) { "?" }
-                  val conf = Math.round(probs.getDouble(topIdx) * 1000.0) / 10.0
-                  val top3 = JSONArray().also { t3 ->
-                    sortedIdx.take(3).forEach { k ->
-                      t3.put(JSONObject().put("char", alphabet.getOrElse(k) { "?" }).put("conf", Math.round(probs.getDouble(k) * 1000.0) / 10.0))
-                    }
+                  val ch = c.optString("char", "?")
+                  val conf = Math.round(c.optDouble("confidence", 0.0) * 1000.0) / 10.0
+                  val t3In = c.optJSONArray("top3") ?: JSONArray()
+                  val top3 = JSONArray()
+                  for (k in 0 until t3In.length()) {
+                    val item = t3In.getJSONObject(k)
+                    top3.put(
+                      JSONObject()
+                        .put("char", item.optString("char", "?"))
+                        .put("conf", Math.round(item.optDouble("confidence", 0.0) * 1000.0) / 10.0),
+                    )
                   }
-                  text.append(ch)
-                  cellItems.put(JSONObject().put("idx", ci + 1).put("char", ch).put("conf", conf).put("empty", false).put("top3", top3))
+                  cellItems.put(
+                    JSONObject()
+                      .put("idx", ci + 1)
+                      .put("char", ch)
+                      .put("conf", conf)
+                      .put("empty", false)
+                      .put("top3", top3)
+                      .put("bbox", c.optJSONArray("bbox")),
+                  )
                 }
               }
               rowsOut.put(
                 JSONObject()
                   .put("q_num", q.getInt("questionNumber"))
                   .put("marker", q.getInt("markerId"))
-                  .put("text", text.toString())
+                  .put("text", q.optString("text", ""))
                   .put("cells", cellItems),
               )
             }
-            entry.put("method", res.method)
-              .put("markersUsed", ev.optInt("markersUsed"))
+            entry.put("method", ev.optString("method"))
               .put("name", ev.optString("studentNameText"))
               .put("qr", ev.opt("qrPayload"))
+              .put("stats", ev.optJSONObject("stats"))
               .put("stageTimingsMs", ev.optJSONObject("stageTimingsMs"))
               .put("rows", rowsOut)
           }
@@ -370,6 +414,6 @@ class OcrNativeModule : Module() {
       }
       results.put(entry)
     }
-    return report.put("runs", runs).put("optimalThreads", CpuTopology.optimalThreads).put("sheets", results).toString()
+    return report.put("runs", runs).put("sheets", results).toString()
   }
 }

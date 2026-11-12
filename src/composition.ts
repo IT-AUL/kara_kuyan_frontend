@@ -5,6 +5,7 @@ import { CameraPreview } from '@/adapters/ocr-native/CameraPreview';
 import { nativeOcrEngine } from '@/adapters/ocr-native/engine';
 import { githubReleases } from '@/adapters/app-updater/github-releases';
 import { nativeInstaller } from '@/adapters/app-updater/native-installer';
+import { expoNotificationsAdapter } from '@/adapters/notifications/expo-notifications';
 import { ApiClient } from '@/adapters/api/client';
 import { BackendApi } from '@/adapters/api/backend';
 import { getTeacherUuid } from '@/adapters/identity/teacher-identity';
@@ -17,6 +18,7 @@ import { SyncScheduler } from '@/adapters/sync/scheduler';
 import { SyncEngine } from '@/features/checking/sync/syncEngine';
 import type { ApkInstaller, ReleaseSource } from '@/ports/app-updater';
 import type { KeyValueStore } from '@/ports/key-value';
+import type { NotificationsPort } from '@/ports/notifications';
 import type { OcrEngine } from '@/ports/ocr-engine';
 import type { SyncGateway } from '@/ports/sync-gateway';
 
@@ -51,3 +53,6 @@ export const syncScheduler = new SyncScheduler(syncEngine);
 // Self-update from GitHub Releases (ADR 0008).
 export const releaseSource: ReleaseSource = githubReleases;
 export const apkInstaller: ApkInstaller = nativeInstaller;
+
+// Android Notifications & News/Events Port (ADR 0010).
+export const notificationsPort: NotificationsPort = expoNotificationsAdapter;

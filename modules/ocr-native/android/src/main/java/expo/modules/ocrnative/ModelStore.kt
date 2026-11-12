@@ -2,38 +2,61 @@ package expo.modules.ocrnative
 
 import android.content.Context
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
 
 /**
- * OCR models ship inside the APK (assets, from repo `models/ocr`). ONNX Runtime wants a file path, so the model is
- * extracted once into filesDir/models and re-extracted if the checksum from ocr-manifest.json does not match.
+ * Copies bundled OCR assets (`tatar_ocr_v4_handwritten39_int8.onnx`, `pipeline_spec.json`)
+ * from Android `AssetManager` into `context.filesDir/tatar_ocr/` so C++ `tatar_ocr::NativeBlankScanner`
+ * can open them by filesystem path. Automatically refreshes cached files whenever asset SHA-256 changes.
  */
 object ModelStore {
-  @Synchronized
-  fun resolve(context: Context, fileName: String, sha256: String): File {
-    val dir = File(context.filesDir, "models").apply { mkdirs() }
-    val target = File(dir, fileName)
-    if (target.isFile && sha256Of(target).equals(sha256, ignoreCase = true)) return target
+  data class ResolvedAsset(val file: File, val sha256: String)
 
-    val tmp = File(dir, "$fileName.tmp")
-    context.assets.open(fileName).use { input -> tmp.outputStream().use { input.copyTo(it) } }
-    if (!sha256Of(tmp).equals(sha256, ignoreCase = true)) {
-      tmp.delete()
-      throw IllegalStateException("Bundled model $fileName does not match the manifest checksum")
+  @Synchronized
+  fun resolveAsset(context: Context, assetName: String, expectedSha256: String? = null): ResolvedAsset {
+    val assetSha = context.assets.open(assetName).use { sha256Of(it) }
+    if (!expectedSha256.isNullOrBlank() && !assetSha.equals(expectedSha256, ignoreCase = true)) {
+      throw IllegalStateException("Bundled asset $assetName SHA-256 ($assetSha) != manifest ($expectedSha256)")
     }
-    if (!tmp.renameTo(target)) throw IllegalStateException("Cannot store model $fileName")
-    return target
+
+    val dir = File(context.filesDir, "tatar_ocr").apply { mkdirs() }
+    val target = File(dir, assetName)
+    if (target.isFile && target.inputStream().use { sha256Of(it) }.equals(assetSha, ignoreCase = true)) {
+      return ResolvedAsset(target, assetSha)
+    }
+
+    val tmp = File(dir, "$assetName.tmp")
+    context.assets.open(assetName).use { input ->
+      tmp.outputStream().use { output -> input.copyTo(output) }
+    }
+    val copiedSha = tmp.inputStream().use { sha256Of(it) }
+    if (!copiedSha.equals(assetSha, ignoreCase = true)) {
+      tmp.delete()
+      throw IllegalStateException("Corrupted extraction for asset $assetName")
+    }
+    if (target.exists() && !target.delete()) {
+      tmp.delete()
+      throw IllegalStateException("Cannot replace stale asset $assetName")
+    }
+    if (!tmp.renameTo(target)) {
+      tmp.delete()
+      throw IllegalStateException("Cannot move extracted asset $assetName into place")
+    }
+    return ResolvedAsset(target, assetSha)
   }
 
-  private fun sha256Of(file: File): String {
+  @Synchronized
+  fun resolve(context: Context, fileName: String, sha256: String): File =
+    resolveAsset(context, fileName, sha256).file
+
+  private fun sha256Of(stream: InputStream): String {
     val digest = MessageDigest.getInstance("SHA-256")
-    file.inputStream().use { input ->
-      val buf = ByteArray(64 * 1024)
-      while (true) {
-        val n = input.read(buf)
-        if (n < 0) break
-        digest.update(buf, 0, n)
-      }
+    val buf = ByteArray(64 * 1024)
+    while (true) {
+      val n = stream.read(buf)
+      if (n < 0) break
+      digest.update(buf, 0, n)
     }
     return digest.digest().joinToString("") { "%02x".format(it) }
   }

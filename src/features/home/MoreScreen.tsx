@@ -17,6 +17,7 @@ import {
   textStyles,
   touchTarget,
 } from '@/design-system';
+import { useNotificationCenter } from '@/features/notifications/notificationCenter';
 
 import { SyncSummary } from './components/SyncSummary';
 import { SyncWorkRow, type SyncWorkStatus } from './components/SyncWorkRow';
@@ -24,10 +25,11 @@ import { SyncWorkRow, type SyncWorkStatus } from './components/SyncWorkRow';
 type MenuItem = {
   icon: AppIconName;
   title: string;
-  route: '/classes' | '/assignments' | '/export-gradebook' | '/analytics';
+  route: '/notifications' | '/classes' | '/assignments' | '/export-gradebook' | '/analytics';
 };
 
 const MENU_ITEMS: readonly MenuItem[] = [
+  { icon: 'bell', title: 'Уведомления и новости', route: '/notifications' },
   { icon: 'classes', title: 'Классы и ученики', route: '/classes' },
   { icon: 'library', title: 'Все тесты', route: '/assignments' },
   { icon: 'export', title: 'Экспорт в журнал', route: '/export-gradebook' },
@@ -38,6 +40,7 @@ export function MoreScreen() {
   const router = useRouter();
   const ctx = useActiveContext();
   const { rows, counts } = useSyncState();
+  const { unreadCount } = useNotificationCenter();
 
   const lastSentAt = useMemo<number | null>(() => {
     let max: number | null = null;
@@ -154,8 +157,15 @@ export function MoreScreen() {
                 pressed && styles.pressed,
               ]}
             >
-              <AppIcon color={colors.textMuted} name={item.icon} size={20} />
+              <AppIcon
+                color={item.route === '/notifications' && unreadCount > 0 ? colors.primary : colors.textMuted}
+                name={item.route === '/notifications' && unreadCount > 0 ? 'bellBadge' : item.icon}
+                size={20}
+              />
               <Text style={styles.menuTitle}>{item.title}</Text>
+              {item.route === '/notifications' && unreadCount > 0 ? (
+                <StatusPill label={`новых: ${unreadCount}`} tone="success" />
+              ) : null}
               <AppIcon color={colors.textFaint} name="chevronRight" size={18} />
             </Pressable>
           );

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useState, type ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { kvStore } from '@/composition';
@@ -8,9 +8,10 @@ import { useActiveContext } from '@/data/context';
 import { classAnalyticsResource } from '@/data/hub';
 import { useResource } from '@/data/resource';
 import { retryFailedSheets, useSyncState } from '@/data/syncState';
-import { EmptyState, Notice, Screen, Tag, textStyles } from '@/design-system';
+import { AppIcon, EmptyState, Notice, Screen, Tag, fontFamilies, textStyles, touchTarget } from '@/design-system';
 import { useMotion } from '@/design-system/motion';
 import { colors, hairline, radius, spacing } from '@/design-system/tokens';
+import { useNotificationCenter } from '@/features/notifications/notificationCenter';
 
 import { CheckHero } from './components/CheckHero';
 import { InsightCard } from './components/InsightCard';
@@ -42,6 +43,7 @@ export function HomeScreen() {
   const ctx = useActiveContext();
   const analytics = useResource(ctx.classId ? classAnalyticsResource(ctx.classId) : null);
   const { counts } = useSyncState();
+  const { unreadCount } = useNotificationCenter();
   const [refreshing, setRefreshing] = useState(false);
   const [dismissed, setDismissed] = useState<readonly string[]>([]);
 
@@ -107,7 +109,30 @@ export function HomeScreen() {
               {name}
             </Text>
           </View>
-          {offline ? <Tag icon="sync" label="офлайн" tone="mid" /> : null}
+          <View style={styles.headerActions}>
+            {offline ? <Tag icon="sync" label="офлайн" tone="mid" /> : null}
+            <Pressable
+              accessibilityLabel={
+                unreadCount > 0
+                  ? `Уведомления и новости, новых: ${unreadCount}`
+                  : 'Уведомления и новости'
+              }
+              accessibilityRole="button"
+              onPress={() => router.push('/notifications')}
+              style={({ pressed }) => [styles.bellButton, pressed && styles.pressed]}
+            >
+              <AppIcon
+                color={unreadCount > 0 ? colors.primary : colors.textMuted}
+                name={unreadCount > 0 ? 'bellBadge' : 'bell'}
+                size={22}
+              />
+              {unreadCount > 0 ? (
+                <View style={styles.bellCountBadge}>
+                  <Text style={styles.bellCountText}>{unreadCount > 9 ? '9+' : String(unreadCount)}</Text>
+                </View>
+              ) : null}
+            </Pressable>
+          </View>
         </View>
       </Reveal>
 
@@ -165,12 +190,46 @@ export function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  bellButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.divider,
+    borderRadius: radius.pill,
+    borderWidth: hairline,
+    height: touchTarget,
+    justifyContent: 'center',
+    width: touchTarget,
+  },
+  bellCountBadge: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    height: 18,
+    justifyContent: 'center',
+    minWidth: 18,
+    paddingHorizontal: 4,
+    position: 'absolute',
+    right: 4,
+    top: 4,
+  },
+  bellCountText: {
+    color: colors.toastText,
+    fontFamily: fontFamilies.bold,
+    fontSize: 10,
+    lineHeight: 12,
+  },
   header: { flex: 1, gap: 2 },
+  headerActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
   headerRow: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
     justifyContent: 'space-between',
   },
+  pressed: { opacity: 0.82 },
   skeleton: { backgroundColor: colors.surface, borderColor: colors.divider, borderRadius: radius.xl, borderWidth: hairline },
 });

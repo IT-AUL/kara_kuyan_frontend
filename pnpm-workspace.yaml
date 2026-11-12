@@ -1,10 +1,19 @@
 allowBuilds:
   unrs-resolver: false
 minimumReleaseAgeExclude:
-  - '@expo/cli@57.0.26'
+  - '@expo/cli@57.0.26 || 57.0.34'
   - '@expo/metro-runtime@57.0.16'
   - '@expo/ui@57.0.19'
   - expo-asset@57.0.18
-  - expo-constants@57.0.19
-  - expo-router@57.0.22
-  - expo@57.0.24
+  - expo-constants@57.0.19 || 57.0.24
+  - expo-router@57.0.22 || 57.0.31
+  - expo@57.0.24 || 57.0.33
+  - '@expo/config-plugins@57.0.13'
+  - '@expo/fingerprint@0.20.16'
+  - '@expo/metro-file-map@57.0.5'
+  - '@expo/prebuild-config@57.0.21'
+  - expo-modules-autolinking@57.0.18
+  - expo-modules-core@57.0.26
+  - expo-linking@57.0.14
+  - expo-sharing@57.0.26
+  - expo-sqlite@57.0.5

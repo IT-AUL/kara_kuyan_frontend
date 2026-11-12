@@ -1,0 +1,4 @@
+[submodule "third_party/tatar_ocr"]
+	path = third_party/tatar_ocr
+	url = https://github.com/DanisGaleev/tatar_ocr.git
+	branch = v3-architecture-training

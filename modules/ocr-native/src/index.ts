@@ -5,6 +5,7 @@ type OcrNativeModule = {
   selfTest(): Promise<string>;
   benchmark(cells: number, runs: number): Promise<string>;
   sheetTest(runs: number): Promise<string>;
+  readFileForDev(relativePath: string, fallbackRotationDegrees: number): Promise<string>;
   captureSheet(): Promise<string>;
   /** Opens the system picker, reads the chosen sheet image in native memory; rejects with PICK_CANCELLED on back. */
   pickAndReadSheet(): Promise<string>;

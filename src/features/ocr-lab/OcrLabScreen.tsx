@@ -7,6 +7,7 @@ import { session } from '@/data/session';
 import { colors, spacing, textStyles } from '@/design-system';
 import type { SheetOutcome } from '@/domain/scan/evaluate';
 import { scanSession } from '@/features/checking/scanSession';
+import { notificationCenter } from '@/features/notifications/notificationCenter';
 import { atomicityCheck, clearAll, goOnlineAndDrain, offlineBatch, outboxStatus, slowSend } from './outboxLab';
 
 function buildCleanDemoOutcome(): SheetOutcome {
@@ -112,6 +113,34 @@ export function OcrLabScreen() {
     ['selftest', 'Сверка с golden', ocrLab.selfTest],
     ['sheets', 'Листы v4 (12 бланков, геометрия + OCR)', () => ocrLab.sheetTest(3)],
     ['bench', 'Замер v4 (лист, 72 клетки)', () => ocrLab.benchmark(72, 20)],
+    [
+      'open-home',
+      'UI: Главная (колокольчик уведомлений)',
+      async () => {
+        await ensureSignedIn();
+        router.replace('/');
+        return { opened: 'home' };
+      },
+    ],
+    [
+      'open-notifications',
+      'UI: Центр уведомлений и новостей',
+      async () => {
+        await ensureSignedIn();
+        router.replace('/notifications');
+        return { opened: 'notifications' };
+      },
+    ],
+    [
+      'send-test-notif',
+      'Уведомления: отправить тестовый баннер Android',
+      async () => {
+        await ensureSignedIn();
+        await notificationCenter.init();
+        const perm = await notificationCenter.sendTestNotification();
+        return { permission: perm, sent: perm === 'granted' };
+      },
+    ],
     [
       'demo-clean',
       'UI: Zero-Touch (100% чисто)',

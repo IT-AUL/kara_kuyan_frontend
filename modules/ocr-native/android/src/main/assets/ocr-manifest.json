@@ -1,10 +1,13 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "model_version": "4.0.0",
   "architecture": "TatarOCRNetV3_MultiScale",
+  "engine": "tatar_ocr_core_cpp20",
   "confidence_threshold": 0.85,
-  "note": "Production v4 handwritten Tatar OCR manifest (DanisGaleev/tatar_ocr@7a5cce4). Class order verified with Ә at index 1.",
+  "note": "Canonical C++20 NativeBlankScanner manifest (DanisGaleev/tatar_ocr@v3-architecture-training). Uses pipeline_spec.json + tatar_ocr_v4_handwritten39_int8.onnx.",
   "template_version": "tatar-ocr-a4-v1",
+  "pipeline_spec": "pipeline_spec.json",
+  "default_model": "int8",
   "alphabet": [
     "А",
     "Ә",
@@ -47,13 +50,13 @@
     "Я"
   ],
   "models": {
-    "fp32": {
-      "file": "tatar_ocr_v4_handwritten39_fp32.onnx",
-      "sha256": "b9cbbfd045921fa7f2e92bf54d2eaf84c9266075ad09a0d0b175031d8a948aa5"
-    },
     "int8": {
       "file": "tatar_ocr_v4_handwritten39_int8.onnx",
       "sha256": "656096ed97d25cfdd07390f292a7b9a9f838481adf126587e40dccae25c9f191"
+    },
+    "fp32": {
+      "file": "tatar_ocr_v4_handwritten39_fp32.onnx",
+      "sha256": "b9cbbfd045921fa7f2e92bf54d2eaf84c9266075ad09a0d0b175031d8a948aa5"
     }
   }
 }

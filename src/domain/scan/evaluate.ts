@@ -125,7 +125,9 @@ export function evaluateSheet(
   }
 
   const tasks = variant.questions.map<EvaluatedTask>((q) => {
-    const seen = evidence.questions.find((e) => e.markerId === q.markerId);
+    const seen =
+      evidence.questions.find((e) => e.markerId != null && e.markerId === q.markerId) ??
+      evidence.questions.find((e) => e.questionNumber === q.questionNumber);
     const base = {
       number: q.questionNumber,
       markerId: q.markerId,
@@ -152,14 +154,20 @@ export function evaluateSheet(
       const seenCell = seen.cells[index];
       const expectedChar = q.expectedCells[index]?.char ?? ' ';
       const top3 = seenCell && !seenCell.isEmpty
-        ? extractTopCandidates(seenCell.probabilities, evidence.alphabet, 3)
+        ? extractTopCandidates(seenCell.probabilities, evidence.alphabet, 3, seenCell.top3)
         : [];
       const top1 = top3[0];
+      const predictedChar = !seenCell || seenCell.isEmpty
+        ? ' '
+        : (seenCell.char && seenCell.char.trim() !== '' ? seenCell.char : (top1?.char ?? ' '));
+      const predictedConf = !seenCell || seenCell.isEmpty
+        ? 1
+        : (seenCell.confidence ?? top1?.confidence ?? 1);
       cells.push({
         index,
         expected: expectedChar,
-        predicted: !seenCell || seenCell.isEmpty || !top1 ? ' ' : top1.char,
-        confidence: !seenCell || seenCell.isEmpty || !top1 ? 1 : top1.confidence,
+        predicted: predictedChar,
+        confidence: predictedConf,
         verdict: decision.cells[index]?.verdict ?? 'uncertain',
         top3,
       });
