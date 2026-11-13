@@ -47,6 +47,16 @@ export class SheetPickCancelled extends Error {
 
 export type Unsubscribe = () => void;
 
+export type CameraCapabilities = {
+  ready?: boolean;
+  hasFlash: boolean;
+  torchEnabled: boolean;
+  zoomRatio: number;
+  maxZoomRatio: number;
+  zslSupported: boolean;
+  captureMode: string;
+};
+
 export interface OcrSession {
   /** Live alignment feedback while the teacher frames the sheet. */
   onAlignment(listener: (state: AlignmentState) => void): Unsubscribe;
@@ -60,6 +70,12 @@ export interface OcrSession {
    * released inside the native module (ADR 0007). Rejects with `SheetPickCancelled` when nothing is chosen.
    */
   readSheetFromDevice(): Promise<SheetEvidence>;
+  /** Toggles continuous LED torch for dim classrooms; resolves with actual active torch state. */
+  setTorch(enabled: boolean): Promise<boolean>;
+  /** Sets optical / in-sensor crop zoom ratio (e.g. `1.0` or `1.4` to avoid close-range lens field curvature). */
+  setZoom(ratio: number): Promise<number>;
+  /** Returns active camera hardware/session capabilities without exposing frames. */
+  getCapabilities(): Promise<CameraCapabilities>;
   /** Releases the camera and every native buffer. Safe to call more than once. */
   close(): Promise<void>;
 }

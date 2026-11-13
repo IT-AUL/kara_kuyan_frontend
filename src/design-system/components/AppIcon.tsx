@@ -24,6 +24,8 @@ const iconNames = {
   edit: { ios: 'pencil', android: 'edit', web: 'edit' },
   error: { ios: 'xmark.circle.fill', android: 'cancel', web: 'cancel' },
   export: { ios: 'square.and.arrow.up.fill', android: 'ios_share', web: 'ios_share' },
+  flashlight: { ios: 'flashlight.on.fill', android: 'flashlight_on', web: 'flashlight_on' },
+  flashlightOff: { ios: 'flashlight.off.fill', android: 'flashlight_off', web: 'flashlight_off' },
   home: { ios: 'house.fill', android: 'home', web: 'home' },
   insight: { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
   library: { ios: 'books.vertical.fill', android: 'library_books', web: 'library_books' },

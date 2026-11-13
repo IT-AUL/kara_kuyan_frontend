@@ -4,12 +4,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIcon, textStyles } from '@/design-system';
 import { colors, fontFamilies, fontSizes, radius, spacing } from '@/design-system/tokens';
 
+export const ZOOM_PRESETS = [1, 1.4] as const;
+export type ZoomPreset = (typeof ZOOM_PRESETS)[number];
+
 export type ScanHudProps = {
   checked: number;
   total: number;
   locked: boolean;
   hint: string | null;
   canCapture: boolean;
+  torchEnabled: boolean;
+  hasFlash: boolean;
+  zoomRatio: ZoomPreset;
+  maxZoomRatio: number;
+  onToggleTorch: () => void;
+  onSelectZoom: (ratio: ZoomPreset) => void;
   onClose: () => void;
   onDone: () => void;
   onCapture: () => void;
@@ -22,6 +31,12 @@ export function ScanHud({
   locked,
   hint,
   canCapture,
+  torchEnabled,
+  hasFlash,
+  zoomRatio,
+  maxZoomRatio,
+  onToggleTorch,
+  onSelectZoom,
   onClose,
   onDone,
   onCapture,
@@ -30,6 +45,8 @@ export function ScanHud({
   const insets = useSafeAreaInsets();
   const fillPercent = total > 0 ? Math.min(100, Math.max(0, (checked / total) * 100)) : 0;
   const hintText = locked ? 'Держите' : (hint ?? 'Положите лист целиком в рамку');
+  const torchDisabled = !canCapture || !hasFlash;
+  const cropSupported = canCapture && maxZoomRatio >= 1.25;
 
   return (
     <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
@@ -69,6 +86,58 @@ export function ScanHud({
       </View>
 
       <View pointerEvents="box-none" style={[styles.bottomArea, { bottom: insets.bottom + spacing.xl }]}>
+        <View pointerEvents="box-none" style={styles.opticsRow}>
+          <Pressable
+            accessibilityLabel={torchEnabled ? 'Выключить фонарик' : 'Включить фонарик'}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: torchDisabled, selected: torchEnabled }}
+            disabled={torchDisabled}
+            hitSlop={4}
+            onPress={onToggleTorch}
+            style={({ pressed }) => [
+              styles.glass,
+              styles.torchPill,
+              torchEnabled && styles.torchPillActive,
+              torchDisabled && styles.opticDisabled,
+              pressed && !torchDisabled && styles.pressed,
+            ]}
+          >
+            <AppIcon
+              color={torchEnabled ? colors.toastText : colors.text}
+              name={torchEnabled ? 'flashlight' : 'flashlightOff'}
+              size={16}
+            />
+            <Text style={[styles.torchLabel, torchEnabled && styles.torchLabelActive]}>Свет</Text>
+          </Pressable>
+
+          <View style={[styles.glass, styles.zoomCapsule]}>
+            {ZOOM_PRESETS.map((preset) => {
+              const selected = zoomRatio === preset;
+              const disabled = preset > 1 && !cropSupported;
+              const label = preset === 1 ? '1×' : '1.4×';
+              return (
+                <Pressable
+                  accessibilityLabel={`Масштаб камеры ${label}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled, selected }}
+                  disabled={disabled}
+                  hitSlop={4}
+                  key={preset}
+                  onPress={() => onSelectZoom(preset)}
+                  style={({ pressed }) => [
+                    styles.zoomSegment,
+                    selected && styles.zoomSegmentActive,
+                    disabled && styles.opticDisabled,
+                    pressed && !disabled && styles.pressed,
+                  ]}
+                >
+                  <Text style={[styles.zoomLabel, selected && styles.zoomLabelActive]}>{label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
         <View pointerEvents="none" style={[styles.glass, styles.hintPill]}>
           <Text style={[styles.hintText, locked && styles.hintTextLocked]}>{hintText}</Text>
         </View>
@@ -111,7 +180,7 @@ export function ScanHud({
         </View>
 
         <Text style={[textStyles.caption, styles.caption]}>
-          Снимок сделается сам, когда лист в рамке
+          Нажмите на лист для фокуса · снимок сделается сам в рамке
         </Text>
       </View>
     </View>
@@ -184,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     height: 36,
     justifyContent: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
     paddingHorizontal: spacing.md,
   },
   hintText: {
@@ -201,6 +270,16 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     width: 48,
+  },
+  opticDisabled: {
+    opacity: 0.42,
+  },
+  opticsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
   },
   pressed: {
     opacity: 0.9,
@@ -273,5 +352,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
+  },
+  torchLabel: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.caption,
+  },
+  torchLabelActive: {
+    color: colors.toastText,
+  },
+  torchPill: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    flexDirection: 'row',
+    gap: 6,
+    height: 38,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+  },
+  torchPillActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  zoomCapsule: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    flexDirection: 'row',
+    height: 38,
+    padding: 3,
+  },
+  zoomLabel: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.caption,
+    fontVariant: ['tabular-nums'],
+  },
+  zoomLabelActive: {
+    color: colors.toastText,
+  },
+  zoomSegment: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    height: 30,
+    justifyContent: 'center',
+    minWidth: 44,
+    paddingHorizontal: 10,
+  },
+  zoomSegmentActive: {
+    backgroundColor: colors.primary,
   },
 });

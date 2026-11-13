@@ -7,20 +7,20 @@ import { useActiveContext } from '@/data/context';
 import { textStyles } from '@/design-system';
 import { colors, spacing } from '@/design-system/tokens';
 import type { AlignmentHint, AlignmentPhase } from '@/ports/ocr-engine';
-import { ScanHud } from './components/ScanHud';
+import { ScanHud, type ZoomPreset } from './components/ScanHud';
 import { scanSession } from './scanSession';
 
 const hintLabel: Record<AlignmentHint, string> = {
   'move-away': 'Покажите все четыре угла листа',
   'move-closer': 'Приблизьте лист',
   'hold-steady': 'Держите телефон неподвижно',
-  blurry: 'Изображение нечёткое',
-  glare: 'Уберите блик',
-  'too-dark': 'Нужно больше света',
-  tilted: 'Держите телефон ровнее',
+  blurry: 'Изображение нечёткое — нажмите на лист',
+  glare: 'Уберите блик света с листа',
+  'too-dark': 'Мало света — включите кнопку «Свет»',
+  tilted: 'Держите телефон параллельно листу',
 };
 
-const LOCKED_EVENTS_TO_CAPTURE = 3;
+const LOCKED_EVENTS_TO_CAPTURE = 2;
 
 export function ScanScreen() {
   const router = useRouter();
@@ -29,16 +29,26 @@ export function ScanScreen() {
   const [permission, setPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const [phase, setPhase] = useState<AlignmentPhase>('searching');
   const [hint, setHint] = useState<AlignmentHint | null>(null);
+  const [torchEnabled, setTorchEnabled] = useState(false);
+  const [hasFlash, setHasFlash] = useState(true);
+  const [zoomRatio, setZoomRatio] = useState<ZoomPreset>(1);
+  const [maxZoomRatio, setMaxZoomRatio] = useState(4);
   const lockedCount = useRef(0);
   const triggered = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
       setFocused(true);
+      setTorchEnabled(false);
+      setZoomRatio(1);
       triggered.current = false;
       lockedCount.current = 0;
       void ocrEngine.ensureCameraPermission().then((ok) => setPermission(ok ? 'granted' : 'denied'));
-      return () => setFocused(false);
+      return () => {
+        setFocused(false);
+        setTorchEnabled(false);
+        setZoomRatio(1);
+      };
     }, []),
   );
 
@@ -57,10 +67,39 @@ export function ScanScreen() {
     else router.push('/processing');
   }, [router]);
 
+  const toggleTorch = useCallback(async () => {
+    const desired = !torchEnabled;
+    const actual = await scanSession.setTorch(desired);
+    setTorchEnabled(actual);
+  }, [torchEnabled]);
+
+  const selectZoom = useCallback(async (preset: ZoomPreset) => {
+    setZoomRatio(preset);
+    const applied = await scanSession.setZoom(preset);
+    setZoomRatio(applied >= 1.2 ? 1.4 : 1);
+  }, []);
+
   useEffect(() => {
     if (!focused || permission !== 'granted') return;
     let unsubscribe: (() => void) | undefined;
     let cancelled = false;
+    let capTimer: ReturnType<typeof setTimeout> | undefined;
+    const pollCapabilities = (attempt = 0) => {
+      void scanSession
+        .getCameraCapabilities()
+        .then((caps) => {
+          if (cancelled) return;
+          if (caps.ready === false && attempt < 8) {
+            capTimer = setTimeout(() => pollCapabilities(attempt + 1), 350);
+            return;
+          }
+          setHasFlash(caps.hasFlash);
+          setMaxZoomRatio(caps.maxZoomRatio);
+        })
+        .catch(() => {});
+    };
+    capTimer = setTimeout(() => pollCapabilities(0), 250);
+
     void scanSession
       .watchAlignment((state) => {
         setPhase(state.phase);
@@ -74,6 +113,7 @@ export function ScanScreen() {
       });
     return () => {
       cancelled = true;
+      clearTimeout(capTimer);
       unsubscribe?.();
     };
   }, [focused, permission, capture]);
@@ -95,13 +135,19 @@ export function ScanScreen() {
       <ScanHud
         canCapture={permission === 'granted'}
         checked={progress.checkedCount}
+        hasFlash={hasFlash}
         hint={hint ? hintLabel[hint] : null}
         locked={locked}
+        maxZoomRatio={maxZoomRatio}
         onCapture={capture}
         onClose={() => router.back()}
         onDone={() => router.replace('/checking')}
         onImport={() => void importFile()}
+        onSelectZoom={(preset) => void selectZoom(preset)}
+        onToggleTorch={() => void toggleTorch()}
+        torchEnabled={torchEnabled}
         total={progress.studentCount}
+        zoomRatio={zoomRatio}
       />
     </View>
   );

@@ -70,6 +70,18 @@ class OcrNativeModule : Module() {
       CameraController.capture(appContext.reactContext ?: throw IllegalStateException("no context"))
     }
 
+    AsyncFunction("setTorch") { enabled: Boolean ->
+      CameraController.setTorch(appContext.reactContext ?: throw IllegalStateException("no context"), enabled)
+    }
+
+    AsyncFunction("setZoom") { ratio: Double ->
+      CameraController.setZoom(appContext.reactContext ?: throw IllegalStateException("no context"), ratio)
+    }
+
+    AsyncFunction("getCameraCapabilities") {
+      CameraController.getCapabilities()
+    }
+
     AsyncFunction("pickAndReadSheet") { promise: Promise ->
       val activity = appContext.currentActivity
       if (activity == null) {

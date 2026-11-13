@@ -2,7 +2,7 @@
 
 ## Stages
 
-1. **Stable frame** — camera produces a rectifiable frame; no temp files, no JS pixel copies.
+1. **Stable frame (`ADR 0006` v0.4.2 Pro Document Capture)** — unified 4:3 `PreviewView` (`FIT_CENTER`) + `ImageAnalysis` (`1280×960`) + `ImageCapture` (`4200×3150`, `PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE`, `JPEG 95`), hybrid `CAPTURE_MODE_ZERO_SHUTTER_LAG` (when `isZslSupported` and torch OFF) / `CAPTURE_MODE_MAXIMIZE_QUALITY`, `Camera2Interop` (`EDGE_MODE_HIGH_QUALITY`, `NOISE_REDUCTION_MODE_FAST`), `+0.5 EV` white-paper exposure bias, active sheet-centroid & tap-to-focus `FocusMeteringAction` (`FLAG_AF | FLAG_AE`) with bounded pre-shutter convergence wait, noise-immune `Gaussian(5×5) + Sobel(3×3) P99` sharpness + tilt/darkness/hotspot-glare DQA gates, post-capture blur gate with `1×` silent retry, and teacher `1x / 1.4x` zoom + Torch HUD controls; no temp files, no JS pixel copies.
 2. **Geometry** — ArUco corner detection (`DICT_4X4_50`; ids 0 top-left, 1 top-right, 2 bottom-left, 3 bottom-right), perspective rectification to a 2100×2970 px A4 canvas; fallback largest-quad contour. Rows/cells are located from each question's own marker plus grid-line detection, not fixed coordinates.
 3. **QR decode** — student/assessment/variant identity; teacher fallback via «Изменить ученика».
 4. **Cell crops** — 10×10 mm cells cut per the offline-bundle template geometry.

@@ -11,7 +11,12 @@ import { cellFixKey, evaluateSheet, scoreOutcome } from '@/domain/scan/evaluate'
 import { buildSubmission } from '@/domain/sync/payload';
 import { matchStudent } from '@/domain/roster/match';
 import type { Student } from '@/domain/assessment/model';
-import { SheetPickCancelled, type AlignmentState, type OcrSession } from '@/ports/ocr-engine';
+import {
+  SheetPickCancelled,
+  type AlignmentState,
+  type CameraCapabilities,
+  type OcrSession,
+} from '@/ports/ocr-engine';
 import type { SheetEvidence } from '@/domain/ocr/evidence';
 
 export type ScanPhase = 'idle' | 'processing' | 'ready' | 'error';
@@ -180,6 +185,18 @@ export const scanSession = {
 
   async watchAlignment(listener: (state: AlignmentState) => void): Promise<() => void> {
     return (await getSession()).onAlignment(listener);
+  },
+
+  async setTorch(enabled: boolean): Promise<boolean> {
+    return (await getSession()).setTorch(enabled);
+  },
+
+  async setZoom(ratio: number): Promise<number> {
+    return (await getSession()).setZoom(ratio);
+  },
+
+  async getCameraCapabilities(): Promise<CameraCapabilities> {
+    return (await getSession()).getCapabilities();
   },
 
   /**

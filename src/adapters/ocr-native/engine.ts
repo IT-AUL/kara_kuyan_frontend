@@ -1,6 +1,11 @@
 import OcrNative from '../../../modules/ocr-native';
 import type { SheetEvidence } from '@/domain/ocr/evidence';
-import { SheetPickCancelled, type OcrEngine, type OcrSession } from '@/ports/ocr-engine';
+import {
+  SheetPickCancelled,
+  type CameraCapabilities,
+  type OcrEngine,
+  type OcrSession,
+} from '@/ports/ocr-engine';
 import { alignmentBus } from './alignmentBus';
 
 class NativeSession implements OcrSession {
@@ -17,6 +22,18 @@ class NativeSession implements OcrSession {
       if (String(e).includes('PICK_CANCELLED')) throw new SheetPickCancelled();
       throw e;
     }
+  }
+
+  async setTorch(enabled: boolean): Promise<boolean> {
+    return OcrNative.setTorch(enabled);
+  }
+
+  async setZoom(ratio: number): Promise<number> {
+    return OcrNative.setZoom(ratio);
+  }
+
+  async getCapabilities(): Promise<CameraCapabilities> {
+    return OcrNative.getCameraCapabilities();
   }
 
   async close(): Promise<void> {}
