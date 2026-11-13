@@ -205,7 +205,7 @@ function parseSingleItem(raw: unknown, opts: ParseRemoteOptions, index: number):
       : defaultIconFor(kind);
 
   const badge = boundedText(rec.badge, 44) ?? defaultBadgeFor(kind);
-  const body = boundedText(rec.body, 2_000) ?? summary;
+  const body = boundedText(rec.body, 4_000) ?? summary;
   const createdAt = parseTimestampMs(rec.publishedAt ?? rec.createdAt, DEFAULT_EPOCH_MS - index);
 
   const primaryTarget = sanitizeNavigationTarget(rec.route ?? rec.externalUrl);

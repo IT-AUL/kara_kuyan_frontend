@@ -82,6 +82,7 @@ export default function RootLayout() {
             <Stack.Screen name="task-new" />
             <Stack.Screen name="task-photo" />
             <Stack.Screen name="notifications" />
+            <Stack.Screen name="notification-detail" />
           </Stack.Protected>
           <Stack.Screen name="ocr-lab" />
           <Stack.Screen name="ds-gallery" />

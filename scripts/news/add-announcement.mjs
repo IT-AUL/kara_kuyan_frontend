@@ -30,8 +30,9 @@ function printHelp() {
 Параметры:
   --id <slug>              Уникальный ключ (по умолчанию генерируется автоматически)
   --title <текст>          Заголовок (обязательно, до 140 симв.)
-  --summary <текст>        Краткое описание для карточки и шторки Android (обязательно, до 280 симв.)
-  --body <текст>           Полный текст при раскрытии карточки
+  --summary <текст>        Краткое описание для ленты и шторки Android (обязательно, до 280 симв.)
+  --body <текст>           Полный текст статьи (поддерживает \\n\\n, ### заголовки, - списки, > заметки)
+  --body-file <путь>       Прочитать полный текст статьи из Markdown/текстового файла
   --kind <тип>             event | insight | news | tip (по умолчанию: news)
   --channel <канал>        check_sync | class_insights | updates_news | teacher_tips
   --tone <цвет>            ok | warn | err | info (по умолчанию: info)
@@ -128,6 +129,11 @@ if (!VALID_ICONS.has(icon)) {
 
 const route = validateRoute(args.values.route);
 const secondaryRoute = validateRoute(args.values['secondary-route']);
+const resolvedBody = args.values['body-file']
+  ? fs.readFileSync(path.resolve(process.cwd(), args.values['body-file']), 'utf8').trim()
+  : args.values.body
+    ? args.values.body.replace(/\\n/g, '\n').trim()
+    : '';
 
 const item = {
   id,
@@ -138,7 +144,7 @@ const item = {
   badge: (args.values.badge ?? (kind === 'event' ? 'Событие' : kind === 'tip' ? 'Совет' : 'Новость')).trim(),
   title,
   summary,
-  ...(args.values.body ? { body: args.values.body.trim() } : {}),
+  ...(resolvedBody ? { body: resolvedBody } : {}),
   publishedAt: nowIso,
   ...(args.values['expires-at'] ? { expiresAt: args.values['expires-at'].trim() } : {}),
   pinned: args.flags.has('pinned'),

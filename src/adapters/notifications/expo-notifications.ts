@@ -1,9 +1,10 @@
 import * as Linking from 'expo-linking';
-import * as Notifications from 'expo-notifications';
+import { requireOptionalNativeModule } from 'expo';
+import type * as NotificationsTypes from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { NOTIFICATION_CHANNELS } from '@/domain/notifications/feed';
 import { colors } from '@/design-system/tokens';
+import { NOTIFICATION_CHANNELS } from '@/domain/notifications/feed';
 import type {
   DailyReminderSpec,
   NotificationPermissionStatus,
@@ -14,29 +15,52 @@ import type {
 
 const DAILY_REMINDER_ID = 'kk-daily-after-school-reminder';
 
+type NotificationsModule = typeof NotificationsTypes;
+
+function getNotificationsModule(): NotificationsModule | null {
+  if (Platform.OS === 'web') return null;
+  if (requireOptionalNativeModule('ExpoPushTokenManager') === null) return null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('expo-notifications') as NotificationsModule;
+  } catch {
+    return null;
+  }
+}
+
 let handlerConfigured = false;
 let initialized = false;
 
-function ensureForegroundHandler(): void {
+function ensureForegroundHandler(Notifications: NotificationsModule): void {
   if (handlerConfigured || Platform.OS === 'web') return;
-  handlerConfigured = true;
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
-  });
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+    handlerConfigured = true;
+  } catch {
+    // Degrade gracefully when native notifications runtime is unavailable
+  }
 }
 
-function mapPermission(res: Notifications.NotificationPermissionsStatus): NotificationPermissionStatus {
+function mapPermission(
+  Notifications: NotificationsModule,
+  res: NotificationsTypes.NotificationPermissionsStatus,
+): NotificationPermissionStatus {
   if (res.granted || res.status === Notifications.PermissionStatus.GRANTED) return 'granted';
   if (res.canAskAgain === false) return 'denied';
   return 'undetermined';
 }
 
-function parseResponse(response: Notifications.NotificationResponse): NotificationTapEvent | null {
+function parseResponse(
+  Notifications: NotificationsModule,
+  response: NotificationsTypes.NotificationResponse,
+): NotificationTapEvent | null {
   const data = (response.notification.request.content.data ?? {}) as {
     route?: string;
     actionRoutes?: Record<string, string>;
@@ -56,87 +80,95 @@ function parseResponse(response: Notifications.NotificationResponse): Notificati
 export const expoNotificationsAdapter: NotificationsPort = {
   async init(): Promise<void> {
     if (Platform.OS === 'web' || initialized) return;
-    ensureForegroundHandler();
+    const Notifications = getNotificationsModule();
+    if (!Notifications) return;
+    ensureForegroundHandler(Notifications);
 
-    if (Platform.OS === 'android') {
-      for (const ch of NOTIFICATION_CHANNELS) {
-        await Notifications.setNotificationChannelAsync(ch.id, {
-          name: ch.title,
-          description: ch.description,
-          importance:
-            ch.importance === 'default'
-              ? Notifications.AndroidImportance.DEFAULT
-              : Notifications.AndroidImportance.LOW,
-          vibrationPattern: ch.importance === 'default' ? [0, 140, 80, 140] : [0, 80],
-          lightColor: colors.primary,
-          lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-        });
+    try {
+      if (Platform.OS === 'android') {
+        for (const ch of NOTIFICATION_CHANNELS) {
+          await Notifications.setNotificationChannelAsync(ch.id, {
+            name: ch.title,
+            description: ch.description,
+            importance:
+              ch.importance === 'default'
+                ? Notifications.AndroidImportance.DEFAULT
+                : Notifications.AndroidImportance.LOW,
+            vibrationPattern: ch.importance === 'default' ? [0, 140, 80, 140] : [0, 80],
+            lightColor: colors.primary,
+            lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+          });
+        }
       }
+
+      await Promise.all([
+        Notifications.setNotificationCategoryAsync('pack_complete', [
+          {
+            identifier: 'export_gradebook',
+            buttonTitle: 'В журнал',
+            options: { opensAppToForeground: true },
+          },
+          {
+            identifier: 'open_summary',
+            buttonTitle: 'Итоги',
+            options: { opensAppToForeground: true },
+          },
+        ]),
+        Notifications.setNotificationCategoryAsync('sync_failed', [
+          {
+            identifier: 'open_sync',
+            buttonTitle: 'Повторить',
+            options: { opensAppToForeground: true },
+          },
+        ]),
+        Notifications.setNotificationCategoryAsync('topic_insight', [
+          {
+            identifier: 'open_analytics',
+            buttonTitle: 'Разобрать',
+            options: { opensAppToForeground: true },
+          },
+          {
+            identifier: 'open_generator',
+            buttonTitle: 'Разминка',
+            options: { opensAppToForeground: true },
+          },
+        ]),
+        Notifications.setNotificationCategoryAsync('release_update', [
+          {
+            identifier: 'open_news',
+            buttonTitle: 'Что нового',
+            options: { opensAppToForeground: true },
+          },
+        ]),
+        Notifications.setNotificationCategoryAsync('remote_announcement', [
+          {
+            identifier: 'open_announcement',
+            buttonTitle: 'Открыть',
+            options: { opensAppToForeground: true },
+          },
+        ]),
+      ]);
+
+      initialized = true;
+    } catch {
+      // Gracefully ignore when running inside an older dev-client shell
     }
-
-    await Promise.all([
-      Notifications.setNotificationCategoryAsync('pack_complete', [
-        {
-          identifier: 'export_gradebook',
-          buttonTitle: 'В журнал',
-          options: { opensAppToForeground: true },
-        },
-        {
-          identifier: 'open_summary',
-          buttonTitle: 'Итоги',
-          options: { opensAppToForeground: true },
-        },
-      ]),
-      Notifications.setNotificationCategoryAsync('sync_failed', [
-        {
-          identifier: 'open_sync',
-          buttonTitle: 'Повторить',
-          options: { opensAppToForeground: true },
-        },
-      ]),
-      Notifications.setNotificationCategoryAsync('topic_insight', [
-        {
-          identifier: 'open_analytics',
-          buttonTitle: 'Разобрать',
-          options: { opensAppToForeground: true },
-        },
-        {
-          identifier: 'open_generator',
-          buttonTitle: 'Разминка',
-          options: { opensAppToForeground: true },
-        },
-      ]),
-      Notifications.setNotificationCategoryAsync('release_update', [
-        {
-          identifier: 'open_news',
-          buttonTitle: 'Что нового',
-          options: { opensAppToForeground: true },
-        },
-      ]),
-      Notifications.setNotificationCategoryAsync('remote_announcement', [
-        {
-          identifier: 'open_announcement',
-          buttonTitle: 'Открыть',
-          options: { opensAppToForeground: true },
-        },
-      ]),
-    ]);
-
-    initialized = true;
   },
 
   async getPermissionStatus(): Promise<NotificationPermissionStatus> {
-    if (Platform.OS === 'web') return 'denied';
+    const Notifications = getNotificationsModule();
+    if (!Notifications) return 'denied';
     try {
       const res = await Notifications.getPermissionsAsync();
-      return mapPermission(res);
+      return mapPermission(Notifications, res);
     } catch {
       return 'undetermined';
     }
   },
 
   async requestPermission(): Promise<NotificationPermissionStatus> {
-    if (Platform.OS === 'web') return 'denied';
+    const Notifications = getNotificationsModule();
+    if (!Notifications) return 'denied';
     await this.init();
     try {
       const existing = await Notifications.getPermissionsAsync();
@@ -150,7 +182,8 @@ export const expoNotificationsAdapter: NotificationsPort = {
   },
 
   async present(payload: SystemNotificationPayload): Promise<void> {
-    if (Platform.OS === 'web') return;
+    const Notifications = getNotificationsModule();
+    if (!Notifications) return;
     await this.init();
     const perm = await this.getPermissionStatus();
     if (perm !== 'granted') return;
@@ -174,7 +207,8 @@ export const expoNotificationsAdapter: NotificationsPort = {
   },
 
   async syncDailyReminder(spec: DailyReminderSpec): Promise<void> {
-    if (Platform.OS === 'web') return;
+    const Notifications = getNotificationsModule();
+    if (!Notifications) return;
     await this.init();
     try {
       await Notifications.cancelScheduledNotificationAsync(DAILY_REMINDER_ID);
@@ -204,14 +238,15 @@ export const expoNotificationsAdapter: NotificationsPort = {
   },
 
   onResponse(listener: (event: NotificationTapEvent) => void): () => void {
-    if (Platform.OS === 'web') return () => undefined;
-    ensureForegroundHandler();
+    const Notifications = getNotificationsModule();
+    if (!Notifications) return () => undefined;
+    ensureForegroundHandler(Notifications);
     let active = true;
     const deliveredKeys = new Set<string>();
 
-    const deliver = (response: Notifications.NotificationResponse | null | undefined) => {
+    const deliver = (response: NotificationsTypes.NotificationResponse | null | undefined) => {
       if (!active || !response) return;
-      const parsed = parseResponse(response);
+      const parsed = parseResponse(Notifications, response);
       if (!parsed) return;
       const key = `${parsed.notificationId}:${parsed.actionIdentifier}`;
       if (deliveredKeys.has(key)) return;
@@ -219,23 +254,27 @@ export const expoNotificationsAdapter: NotificationsPort = {
       listener(parsed);
     };
 
-    void Notifications.getLastNotificationResponseAsync()
-      .then((initial) => deliver(initial))
-      .catch(() => undefined);
+    try {
+      void Notifications.getLastNotificationResponseAsync()
+        .then((initial) => deliver(initial))
+        .catch(() => undefined);
 
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      deliver(response);
-    });
+      const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+        deliver(response);
+      });
 
-    return () => {
-      active = false;
-      sub.remove();
-    };
+      return () => {
+        active = false;
+        sub.remove();
+      };
+    } catch {
+      return () => undefined;
+    }
   },
 
   async openSystemSettings(): Promise<void> {
     if (Platform.OS === 'web') return;
-    await Linking.openSettings();
+    await Linking.openURL('app-settings:').catch(() => Linking.openSettings());
   },
 
   async openExternalUrl(url: string): Promise<void> {

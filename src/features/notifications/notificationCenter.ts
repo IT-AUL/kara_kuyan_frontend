@@ -103,7 +103,7 @@ function actionRoutesFor(item: FeedItem): Record<string, string> {
         open_generator: item.secondaryRoute ?? '/task-generate',
       };
     case 'release_update':
-      return { open_news: '/notifications' };
+      return { open_news: `/notification-detail?id=${encodeURIComponent(item.id)}` };
     case 'remote_announcement':
       return item.route ? { open_announcement: item.route } : {};
     default:
@@ -174,6 +174,10 @@ async function maybePresentNextSystemNotification(): Promise<boolean> {
   notifiedIds = new Set(notifiedIds).add(candidate.id);
   writeStringSet(KEY_NOTIFIED, notifiedIds);
 
+  const detailRoute = `/notification-detail?id=${encodeURIComponent(candidate.id)}`;
+  const targetRoute =
+    candidate.route && candidate.route !== '/notifications' ? candidate.route : detailRoute;
+
   await notificationsPort.present({
     id: candidate.id,
     channelId: candidate.channelId,
@@ -181,7 +185,7 @@ async function maybePresentNextSystemNotification(): Promise<boolean> {
     title: candidate.title,
     subtitle: candidate.badge,
     body: candidate.summary,
-    route: candidate.route ?? '/notifications',
+    route: targetRoute,
     actionRoutes: actionRoutesFor(candidate),
   });
   return true;

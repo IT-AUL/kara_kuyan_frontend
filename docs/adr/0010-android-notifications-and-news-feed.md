@@ -24,7 +24,10 @@ Teachers need timely awareness of meaningful workflow events (a class worksheet 
    - Register 4 granular `NotificationChannel`s (`check_sync`, `class_insights`, `updates_news`, `teacher_tips`) and interactive `NotificationCategory` actions (`pack_complete`, `sync_failed`, `topic_insight`, `release_update`, `remote_announcement`) BEFORE requesting `POST_NOTIFICATIONS`.
    - Never prompt `POST_NOTIFICATIONS` on cold launch; request contextually from `/notifications`, with graceful fallback to the in-app feed if denied.
    - Respect Android 15 Notification Cooldown by deduplicating event keys in `kvStore` and firing at most one new system banner per sync cycle.
-5. **Privacy & Zero-Photo / Zero-PII on Lockscreen (ADR 0003):**
+5. **Two-Level Progressive Disclosure UX (`/notifications` Compact Feed → `/notification-detail` Article Reader):**
+   - To respect `docs/design/design-direction.md` ("fewer cards, fewer borders, more negative space; one dominant CTA and one main decision per screen"), `/notifications` renders items as calm, compact rows inside a unified surface (40×40 icon tile, unread dot, badge + date/reading time, 2-line title, 2-line `summary` teaser, chevron — zero inline expanded walls of text and zero repeated neon CTA buttons).
+   - Tapping any row marks it read and opens `/notification-detail?id=<id>`, a distraction-free full-article / event reader supporting structured Markdown-lite blocks in `body` (up to `4000` chars: `###` headings, paragraphs, `- ` bullet lists, `1. ` steps, `> ` callout tips) and a single bottom CTA block.
+6. **Privacy & Zero-Photo / Zero-PII on Lockscreen (ADR 0003):**
    - System notifications and remote feeds never include individual student names, individual grades, or image data.
 
 ## Consequences

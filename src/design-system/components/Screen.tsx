@@ -8,6 +8,7 @@ type ScreenProps = PropsWithChildren<{
   scroll?: boolean;
   edges?: Edge[];
   contentStyle?: ViewStyle;
+  header?: ReactNode;
   footer?: ReactNode;
   /** Pull-to-refresh: shown when `onRefresh` is set. */
   onRefresh?: () => void;
@@ -21,6 +22,7 @@ export function Screen({
   scroll = true,
   edges = ['top', 'bottom'],
   contentStyle,
+  header,
   footer,
   onRefresh,
   refreshing = false,
@@ -47,11 +49,13 @@ export function Screen({
     <SafeAreaView edges={edges} style={styles.safeArea}>
       {avoidKeyboard ? (
         <KeyboardAvoidingView behavior="padding" style={styles.frame}>
+          {header ? <View style={styles.header}>{header}</View> : null}
           {content}
           {footer ? <View style={styles.footer}>{footer}</View> : null}
         </KeyboardAvoidingView>
       ) : (
         <View style={styles.frame}>
+          {header ? <View style={styles.header}>{header}</View> : null}
           {content}
           {footer ? <View style={styles.footer}>{footer}</View> : null}
         </View>
@@ -80,6 +84,10 @@ const styles = StyleSheet.create({
   },
   frame: {
     flex: 1,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xs,
   },
   safeArea: {
     backgroundColor: colors.background,

@@ -1,157 +1,114 @@
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import {
   AppIcon,
-  type AppIconName,
   Button,
   Card,
   EmptyState,
   Screen,
   ScreenHeader,
   SegmentedTabs,
-  StatusPill,
   colors,
   fontFamilies,
+  fontSizes,
   hairline,
   radius,
   spacing,
   textStyles,
   touchTarget,
 } from '@/design-system';
-import {
-  NOTIFICATION_CHANNELS,
-  type FeedIconKind,
-  type FeedTone,
-  type FeedViewItem,
-} from '@/domain/notifications/feed';
+import { withAlpha } from '@/design-system/color';
+import { estimateReadMinutes, formatFeedShortDate } from '@/domain/notifications/article';
+import { NOTIFICATION_CHANNELS, type FeedViewItem } from '@/domain/notifications/feed';
 
 import { notificationCenter, useNotificationCenter } from './notificationCenter';
+import {
+  badgeColorFor,
+  iconFor,
+  iconSurfaceFor,
+  iconTintFor,
+} from './notificationVisuals';
 
 type TabKey = 'all' | 'events' | 'news' | 'settings';
 
 const TAB_KEYS: readonly TabKey[] = ['all', 'events', 'news', 'settings'];
 const TAB_LABELS: readonly string[] = ['Все', 'События', 'Инфо', 'Настройки'];
 
-function iconFor(kind: FeedIconKind): AppIconName {
-  switch (kind) {
-    case 'check':
-      return 'checkCircle';
-    case 'sync':
-      return 'sync';
-    case 'warning':
-      return 'warning';
-    case 'insight':
-      return 'insight';
-    case 'release':
-      return 'download';
-    case 'news':
-      return 'news';
-    case 'tip':
-      return 'school';
-  }
-}
-
-function pillToneFor(tone: FeedTone): 'success' | 'warning' | 'error' | 'info' {
-  switch (tone) {
-    case 'ok':
-      return 'success';
-    case 'warn':
-      return 'warning';
-    case 'err':
-      return 'error';
-    case 'info':
-      return 'info';
-  }
-}
-
-function FeedCard({
+export function FeedRow({
   item,
-  expanded,
-  onToggleExpand,
-  onNavigate,
-  onDismiss,
+  isLast,
+  onOpen,
 }: {
   item: FeedViewItem;
-  expanded: boolean;
-  onToggleExpand: () => void;
-  onNavigate: (route: string) => void;
-  onDismiss: () => void;
+  isLast: boolean;
+  onOpen: () => void;
 }) {
+  const shortDate = formatFeedShortDate(item.createdAt);
+  const readMins = estimateReadMinutes(
+    item.summary,
+    item.body !== item.summary ? item.body : null,
+  );
+  const metaTail = [shortDate, `${readMins} мин`].filter(Boolean).join(' · ');
+
   return (
-    <Card
-      accessibilityLabel={`${item.badge}: ${item.title}`}
-      outlined
-      style={item.unread ? styles.feedCardUnread : styles.feedCard}
-      tone={item.unread ? 'raised' : 'surface'}
+    <Pressable
+      accessibilityLabel={`${item.unread ? 'Новое. ' : ''}${item.badge}. ${item.title}. ${item.summary}`}
+      accessibilityRole="button"
+      android_ripple={{ color: withAlpha(colors.text, 0.08) }}
+      onPress={onOpen}
+      style={({ pressed }) => [
+        styles.feedRow,
+        !isLast && styles.rowDivider,
+        pressed && styles.pressed,
+      ]}
     >
-      <View style={styles.cardTopRow}>
-        <View style={styles.badgeRow}>
-          {item.unread ? <View style={styles.unreadDot} /> : null}
-          <StatusPill label={item.badge} tone={pillToneFor(item.tone)} />
-        </View>
-        <Pressable
-          accessibilityLabel={`Скрыть: ${item.title}`}
-          accessibilityRole="button"
-          hitSlop={10}
-          onPress={onDismiss}
-          style={styles.dismissBtn}
-        >
-          <AppIcon color={colors.textFaint} name="close" size={18} />
-        </Pressable>
+      <View
+        style={[
+          styles.iconWrap,
+          { backgroundColor: iconSurfaceFor(item.tone, item.unread) },
+        ]}
+      >
+        <AppIcon
+          color={iconTintFor(item.tone, item.unread)}
+          name={iconFor(item.icon)}
+          size={20}
+        />
       </View>
 
-      <Pressable
-        accessibilityLabel={`${expanded ? 'Свернуть' : 'Подробнее'}: ${item.title}`}
-        accessibilityRole="button"
-        onPress={onToggleExpand}
-        style={({ pressed }) => [styles.titlePressable, pressed && styles.pressed]}
-      >
-        <View style={styles.titleRow}>
-          <View style={styles.iconWrap}>
-            <AppIcon color={colors.primary} name={iconFor(item.icon)} size={20} />
-          </View>
-          <View style={styles.titleTextWrap}>
-            <Text style={textStyles.titleSmall}>{item.title}</Text>
-            <Text style={[textStyles.bodySmall, styles.summaryText]}>{item.summary}</Text>
-          </View>
-        </View>
-
-        {expanded ? (
-          <View style={styles.expandedWrap}>
-            <Text style={[textStyles.bodySmall, styles.bodyText]}>{item.body}</Text>
-          </View>
-        ) : null}
-      </Pressable>
-
-      {item.actionLabel || item.secondaryActionLabel ? (
-        <View style={styles.actionsRow}>
-          {item.actionLabel && item.route ? (
-            <Pressable
-              accessibilityLabel={item.actionLabel}
-              accessibilityRole="button"
-              onPress={() => onNavigate(item.route!)}
-              style={({ pressed }) => [styles.primaryChip, pressed && styles.pressed]}
-            >
-              <Text style={styles.primaryChipLabel}>{item.actionLabel}</Text>
-              <AppIcon color={colors.toastText} name="arrowRight" size={16} />
-            </Pressable>
-          ) : null}
-
-          {item.secondaryActionLabel && item.secondaryRoute ? (
-            <Pressable
-              accessibilityLabel={item.secondaryActionLabel}
-              accessibilityRole="button"
-              onPress={() => onNavigate(item.secondaryRoute!)}
-              style={({ pressed }) => [styles.secondaryChip, pressed && styles.pressed]}
-            >
-              <Text style={styles.secondaryChipLabel}>{item.secondaryActionLabel}</Text>
-            </Pressable>
+      <View style={styles.rowCenter}>
+        <View style={styles.metaLine}>
+          {item.unread ? <View style={styles.unreadDot} /> : null}
+          <Text
+            numberOfLines={1}
+            style={[styles.badgeText, { color: badgeColorFor(item.tone, item.unread) }]}
+          >
+            {item.badge}
+          </Text>
+          {metaTail ? (
+            <Text numberOfLines={1} style={styles.metaDateText}>
+              · {metaTail}
+            </Text>
           ) : null}
         </View>
-      ) : null}
-    </Card>
+
+        <Text
+          numberOfLines={2}
+          style={item.unread ? styles.rowTitleUnread : styles.rowTitleRead}
+        >
+          {item.title}
+        </Text>
+
+        <Text numberOfLines={2} style={styles.rowSummary}>
+          {item.summary}
+        </Text>
+      </View>
+
+      <View style={styles.chevronWrap}>
+        <AppIcon color={colors.textFaint} name="chevronRight" size={18} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -168,7 +125,6 @@ export function NotificationsScreen() {
   const state = useNotificationCenter();
   const [tabIndex, setTabIndex] = useState(0);
   const tab: TabKey = TAB_KEYS[tabIndex] ?? 'all';
-  const [expandedId, setExpandedId] = useState<string | null>(state.items[0]?.id ?? null);
 
   const visibleItems = state.items.filter((item) => {
     if (tab === 'events') return item.kind === 'event' || item.kind === 'insight';
@@ -176,18 +132,12 @@ export function NotificationsScreen() {
     return true;
   });
 
-  const handleOpenRoute = (id: string, route: string) => {
-    notificationCenter.openTarget(id, route, (internal) => {
-      router.push(internal as Href);
-    });
-  };
-
-  const handleToggleExpand = (id: string) => {
+  const handleOpenArticle = (id: string) => {
     notificationCenter.markRead(id);
-    setExpandedId((prev) => (prev === id ? null : id));
+    router.push({ pathname: '/notification-detail', params: { id } });
   };
 
-  const showOptInBanner = state.permission !== 'granted';
+  const showOptInStrip = state.permission !== 'granted' && tab !== 'settings';
 
   return (
     <Screen
@@ -213,8 +163,8 @@ export function NotificationsScreen() {
         showBack
         subtitle={
           state.unreadCount > 0
-            ? `Новых уведомлений: ${state.unreadCount}`
-            : 'Важные события, обновления и полезные приёмы'
+            ? `Непрочитанных: ${state.unreadCount}`
+            : 'События, обновления и полезные памятки'
         }
         title="Уведомления"
       />
@@ -225,20 +175,27 @@ export function NotificationsScreen() {
         tabs={TAB_LABELS}
       />
 
-      {showOptInBanner && tab !== 'settings' ? (
-        <Card outlined style={styles.optInCard} tone="raised">
-          <View style={styles.optInHeader}>
-            <View style={styles.iconWrap}>
-              <AppIcon color={colors.primary} name="bellBadge" size={20} />
-            </View>
-            <View style={styles.titleTextWrap}>
-              <Text style={textStyles.titleSmall}>Уведомления на Android без спама</Text>
-              <Text style={textStyles.bodySmall}>
-                Сообщим только по делу: когда пачка работ класса проверена целиком, оценки требуют повторной отправки или найдена сложная тема.
-              </Text>
-            </View>
+      {showOptInStrip ? (
+        <View style={styles.optInStrip}>
+          <View style={styles.optInIcon}>
+            <AppIcon color={colors.primary} name="bellBadge" size={18} />
           </View>
-          <Button
+          <View style={styles.optInCopy}>
+            <Text numberOfLines={1} style={styles.optInTitle}>
+              Уведомления в шторке Android
+            </Text>
+            <Text numberOfLines={1} style={styles.optInSubtitle}>
+              Только проверка класса и важные события
+            </Text>
+          </View>
+          <Pressable
+            accessibilityLabel={
+              state.permission === 'denied'
+                ? 'Открыть настройки уведомлений Android'
+                : 'Включить системные уведомления'
+            }
+            accessibilityRole="button"
+            hitSlop={6}
             onPress={() => {
               if (state.permission === 'denied') {
                 void notificationCenter.openSystemSettings();
@@ -246,13 +203,13 @@ export function NotificationsScreen() {
                 void notificationCenter.requestOptIn();
               }
             }}
-            title={
-              state.permission === 'denied'
-                ? 'Открыть настройки уведомлений Android'
-                : 'Включить уведомления'
-            }
-          />
-        </Card>
+            style={({ pressed }) => [styles.optInAction, pressed && styles.pressed]}
+          >
+            <Text style={styles.optInActionText}>
+              {state.permission === 'denied' ? 'Настройки' : 'Включить'}
+            </Text>
+          </Pressable>
+        </View>
       ) : null}
 
       {tab === 'settings' ? (
@@ -305,7 +262,7 @@ export function NotificationsScreen() {
               return (
                 <View
                   key={ch.id}
-                  style={[styles.channelRow, idx < NOTIFICATION_CHANNELS.length - 1 && styles.divider]}
+                  style={[styles.channelRow, idx < NOTIFICATION_CHANNELS.length - 1 && styles.rowDivider]}
                 >
                   <View style={styles.switchTextWrap}>
                     <Text style={styles.channelTitle}>{ch.title}</Text>
@@ -381,45 +338,27 @@ export function NotificationsScreen() {
           title="Пока всё спокойно"
         />
       ) : (
-        <View style={styles.feedStack}>
-          {visibleItems.map((item) => (
-            <FeedCard
-              expanded={expandedId === item.id}
+        <Card outlined style={styles.feedContainer}>
+          {visibleItems.map((item, idx) => (
+            <FeedRow
+              isLast={idx === visibleItems.length - 1}
               item={item}
               key={item.id}
-              onDismiss={() => notificationCenter.dismiss(item.id)}
-              onNavigate={(route) => handleOpenRoute(item.id, route)}
-              onToggleExpand={() => handleToggleExpand(item.id)}
+              onOpen={() => handleOpenArticle(item.id)}
             />
           ))}
-        </View>
+        </Card>
       )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  actionsRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    paddingTop: spacing.xxs,
-  },
-  badgeRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flex: 1,
-    gap: spacing.xs,
-  },
-  bodyText: {
-    color: colors.text,
-    lineHeight: 20,
-  },
-  cardTopRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  badgeText: {
+    fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.caption,
+    lineHeight: 16,
+    maxWidth: '62%',
   },
   channelRow: {
     alignItems: 'center',
@@ -432,34 +371,25 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontFamily: fontFamilies.semibold,
   },
-  dismissBtn: {
-    alignItems: 'center',
-    height: 32,
+  chevronWrap: {
     justifyContent: 'center',
-    width: 32,
+    paddingLeft: 2,
   },
-  divider: {
-    borderBottomColor: colors.divider,
-    borderBottomWidth: hairline,
+  feedContainer: {
+    borderRadius: radius.xxl,
+    overflow: 'hidden',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
   },
-  expandedWrap: {
-    backgroundColor: colors.surfaceSoft,
-    borderRadius: radius.md,
-    padding: spacing.sm,
-  },
-  feedCard: {
+  feedRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: spacing.sm,
-  },
-  feedCardUnread: {
-    borderColor: colors.primaryDeep,
-    gap: spacing.sm,
-  },
-  feedStack: {
-    gap: spacing.sm,
+    minHeight: 80,
+    paddingVertical: 14,
   },
   iconWrap: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceHigh,
     borderRadius: radius.md,
     height: 40,
     justifyContent: 'center',
@@ -468,31 +398,68 @@ const styles = StyleSheet.create({
   listCard: {
     gap: spacing.xxs,
   },
-  optInCard: {
-    gap: spacing.md,
+  metaDateText: {
+    color: colors.textFaint,
+    flexShrink: 1,
+    fontFamily: fontFamilies.regular,
+    fontSize: fontSizes.caption,
+    lineHeight: 16,
   },
-  optInHeader: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  pressed: {
-    opacity: 0.82,
-  },
-  primaryChip: {
+  metaLine: {
     alignItems: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: radius.pill,
     flexDirection: 'row',
     gap: 6,
-    minHeight: Math.max(40, touchTarget - 8),
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
   },
-  primaryChipLabel: {
-    ...textStyles.caption,
-    color: colors.toastText,
+  optInAction: {
+    alignItems: 'center',
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.pill,
+    justifyContent: 'center',
+    minHeight: 36,
+    paddingHorizontal: spacing.sm,
+  },
+  optInActionText: {
+    color: colors.primary,
     fontFamily: fontFamilies.semibold,
+    fontSize: fontSizes.caption,
+  },
+  optInCopy: {
+    flex: 1,
+    gap: 1,
+  },
+  optInIcon: {
+    alignItems: 'center',
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.sm,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  optInStrip: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.divider,
+    borderRadius: radius.xl,
+    borderWidth: hairline,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 10,
+  },
+  optInSubtitle: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.regular,
+    fontSize: fontSizes.caption,
+    lineHeight: 16,
+  },
+  optInTitle: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: 13.5,
+    lineHeight: 18,
+  },
+  pressed: {
+    opacity: 0.78,
   },
   readAllBtn: {
     justifyContent: 'center',
@@ -504,21 +471,31 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontFamily: fontFamilies.semibold,
   },
-  secondaryChip: {
-    alignItems: 'center',
-    backgroundColor: colors.surfaceHigh,
-    borderColor: colors.divider,
-    borderRadius: radius.pill,
-    borderWidth: hairline,
-    flexDirection: 'row',
-    minHeight: Math.max(40, touchTarget - 8),
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+  rowCenter: {
+    flex: 1,
+    gap: 3,
   },
-  secondaryChipLabel: {
-    ...textStyles.caption,
-    color: colors.text,
+  rowDivider: {
+    borderBottomColor: colors.divider,
+    borderBottomWidth: hairline,
+  },
+  rowSummary: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.regular,
+    fontSize: 13.5,
+    lineHeight: 19,
+  },
+  rowTitleRead: {
+    color: withAlpha(colors.text, 0.86),
     fontFamily: fontFamilies.medium,
+    fontSize: 15.5,
+    lineHeight: 21,
+  },
+  rowTitleUnread: {
+    color: colors.text,
+    fontFamily: fontFamilies.semibold,
+    fontSize: 15.5,
+    lineHeight: 21,
   },
   sectionEyebrow: {
     ...textStyles.caption,
@@ -532,9 +509,6 @@ const styles = StyleSheet.create({
   settingsStack: {
     gap: spacing.sm,
   },
-  summaryText: {
-    marginTop: 2,
-  },
   switchRow: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -545,22 +519,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  titlePressable: {
-    gap: spacing.sm,
-  },
-  titleRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  titleTextWrap: {
-    flex: 1,
-    gap: 2,
-  },
   unreadDot: {
     backgroundColor: colors.primary,
-    borderRadius: 4,
-    height: 8,
-    width: 8,
+    borderRadius: 3.5,
+    height: 7,
+    width: 7,
   },
 });
